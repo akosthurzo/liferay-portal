@@ -98,6 +98,7 @@ import com.liferay.portal.service.persistence.UserUtil;
 import com.liferay.portal.servlet.filters.cache.CacheUtil;
 import com.liferay.portal.theme.ThemeLoader;
 import com.liferay.portal.theme.ThemeLoaderFactory;
+import com.liferay.portal.util.LayoutLocalServiceHelperUtil;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.PortletKeys;
 import com.liferay.portal.util.PropsValues;
@@ -111,7 +112,6 @@ import com.liferay.portlet.sites.util.SitesUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -1076,6 +1076,10 @@ public class LayoutImporter {
 
 				return;
 			}
+
+			if (existingLayout != null) {
+				friendlyURL = existingLayout.getFriendlyURL();
+			}
 		}
 		else {
 
@@ -1123,6 +1127,17 @@ public class LayoutImporter {
 
 				layoutId = LayoutLocalServiceUtil.getNextLayoutId(
 					groupId, privateLayout);
+
+				for (Layout curLayout : previousLayouts) {
+					if (curLayout.getFriendlyURL().equals(friendlyURL)) {
+						friendlyURL =
+							LayoutLocalServiceHelperUtil.getFriendlyURL(
+								groupId, privateLayout, layoutId,
+								layout.getName(LocaleUtil.getDefault()), null);
+
+						break;
+					}
+				}
 			}
 			else {
 				importedLayout.setCreateDate(layout.getCreateDate());
