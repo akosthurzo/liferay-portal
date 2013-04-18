@@ -19,8 +19,6 @@ import com.liferay.portal.LayoutNameException;
 import com.liferay.portal.LayoutParentLayoutIdException;
 import com.liferay.portal.LayoutTypeException;
 import com.liferay.portal.NoSuchLayoutException;
-import com.liferay.portal.kernel.bean.BeanReference;
-import com.liferay.portal.kernel.bean.IdentifiableBean;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil;
@@ -33,9 +31,8 @@ import com.liferay.portal.model.LayoutConstants;
 import com.liferay.portal.model.LayoutSet;
 import com.liferay.portal.model.LayoutSetPrototype;
 import com.liferay.portal.model.impl.LayoutImpl;
-import com.liferay.portal.service.persistence.LayoutPersistence;
-import com.liferay.portal.service.persistence.LayoutSetPersistence;
-import com.liferay.portal.util.PortalUtil;
+import com.liferay.portal.service.persistence.LayoutSetUtil;
+import com.liferay.portal.service.persistence.LayoutUtil;
 import com.liferay.portal.util.comparator.LayoutPriorityComparator;
 import com.liferay.portlet.sites.util.SitesUtil;
 
@@ -45,12 +42,7 @@ import java.util.List;
  * @author Raymond Augé
  * @author Akos Thurzo
  */
-public class LayoutLocalServiceHelperImpl
-	implements IdentifiableBean, LayoutLocalServiceHelper {
-
-	public String getBeanIdentifier() {
-		return _beanIdentifier;
-	}
+public class LayoutLocalServiceHelperImpl implements LayoutLocalServiceHelper {
 
 	public String getFriendlyURL(
 			long groupId, boolean privateLayout, long layoutId, String name,
@@ -102,7 +94,7 @@ public class LayoutLocalServiceHelperImpl
 			int priority = defaultPriority;
 
 			if (priority < 0) {
-				Layout layout = layoutPersistence.findByG_P_P_First(
+				Layout layout = LayoutUtil.findByG_P_P_First(
 					groupId, privateLayout, parentLayoutId,
 					new LayoutPriorityComparator(false));
 
@@ -112,7 +104,7 @@ public class LayoutLocalServiceHelperImpl
 			if ((priority < _PRIORITY_BUFFER) &&
 				Validator.isNull(sourcePrototypeLayoutUuid)) {
 
-				LayoutSet layoutSet = layoutSetPersistence.fetchByG_P(
+				LayoutSet layoutSet = LayoutSetUtil.fetchByG_P(
 					groupId, privateLayout);
 
 				if (Validator.isNotNull(
@@ -137,7 +129,7 @@ public class LayoutLocalServiceHelperImpl
 
 			// Ensure parent layout exists
 
-			Layout parentLayout = layoutPersistence.fetchByG_P_L(
+			Layout parentLayout = LayoutUtil.fetchByG_P_L(
 				groupId, privateLayout, parentLayoutId);
 
 			if (parentLayout == null) {
@@ -154,7 +146,7 @@ public class LayoutLocalServiceHelperImpl
 
 		Group group = layoutSetPrototype.getGroup();
 
-		Layout layout = layoutPersistence.fetchByUUID_G_P(
+		Layout layout = LayoutUtil.fetchByUUID_G_P(
 			layoutUuid, group.getGroupId(), true);
 
 		if (layout != null) {
@@ -162,10 +154,6 @@ public class LayoutLocalServiceHelperImpl
 		}
 
 		return false;
-	}
-
-	public void setBeanIdentifier(String beanIdentifier) {
-		_beanIdentifier = beanIdentifier;
 	}
 
 	public void validate(
@@ -179,7 +167,7 @@ public class LayoutLocalServiceHelperImpl
 		boolean firstLayout = false;
 
 		if (parentLayoutId == LayoutConstants.DEFAULT_PARENT_LAYOUT_ID) {
-			List<Layout> layouts = layoutPersistence.findByG_P_P(
+			List<Layout> layouts = LayoutUtil.findByG_P_P(
 				groupId, privateLayout, parentLayoutId, 0, 1);
 
 			if (layouts.size() == 0) {
@@ -199,7 +187,7 @@ public class LayoutLocalServiceHelperImpl
 		}
 
 		if (!PortalUtil.isLayoutParentable(type)) {
-			if (layoutPersistence.countByG_P_P(
+			if (LayoutUtil.countByG_P_P(
 					groupId, privateLayout, layoutId) > 0) {
 
 				throw new LayoutTypeException(
@@ -236,7 +224,7 @@ public class LayoutLocalServiceHelperImpl
 			throw new LayoutFriendlyURLException(exceptionType);
 		}
 
-		Layout layout = layoutPersistence.fetchByG_P_F(
+		Layout layout = LayoutUtil.fetchByG_P_F(
 			groupId, privateLayout, friendlyURL);
 
 		if ((layout != null) && (layout.getLayoutId() != layoutId)) {
@@ -297,7 +285,7 @@ public class LayoutLocalServiceHelperImpl
 			long parentLayoutId)
 		throws PortalException, SystemException {
 
-		Layout layout = layoutPersistence.findByG_P_L(
+		Layout layout = LayoutUtil.findByG_P_L(
 			groupId, privateLayout, layoutId);
 
 		if (parentLayoutId != layout.getParentLayoutId()) {
@@ -310,7 +298,7 @@ public class LayoutLocalServiceHelperImpl
 
 			// Layout cannot become a child of a layout that is not parentable
 
-			Layout parentLayout = layoutPersistence.findByG_P_L(
+			Layout parentLayout = LayoutUtil.findByG_P_L(
 				groupId, privateLayout, parentLayoutId);
 
 			if (!PortalUtil.isLayoutParentable(parentLayout)) {
@@ -338,7 +326,7 @@ public class LayoutLocalServiceHelperImpl
 			if (layout.getParentLayoutId() ==
 					LayoutConstants.DEFAULT_PARENT_LAYOUT_ID) {
 
-				List<Layout> layouts = layoutPersistence.findByG_P_P(
+				List<Layout> layouts = LayoutUtil.findByG_P_P(
 					groupId, privateLayout,
 					LayoutConstants.DEFAULT_PARENT_LAYOUT_ID, 0, 2);
 
@@ -362,14 +350,6 @@ public class LayoutLocalServiceHelperImpl
 		}
 	}
 
-	@BeanReference(type = LayoutPersistence.class)
-	protected LayoutPersistence layoutPersistence;
-
-	@BeanReference(type = LayoutSetPersistence.class)
-	protected LayoutSetPersistence layoutSetPersistence;
-
 	private static final int _PRIORITY_BUFFER = 1000000;
-
-	private String _beanIdentifier;
 
 }
