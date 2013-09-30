@@ -56,6 +56,7 @@ import com.liferay.portal.model.PortletConstants;
 import com.liferay.portal.model.PortletItem;
 import com.liferay.portal.model.PortletPreferences;
 import com.liferay.portal.model.User;
+import com.liferay.portal.model.impl.LayoutImpl;
 import com.liferay.portal.service.GroupLocalServiceUtil;
 import com.liferay.portal.service.LayoutLocalServiceUtil;
 import com.liferay.portal.service.PortletItemLocalServiceUtil;
@@ -370,7 +371,20 @@ public class PortletExporter {
 
 		LayoutCache layoutCache = new LayoutCache();
 
-		Layout layout = LayoutLocalServiceUtil.getLayout(plid);
+		Group group = GroupLocalServiceUtil.getGroup(groupId);
+
+		Layout layout = null;
+
+		if (plid > 0) {
+			layout = LayoutLocalServiceUtil.getLayout(plid);
+		}
+		else {
+			layout = new LayoutImpl();
+
+			layout.setCompanyId(group.getCompanyId());
+			layout.setGroupId(groupId);
+			layout.setType(LayoutConstants.TYPE_PORTLET);
+		}
 
 		if (!layout.isTypeControlPanel() && !layout.isTypePanel() &&
 			!layout.isTypePortlet()) {
@@ -405,28 +419,33 @@ public class PortletExporter {
 
 		long scopeGroupId = groupId;
 
-		javax.portlet.PortletPreferences jxPortletPreferences =
-			PortletPreferencesFactoryUtil.getLayoutPortletSetup(
-				layout, portletId);
+		String scopeType = StringPool.BLANK;
+		String scopeLayoutUuid = StringPool.BLANK;
 
-		String scopeType = GetterUtil.getString(
-			jxPortletPreferences.getValue("lfrScopeType", null));
-		String scopeLayoutUuid = GetterUtil.getString(
-			jxPortletPreferences.getValue("lfrScopeLayoutUuid", null));
+		if (plid > 0) {
+			javax.portlet.PortletPreferences jxPortletPreferences =
+				PortletPreferencesFactoryUtil.getLayoutPortletSetup(
+					layout, portletId);
 
-		if (Validator.isNotNull(scopeType)) {
-			Group scopeGroup = null;
+			scopeType = GetterUtil.getString(
+				jxPortletPreferences.getValue("lfrScopeType", null));
+			scopeLayoutUuid = GetterUtil.getString(
+				jxPortletPreferences.getValue("lfrScopeLayoutUuid", null));
 
-			if (scopeType.equals("company")) {
-				scopeGroup = GroupLocalServiceUtil.getCompanyGroup(
-					layout.getCompanyId());
-			}
-			else if (Validator.isNotNull(scopeLayoutUuid)) {
-				scopeGroup = layout.getScopeGroup();
-			}
+			if (Validator.isNotNull(scopeType)) {
+				Group scopeGroup = null;
 
-			if (scopeGroup != null) {
-				scopeGroupId = scopeGroup.getGroupId();
+				if (scopeType.equals("company")) {
+					scopeGroup = GroupLocalServiceUtil.getCompanyGroup(
+						layout.getCompanyId());
+				}
+				else if (Validator.isNotNull(scopeLayoutUuid)) {
+					scopeGroup = layout.getScopeGroup();
+				}
+
+				if (scopeGroup != null) {
+					scopeGroupId = scopeGroup.getGroupId();
+				}
 			}
 		}
 
