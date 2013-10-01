@@ -25,6 +25,7 @@ import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import com.liferay.portal.model.Group;
 import com.liferay.portal.model.Layout;
+import com.liferay.portal.model.LayoutConstants;
 import com.liferay.portal.model.PortletConstants;
 import com.liferay.portal.model.ResourceConstants;
 import com.liferay.portal.model.Role;
@@ -160,10 +161,16 @@ public class PermissionImporter {
 		Element permissionsElement = portletElement.element("permissions");
 
 		if ((layout != null) && (permissionsElement != null)) {
+			long plid = layout.getPlid();
+
+			if (plid == LayoutConstants.DEFAULT_PLID) {
+				return;
+			}
+
 			String resourceName = PortletConstants.getRootPortletId(portletId);
 
 			String resourcePrimKey = PortletPermissionUtil.getPrimaryKey(
-				layout.getPlid(), portletId);
+				plid, portletId);
 
 			importPermissions(
 				layoutCache, companyId, groupId, userId, layout, resourceName,

@@ -68,6 +68,7 @@ import com.liferay.portal.model.PortletConstants;
 import com.liferay.portal.model.PortletItem;
 import com.liferay.portal.model.PortletPreferences;
 import com.liferay.portal.model.User;
+import com.liferay.portal.model.impl.LayoutImpl;
 import com.liferay.portal.security.permission.PermissionCacheUtil;
 import com.liferay.portal.service.GroupLocalServiceUtil;
 import com.liferay.portal.service.LayoutLocalServiceUtil;
@@ -443,7 +444,20 @@ public class PortletImporter {
 			ServiceContextThreadLocal.pushServiceContext(serviceContext);
 		}
 
-		Layout layout = LayoutLocalServiceUtil.getLayout(plid);
+		Group group = GroupLocalServiceUtil.getGroup(groupId);
+
+		Layout layout = null;
+
+		if (plid > 0) {
+			layout = LayoutLocalServiceUtil.getLayout(plid);
+		}
+		else {
+			layout = new LayoutImpl();
+
+			layout.setCompanyId(group.getCompanyId());
+			layout.setGroupId(groupId);
+			layout.setType(LayoutConstants.TYPE_PORTLET);
+		}
 
 		UserIdStrategy userIdStrategy = getUserIdStrategy(
 			user, userIdStrategyString);
@@ -1038,7 +1052,7 @@ public class PortletImporter {
 		if (layout != null) {
 			plid = layout.getPlid();
 
-			if (preserveScopeLayoutId && (portletId != null)) {
+			if (preserveScopeLayoutId && (portletId != null) && (plid > 0)) {
 				javax.portlet.PortletPreferences jxPortletPreferences =
 					PortletPreferencesFactoryUtil.getLayoutPortletSetup(
 						layout, portletId);
@@ -1180,7 +1194,7 @@ public class PortletImporter {
 			}
 		}
 
-		if (preserveScopeLayoutId && (layout != null)) {
+		if (preserveScopeLayoutId && (layout != null) && (plid > 0)) {
 			javax.portlet.PortletPreferences jxPortletPreferences =
 				PortletPreferencesFactoryUtil.getLayoutPortletSetup(
 					layout, portletId);
