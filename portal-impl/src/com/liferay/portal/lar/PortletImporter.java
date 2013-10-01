@@ -219,20 +219,20 @@ public class PortletImporter {
 	}
 
 	public MissingReferences validateFile(
-			long userId, long plid, long groupId, String portletId,
+			long userId, long groupId, String portletId,
 			Map<String, String[]> parameterMap, File file)
 		throws Exception {
 
 		try {
 			ExportImportThreadLocal.setPortletValidationInProcess(true);
 
-			Layout layout = LayoutLocalServiceUtil.getLayout(plid);
+			Group group = GroupLocalServiceUtil.getGroup(groupId);
 
 			ZipReader zipReader = ZipReaderFactoryUtil.getZipReader(file);
 
 			PortletDataContext portletDataContext =
 				PortletDataContextFactoryUtil.createImportPortletDataContext(
-					layout.getCompanyId(), groupId, parameterMap, null,
+					group.getCompanyId(), groupId, parameterMap, null,
 					zipReader);
 
 			validateFile(portletDataContext, portletId);
