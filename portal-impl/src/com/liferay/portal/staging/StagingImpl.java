@@ -38,6 +38,8 @@ import com.liferay.portal.kernel.lar.ExportImportHelperUtil;
 import com.liferay.portal.kernel.lar.MissingReference;
 import com.liferay.portal.kernel.lar.MissingReferences;
 import com.liferay.portal.kernel.lar.PortletDataContext;
+import com.liferay.portal.kernel.lar.PortletDataContextFactoryUtil;
+import com.liferay.portal.kernel.lar.PortletDataHandler;
 import com.liferay.portal.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.portal.kernel.lar.UserIdStrategy;
 import com.liferay.portal.kernel.log.Log;
@@ -68,6 +70,8 @@ import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.workflow.WorkflowTask;
 import com.liferay.portal.kernel.workflow.WorkflowTaskManagerUtil;
 import com.liferay.portal.kernel.xml.Element;
+import com.liferay.portal.kernel.zip.ZipWriter;
+import com.liferay.portal.lar.LayoutExporter;
 import com.liferay.portal.lar.backgroundtask.BackgroundTaskContextMapFactory;
 import com.liferay.portal.lar.backgroundtask.LayoutRemoteStagingBackgroundTaskExecutor;
 import com.liferay.portal.lar.backgroundtask.LayoutStagingBackgroundTaskExecutor;
@@ -78,6 +82,7 @@ import com.liferay.portal.model.Group;
 import com.liferay.portal.model.GroupConstants;
 import com.liferay.portal.model.Layout;
 import com.liferay.portal.model.LayoutBranch;
+import com.liferay.portal.model.LayoutConstants;
 import com.liferay.portal.model.LayoutRevision;
 import com.liferay.portal.model.LayoutSet;
 import com.liferay.portal.model.LayoutSetBranch;
@@ -129,6 +134,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -223,6 +229,30 @@ public class StagingImpl implements Staging {
 
 	@Override
 	public void copyPortlet(
+			long userId, long sourceGroupId, long targetGroupId,
+			long sourcePlid, long targetPlid, String portletId,
+			Map<String, String[]> parameterMap, Date startDate, Date endDate)
+		throws PortalException, SystemException {
+
+		Map<String, Serializable> taskContextMap =
+			BackgroundTaskContextMapFactory.buildTaskContextMap(
+				userId, sourceGroupId, false, null, parameterMap,
+				Constants.PUBLISH, startDate, endDate, StringPool.BLANK);
+
+		taskContextMap.put("sourceGroupId", sourceGroupId);
+		taskContextMap.put("sourcePlid", sourcePlid);
+		taskContextMap.put("portletId", portletId);
+		taskContextMap.put("targetGroupId", targetGroupId);
+		taskContextMap.put("targetPlid", targetPlid);
+
+		BackgroundTaskLocalServiceUtil.addBackgroundTask(
+			userId, sourceGroupId, portletId, null,
+			PortletStagingBackgroundTaskExecutor.class, taskContextMap,
+			new ServiceContext());
+	}
+
+	@Override
+	public void copyPortlet(
 			PortletRequest portletRequest, long sourceGroupId,
 			long targetGroupId, long sourcePlid, long targetPlid,
 			String portletId)
@@ -236,22 +266,10 @@ public class StagingImpl implements Staging {
 		DateRange dateRange = ExportImportHelperUtil.getDateRange(
 			portletRequest, sourceGroupId, false, sourcePlid, portletId);
 
-		Map<String, Serializable> taskContextMap =
-			BackgroundTaskContextMapFactory.buildTaskContextMap(
-				userId, sourceGroupId, false, null, parameterMap,
-				Constants.PUBLISH, dateRange.getStartDate(),
-				dateRange.getEndDate(), StringPool.BLANK);
-
-		taskContextMap.put("sourceGroupId", sourceGroupId);
-		taskContextMap.put("sourcePlid", sourcePlid);
-		taskContextMap.put("portletId", portletId);
-		taskContextMap.put("targetGroupId", targetGroupId);
-		taskContextMap.put("targetPlid", targetPlid);
-
-		BackgroundTaskLocalServiceUtil.addBackgroundTask(
-			userId, sourceGroupId, portletId, null,
-			PortletStagingBackgroundTaskExecutor.class, taskContextMap,
-			new ServiceContext());
+		copyPortlet(
+			userId, sourceGroupId, targetGroupId, sourcePlid, targetPlid,
+			portletId, parameterMap, dateRange.getStartDate(),
+			dateRange.getEndDate());
 	}
 
 	@Override
@@ -499,6 +517,8 @@ public class StagingImpl implements Staging {
 			disableStaging(liveGroup, serviceContext);
 		}
 
+		List<Portlet> stagedPortletsBefore = getStagedPortlets(liveGroup);
+
 		UnicodeProperties typeSettingsProperties =
 			liveGroup.getTypeSettingsProperties();
 
@@ -516,6 +536,8 @@ public class StagingImpl implements Staging {
 		GroupLocalServiceUtil.updateGroup(
 			liveGroup.getGroupId(), typeSettingsProperties.toString());
 
+		Map<String, String[]> parameterMap = getStagingParameters();
+
 		if (!liveGroup.hasStagingGroup()) {
 			serviceContext.setAttribute("staging", String.valueOf(true));
 
@@ -529,8 +551,6 @@ public class StagingImpl implements Staging {
 				liveGroup.getFriendlyURL(), false, liveGroup.isActive(),
 				serviceContext);
 
-			Map<String, String[]> parameterMap = getStagingParameters();
-
 			if (liveGroup.hasPrivateLayouts()) {
 				publishLayouts(
 					userId, liveGroup.getGroupId(), stagingGroup.getGroupId(),
@@ -543,6 +563,56 @@ public class StagingImpl implements Staging {
 				publishLayouts(
 					userId, liveGroup.getGroupId(), stagingGroup.getGroupId(),
 					false, parameterMap, null, null);
+			}
+		}
+		else {
+			List<Portlet> stagedPortletsAfter = getStagedPortlets(liveGroup);
+
+			List<Portlet> newStagedPortlets = new LinkedList<Portlet>(
+				stagedPortletsAfter);
+
+			newStagedPortlets.removeAll(stagedPortletsBefore);
+
+			Group stagingGroup = liveGroup.getStagingGroup();
+
+			for (Portlet newStagedPortlet : newStagedPortlets) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(
+						"Publishing " + newStagedPortlet.getDisplayName() +
+						" (" + newStagedPortlet.getPortletId() + ")");
+				}
+
+				copyPortlet(
+					userId, liveGroup.getGroupId(), stagingGroup.getGroupId(),
+					LayoutConstants.DEFAULT_PLID, LayoutConstants.DEFAULT_PLID,
+					newStagedPortlet.getPortletId(), parameterMap, null, null);
+			}
+
+			List<Portlet> oldStagedPortlets = new LinkedList<Portlet>(
+				stagedPortletsBefore);
+
+			oldStagedPortlets.removeAll(stagedPortletsAfter);
+
+			for (Portlet oldStagedPortlet : oldStagedPortlets) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(
+						"Deleting " + oldStagedPortlet.getDisplayName() + " (" +
+						oldStagedPortlet.getPortletId() + ")");
+				}
+
+				PortletDataHandler portletDataHandler =
+					oldStagedPortlet.getPortletDataHandlerInstance();
+
+				PortletDataContext portletDataContext =
+					PortletDataContextFactoryUtil.
+						createExportPortletDataContext(
+							stagingGroup.getCompanyId(),
+							stagingGroup.getGroupId(),
+							(Map<String, String[]>)null, (Date)null, (Date)null,
+							(ZipWriter)null);
+
+				portletDataHandler.deleteData(
+					portletDataContext, oldStagedPortlet.getPortletId(), null);
 			}
 		}
 
@@ -2207,6 +2277,30 @@ public class StagingImpl implements Staging {
 
 	protected String getRecentLayoutSetBranchIdKey(long layoutSetId) {
 		return "layoutSetBranchId_" + layoutSetId;
+	}
+
+	protected List<Portlet> getStagedPortlets(Group liveGroup)
+		throws Exception {
+
+		List<Portlet> portlets = LayoutExporter.getDataSiteLevelPortlets(
+			liveGroup.getCompanyId());
+
+		List<Portlet> stagedPortlets = new ArrayList<Portlet>(portlets);
+
+		Iterator<Portlet> iterator = stagedPortlets.iterator();
+
+		while (iterator.hasNext()) {
+			Portlet portlet = iterator.next();
+
+			boolean stagedPortlet = liveGroup.isStagedPortlet(
+				portlet.getPortletId());
+
+			if (!stagedPortlet) {
+				iterator.remove();
+			}
+		}
+
+		return stagedPortlets;
 	}
 
 	protected int getStagingType(
