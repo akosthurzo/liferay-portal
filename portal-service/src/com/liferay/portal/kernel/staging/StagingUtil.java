@@ -70,6 +70,17 @@ public class StagingUtil {
 	}
 
 	public static void copyPortlet(
+			long userId, long sourceGroupId, long targetGroupId,
+			long sourcePlid, long targetPlid, String portletId,
+			Map<String, String[]> parameterMap, Date startDate, Date endDate)
+		throws PortalException, SystemException {
+
+		getStaging().copyPortlet(
+			userId, sourceGroupId, targetGroupId, sourcePlid, targetPlid,
+			portletId, parameterMap, startDate, endDate);
+	}
+
+	public static void copyPortlet(
 			PortletRequest PortletRequest, long sourceGroupId,
 			long targetGroupId, long sourcePlid, long targetPlid,
 			String portletId)
