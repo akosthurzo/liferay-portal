@@ -2900,7 +2900,7 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 
 	@Override
 	public MissingReferences validateImportPortletInfo(
-			long userId, long plid, long groupId, String portletId,
+			long userId, long groupId, String portletId,
 			Map<String, String[]> parameterMap, File file)
 		throws PortalException, SystemException {
 
@@ -2908,7 +2908,7 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 			PortletImporter portletImporter = new PortletImporter();
 
 			return portletImporter.validateFile(
-				userId, plid, groupId, portletId, parameterMap, file);
+				userId, groupId, portletId, parameterMap, file);
 		}
 		catch (PortalException pe) {
 			Throwable cause = pe.getCause();
@@ -2929,7 +2929,7 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 
 	@Override
 	public MissingReferences validateImportPortletInfo(
-			long userId, long plid, long groupId, String portletId,
+			long userId, long groupId, String portletId,
 			Map<String, String[]> parameterMap, InputStream inputStream)
 		throws PortalException, SystemException {
 
@@ -2941,7 +2941,7 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 			FileUtil.write(file, inputStream);
 
 			return validateImportPortletInfo(
-				userId, plid, groupId, portletId, parameterMap, file);
+				userId, groupId, portletId, parameterMap, file);
 		}
 		catch (IOException ioe) {
 			throw new SystemException(ioe);
