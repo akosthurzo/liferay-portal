@@ -1891,24 +1891,24 @@ public class LayoutLocalServiceUtil {
 	}
 
 	public static com.liferay.portal.kernel.lar.MissingReferences validateImportPortletInfo(
-		long userId, long plid, long groupId, java.lang.String portletId,
+		long userId, long groupId, java.lang.String portletId,
 		java.util.Map<java.lang.String, java.lang.String[]> parameterMap,
 		java.io.File file)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		return getService()
-				   .validateImportPortletInfo(userId, plid, groupId, portletId,
+				   .validateImportPortletInfo(userId, groupId, portletId,
 			parameterMap, file);
 	}
 
 	public static com.liferay.portal.kernel.lar.MissingReferences validateImportPortletInfo(
-		long userId, long plid, long groupId, java.lang.String portletId,
+		long userId, long groupId, java.lang.String portletId,
 		java.util.Map<java.lang.String, java.lang.String[]> parameterMap,
 		java.io.InputStream inputStream)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		return getService()
-				   .validateImportPortletInfo(userId, plid, groupId, portletId,
+				   .validateImportPortletInfo(userId, groupId, portletId,
 			parameterMap, inputStream);
 	}
 
