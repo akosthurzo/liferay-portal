@@ -1667,7 +1667,7 @@ public class LayoutServiceImpl extends LayoutServiceBaseImpl {
 			getPermissionChecker(), plid, portletId, ActionKeys.CONFIGURATION);
 
 		return layoutLocalService.validateImportPortletInfo(
-			getUserId(), plid, groupId, portletId, parameterMap, file);
+			getUserId(), groupId, portletId, parameterMap, file);
 	}
 
 	@Override
@@ -1680,7 +1680,7 @@ public class LayoutServiceImpl extends LayoutServiceBaseImpl {
 			getPermissionChecker(), plid, portletId, ActionKeys.CONFIGURATION);
 
 		return layoutLocalService.validateImportPortletInfo(
-			getUserId(), plid, groupId, portletId, parameterMap, inputStream);
+			getUserId(), groupId, portletId, parameterMap, inputStream);
 	}
 
 	protected List<Layout> filterLayouts(List<Layout> layouts)
