@@ -46,6 +46,7 @@ import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.UniqueList;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.liveusers.LiveUsers;
+import com.liferay.portal.model.Company;
 import com.liferay.portal.model.Group;
 import com.liferay.portal.model.GroupConstants;
 import com.liferay.portal.model.Layout;
@@ -59,6 +60,7 @@ import com.liferay.portal.model.Team;
 import com.liferay.portal.security.auth.AuthException;
 import com.liferay.portal.security.auth.PrincipalException;
 import com.liferay.portal.security.auth.RemoteAuthException;
+import com.liferay.portal.service.CompanyLocalServiceUtil;
 import com.liferay.portal.service.GroupLocalServiceUtil;
 import com.liferay.portal.service.GroupServiceUtil;
 import com.liferay.portal.service.LayoutLocalServiceUtil;
@@ -75,6 +77,8 @@ import com.liferay.portal.struts.PortletAction;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.PortletKeys;
+import com.liferay.portal.util.PropsValues;
+import com.liferay.portal.util.RobotsUtil;
 import com.liferay.portal.util.WebKeys;
 import com.liferay.portlet.asset.AssetCategoryException;
 import com.liferay.portlet.asset.AssetTagException;
@@ -590,6 +594,8 @@ public class EditGroupAction extends PortletAction {
 
 		LayoutSet publicLayoutSet = liveGroup.getPublicLayoutSet();
 
+		String oldPublicVirtualHost = publicLayoutSet.getVirtualHostname();
+
 		String publicVirtualHost = ParamUtil.getString(
 			actionRequest, "publicVirtualHost",
 			publicLayoutSet.getVirtualHostname());
@@ -598,6 +604,8 @@ public class EditGroupAction extends PortletAction {
 			liveGroup.getGroupId(), false, publicVirtualHost);
 
 		LayoutSet privateLayoutSet = liveGroup.getPrivateLayoutSet();
+
+		String oldPrivateVirtualHost = privateLayoutSet.getVirtualHostname();
 
 		String privateVirtualHost = ParamUtil.getString(
 			actionRequest, "privateVirtualHost",
@@ -652,15 +660,55 @@ public class EditGroupAction extends PortletAction {
 			}
 		}
 
+		String defaultPublicRobots = RobotsUtil.getDefaultRobots(
+			publicVirtualHost);
+
 		String publicRobots = ParamUtil.getString(
 			actionRequest, "publicRobots",
 			liveGroup.getTypeSettingsProperty("false-robots.txt"));
+
+		Company company = CompanyLocalServiceUtil.getCompany(
+			themeDisplay.getCompanyId());
+
+		Group defaultGroup = GroupLocalServiceUtil.getGroup(
+			company.getCompanyId(),
+			PropsValues.VIRTUAL_HOSTS_DEFAULT_SITE_NAME);
+
+		if (!StringUtil.equalsIgnoreCase(defaultPublicRobots, publicRobots) &&
+			StringUtil.equalsIgnoreCase(
+				oldPublicVirtualHost, publicVirtualHost)) {
+
+			typeSettingsProperties.setProperty(
+				"false-robots.txt", publicRobots);
+		}
+
+		if ((Validator.isNull(publicVirtualHost) &&
+			 (defaultGroup.getGroupId() != liveGroup.getGroupId())) ||
+			StringUtil.equalsIgnoreCase(defaultPublicRobots, publicRobots)) {
+
+			typeSettingsProperties.remove("false-robots.txt");
+		}
+
+		String defaultPrivateRobots = RobotsUtil.getDefaultRobots(
+			privateVirtualHost);
+
 		String privateRobots = ParamUtil.getString(
 			actionRequest, "privateRobots",
 			liveGroup.getTypeSettingsProperty("true-robots.txt"));
 
-		typeSettingsProperties.setProperty("false-robots.txt", publicRobots);
-		typeSettingsProperties.setProperty("true-robots.txt", privateRobots);
+		if (!StringUtil.equalsIgnoreCase(defaultPrivateRobots, privateRobots) &&
+			StringUtil.equalsIgnoreCase(
+				oldPrivateVirtualHost, privateVirtualHost)) {
+
+			typeSettingsProperties.setProperty(
+				"true-robots.txt", privateRobots);
+		}
+
+		if (Validator.isNull(privateVirtualHost) ||
+			StringUtil.equalsIgnoreCase(defaultPrivateRobots, privateRobots)) {
+
+			typeSettingsProperties.remove("true-robots.txt");
+		}
 
 		boolean trashEnabled = ParamUtil.getBoolean(
 			actionRequest, "trashEnabled",
