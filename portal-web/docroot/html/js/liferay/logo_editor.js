@@ -41,6 +41,18 @@ AUI.add(
 						instance._cropRegionNode = instance.one('#cropRegion');
 						instance._fileNameNode = instance.one('#fileName');
 						instance._formNode = instance.one('#fm');
+
+						var formValidator = Liferay.Form.get(instance._formNode.attr('id')).formValidator;
+
+						formValidator.on(
+							{
+								errorField: function() {
+									Liferay.Util.toggleDisabled(instance._submitButton, true);
+								}
+							}
+						);
+
+						instance._formValidator = formValidator;
 						instance._portraitPreviewImg = instance.one('#portraitPreviewImg');
 						instance._submitButton = instance.one('#submitButton');
 					},
@@ -116,8 +128,6 @@ AUI.add(
 						var instance = this;
 
 						instance._getMessageNode().remove();
-
-						Liferay.Util.toggleDisabled(instance._submitButton, true);
 					},
 
 					_getImgNaturalSize: function(img) {
@@ -166,8 +176,6 @@ AUI.add(
 					_onFileNameChange: function(event) {
 						var instance = this;
 
-						var uploadURL = instance.get('uploadURL');
-
 						var imageCropper = instance._imageCropper;
 						var portraitPreviewImg = instance._portraitPreviewImg;
 
@@ -179,19 +187,23 @@ AUI.add(
 							imageCropper.disable();
 						}
 
-						A.io.request(
-							uploadURL,
-							{
-								form: {
-									id: instance.ns('fm'),
-									upload: true
-								},
-								on: {
-									complete: A.bind('fire', instance, 'uploadComplete'),
-									start: A.bind('fire', instance, 'uploadStart')
+						instance._formValidator.validateField(instance._fileNameNode);
+
+						if (!instance._formValidator.hasErrors()) {
+							A.io.request(
+								instance.get('uploadURL'),
+								{
+									form: {
+										id: instance.ns('fm'),
+										upload: true
+									},
+									on: {
+										complete: A.bind('fire', instance, 'uploadComplete'),
+										start: A.bind('fire', instance, 'uploadStart')
+									}
 								}
-							}
-						);
+							);
+						}
 					},
 
 					_onImageLoad: function(event) {
