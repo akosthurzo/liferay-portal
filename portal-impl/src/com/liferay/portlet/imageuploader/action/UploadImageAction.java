@@ -159,8 +159,7 @@ public class UploadImageAction extends PortletAction {
 					errorMessage = themeDisplay.translate(
 						"please-enter-a-unique-document-name");
 				}
-
-				if (e instanceof FileExtensionException) {
+				else if (e instanceof FileExtensionException) {
 					errorMessage = themeDisplay.translate(
 						"please-enter-a-file-with-a-valid-extension-x",
 						StringUtil.merge(
