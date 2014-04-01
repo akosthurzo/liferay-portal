@@ -26,7 +26,6 @@ String randomNamespace = ParamUtil.getString(request, "randomNamespace");
 <portlet:resourceURL var="previewURL">
 	<portlet:param name="struts_action" value="/image_uploader/view" />
 	<portlet:param name="<%= Constants.CMD %>" value="<%= Constants.GET_TEMP %>" />
-	<portlet:param name="tempImageFileName" value="<%= tempImageFileName %>" />
 </portlet:resourceURL>
 
 <c:choose>
@@ -34,6 +33,8 @@ String randomNamespace = ParamUtil.getString(request, "randomNamespace");
 
 		<%
 		FileEntry fileEntry = (FileEntry)SessionMessages.get(renderRequest, "imageUploaded");
+
+		previewURL = HttpUtil.addParameter(previewURL, "tempImageFileName", tempImageFileName);
 		%>
 
 		<aui:script>
@@ -66,7 +67,11 @@ String randomNamespace = ParamUtil.getString(request, "randomNamespace");
 			</liferay-ui:error>
 
 			<aui:fieldset cssClass="lfr-portrait-editor">
-				<aui:input autoFocus="<= windowState.equals(WindowState.MAXIMIZED) %>" label='<%= LanguageUtil.format(pageContext, "upload-images-no-larger-than-x", TextFormatter.formatStorageSize(maxFileSize, locale), false) %>' name="fileName" size="50" type="file" />
+				<aui:input autoFocus="<%= windowState.equals(WindowState.MAXIMIZED) || windowState.equals(LiferayWindowState.POP_UP) %>" label='<%= LanguageUtil.format(pageContext, "upload-images-no-larger-than-x", TextFormatter.formatStorageSize(maxFileSize, locale), false) %>' name="fileName" size="50" type="file">
+					<aui:validator name="acceptFiles">
+						'<%= StringUtil.merge(PrefsPropsUtil.getStringArray(PropsKeys.DL_FILE_EXTENSIONS, StringPool.COMMA)) %>'
+					</aui:validator>
+				</aui:input>
 
 				<div class="lfr-change-logo lfr-portrait-preview" id="<portlet:namespace />portraitPreview">
 					<img alt="image-preview" class="lfr-portrait-preview-img" id="<portlet:namespace />portraitPreviewImg" src="<%= HtmlUtil.escape(currentImageURL) %>" />
