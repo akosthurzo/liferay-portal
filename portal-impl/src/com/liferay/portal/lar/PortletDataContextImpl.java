@@ -83,6 +83,9 @@ import com.liferay.portlet.asset.model.AssetLink;
 import com.liferay.portlet.asset.service.AssetEntryLocalServiceUtil;
 import com.liferay.portlet.asset.service.AssetLinkLocalServiceUtil;
 import com.liferay.portlet.asset.service.AssetTagLocalServiceUtil;
+import com.liferay.portlet.documentlibrary.xstream.FileEntryConverter;
+import com.liferay.portlet.documentlibrary.xstream.FileVersionConverter;
+import com.liferay.portlet.documentlibrary.xstream.FolderConverter;
 import com.liferay.portlet.expando.model.ExpandoBridge;
 import com.liferay.portlet.expando.model.ExpandoColumn;
 import com.liferay.portlet.expando.service.ExpandoColumnLocalServiceUtil;
@@ -90,6 +93,7 @@ import com.liferay.portlet.messageboards.model.MBMessage;
 import com.liferay.portlet.ratings.model.RatingsEntry;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.Converter;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -2417,6 +2421,16 @@ public class PortletDataContextImpl implements PortletDataContext {
 		_xStream = new XStream();
 
 		_xStream.omitField(HashMap.class, "cache_bitmask");
+
+		Converter fileEntryConverter = new FileEntryConverter();
+		Converter fileVersionConverter = new FileVersionConverter();
+		Converter folderConverter = new FolderConverter();
+
+		_xStream.registerConverter(folderConverter, XStream.PRIORITY_VERY_HIGH);
+		_xStream.registerConverter(
+			fileEntryConverter, XStream.PRIORITY_VERY_HIGH);
+		_xStream.registerConverter(
+			fileVersionConverter, XStream.PRIORITY_VERY_HIGH);
 	}
 
 	protected boolean isResourceMain(ClassedModel classedModel) {
