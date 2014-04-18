@@ -2431,6 +2431,8 @@ public class PortletDataContextImpl implements PortletDataContext {
 			fileEntryConverter, XStream.PRIORITY_VERY_HIGH);
 		_xStream.registerConverter(
 			fileVersionConverter, XStream.PRIORITY_VERY_HIGH);
+
+		_xStream.setMode(XStream.NO_REFERENCES);
 	}
 
 	protected boolean isResourceMain(ClassedModel classedModel) {
