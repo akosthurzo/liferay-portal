@@ -247,6 +247,8 @@ public class FileEntryStagedModelDataHandler
 			StagedModelDataHandlerUtil.importReferenceStagedModel(
 				portletDataContext, fileEntry, Repository.class,
 				fileEntry.getRepositoryId());
+
+			return;
 		}
 
 		if (fileEntry.getFolderId() !=
