@@ -720,7 +720,7 @@ public class BookmarksEntryLocalServiceImpl
 			bodyLocalizedValuesMap = bookmarksSettings.getEmailEntryAddedBody();
 		}
 
-		SubscriptionSender subscriptionSender = new SubscriptionSender();
+		SubscriptionSender subscriptionSender = new SubscriptionSender(true);
 
 		subscriptionSender.setClassName(entry.getModelClassName());
 		subscriptionSender.setClassPK(entry.getEntryId());
