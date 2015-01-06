@@ -18,6 +18,7 @@ import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.lar.ExportImportHelperUtil;
 import com.liferay.portal.kernel.search.BaseIndexer;
+import com.liferay.portal.kernel.search.BooleanQuery;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.SearchContext;
@@ -63,6 +64,29 @@ public class ExportImportConfigurationIndexer extends BaseIndexer {
 	}
 
 	@Override
+	public void postProcessContextQuery(
+			BooleanQuery contextQuery, SearchContext searchContext)
+		throws Exception {
+
+		Integer type = (Integer)searchContext.getAttribute(Field.TYPE);
+
+		if (type != null) {
+			contextQuery.addRequiredTerm(Field.TYPE, type);
+		}
+	}
+
+	@Override
+	public void postProcessSearchQuery(
+			BooleanQuery searchQuery, SearchContext searchContext)
+		throws Exception {
+
+		addSearchTerm(searchQuery, searchContext, Field.DESCRIPTION, true);
+		addSearchTerm(
+			searchQuery, searchContext, "exportImportConfigurationId", false);
+		addSearchTerm(searchQuery, searchContext, Field.NAME, true);
+	}
+
+	@Override
 	protected void doDelete(Object obj) throws Exception {
 		ExportImportConfiguration exportImportConfiguration =
 			(ExportImportConfiguration)obj;
@@ -82,6 +106,9 @@ public class ExportImportConfigurationIndexer extends BaseIndexer {
 
 		document.addText(
 			Field.DESCRIPTION, exportImportConfiguration.getDescription());
+		document.addNumber(
+			"exportImportConfigurationId",
+			exportImportConfiguration.getExportImportConfigurationId());
 		document.addText(Field.NAME, exportImportConfiguration.getName());
 		document.addKeyword(Field.TYPE, exportImportConfiguration.getType());
 

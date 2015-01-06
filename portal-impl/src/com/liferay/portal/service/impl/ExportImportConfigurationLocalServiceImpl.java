@@ -15,22 +15,35 @@
 package com.liferay.portal.service.impl;
 
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.search.BaseModelSearchResult;
+import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
+import com.liferay.portal.kernel.search.Indexer;
+import com.liferay.portal.kernel.search.IndexerRegistryUtil;
+import com.liferay.portal.kernel.search.QueryConfig;
+import com.liferay.portal.kernel.search.SearchContext;
+import com.liferay.portal.kernel.search.SearchException;
+import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.model.ExportImportConfiguration;
 import com.liferay.portal.model.SystemEventConstants;
 import com.liferay.portal.model.User;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.base.ExportImportConfigurationLocalServiceBaseImpl;
+import com.liferay.portlet.layoutsadmin.util.ExportImportConfigurationUtil;
 import com.liferay.portlet.trash.model.TrashEntry;
 
 import java.io.Serializable;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -220,6 +233,108 @@ public class ExportImportConfigurationLocalServiceImpl
 			exportImportConfiguration.getExportImportConfigurationId());
 
 		return exportImportConfiguration;
+	}
+
+	@Override
+	public BaseModelSearchResult<ExportImportConfiguration> searchExportImportConfigurations (
+			long companyId, int type, String keywords,
+			LinkedHashMap<String, Object> params, int start, int end, Sort sort)
+		throws PortalException {
+
+		String description = null;
+		String name = null;
+		boolean andOperator = false;
+
+		if (Validator.isNotNull(keywords)) {
+			description = keywords;
+			name = keywords;
+		}
+		else {
+			andOperator = true;
+		}
+
+		if (params != null) {
+			params.put("keywords", keywords);
+		}
+
+		return searchExportImportConfigurations(
+			companyId, type, name, description, params, andOperator, start, end,
+			sort);
+	}
+
+	@Override
+	public BaseModelSearchResult<ExportImportConfiguration> searchExportImportConfigurations(
+			long companyId, int type, String name, String description,
+			LinkedHashMap<String, Object> params, boolean andSearch, int start,
+			int end, Sort sort)
+		throws PortalException {
+
+		Indexer indexer = IndexerRegistryUtil.nullSafeGetIndexer(
+			ExportImportConfiguration.class);
+
+		SearchContext searchContext = buildSearchContext(
+			companyId, type, name, description, params, andSearch, start,end,
+			sort);
+
+		for (int i = 0; i < 10; i++) {
+			Hits hits = indexer.search(searchContext);
+
+			List<ExportImportConfiguration> exportImportConfigurations =
+				ExportImportConfigurationUtil.getExportImportConfigurations(
+					hits);
+
+			if (exportImportConfigurations != null) {
+				return new BaseModelSearchResult<ExportImportConfiguration>(
+					exportImportConfigurations, hits.getLength());
+			}
+		}
+
+		throw new SearchException(
+			"Unable to fix the search index after 10 attempts");
+	}
+
+	protected SearchContext buildSearchContext(
+		long companyId, int type, String name, String description,
+		LinkedHashMap<String, Object> params, boolean andSearch, int start,
+		int end, Sort sort) {
+
+		SearchContext searchContext = new SearchContext();
+
+		searchContext.setAndSearch(andSearch);
+
+		Map<String, Serializable> attributes =
+			new HashMap<String, Serializable>();
+
+		attributes.put("description", description);
+		attributes.put("name", name);
+		attributes.put("params", params);
+		attributes.put("type", type);
+
+		searchContext.setAttributes(attributes);
+
+		searchContext.setCompanyId(companyId);
+		searchContext.setEnd(end);
+
+		if (params != null) {
+			String keywords = (String)params.remove("keywords");
+
+			if (Validator.isNotNull(keywords)) {
+				searchContext.setKeywords(keywords);
+			}
+		}
+
+		if (sort != null) {
+			searchContext.setSorts(sort);
+		}
+
+		searchContext.setStart(start);
+
+		QueryConfig queryConfig = searchContext.getQueryConfig();
+
+		queryConfig.setHighlightEnabled(false);
+		queryConfig.setScoreEnabled(false);
+
+		return searchContext;
 	}
 
 	@Indexable(type = IndexableType.REINDEX)
