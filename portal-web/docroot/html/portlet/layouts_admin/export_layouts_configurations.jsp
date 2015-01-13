@@ -35,7 +35,6 @@ String rootNodeName = ParamUtil.getString(request, "rootNodeName");
 </liferay-portlet:renderURL>
 
 <aui:form action="<%= portletURL %>">
-
 	<liferay-ui:search-container
 		displayTerms="<%= new ExportImportConfigurationDisplayTerms(renderRequest) %>"
 		emptyResultsMessage="there-are-no-saved-export-templates"
@@ -64,25 +63,10 @@ String rootNodeName = ParamUtil.getString(request, "rootNodeName");
 		<liferay-ui:search-container-results>
 
 			<%
-			ExportImportConfigurationSearchTerms searchTerms = (ExportImportConfigurationSearchTerms)searchContainer.getSearchTerms();
-
-			BaseModelSearchResult<ExportImportConfiguration> baseModelSearchResult = null;
-
-			Sort sort = SortFactoryUtil.getSort(ExportImportConfiguration.class, searchContainer.getOrderByCol(), searchContainer.getOrderByType());
-
-			if (searchTerms.isAdvancedSearch()) {
-				baseModelSearchResult = ExportImportConfigurationLocalServiceUtil.searchExportImportConfigurations(company.getCompanyId(), ExportImportConfigurationConstants.TYPE_EXPORT_LAYOUT, searchTerms.getName(), searchTerms.getDescription(), null, searchTerms.isAndOperator(), searchContainer.getStart(), searchContainer.getEnd(), sort);
-			}
-			else {
-				baseModelSearchResult = ExportImportConfigurationLocalServiceUtil.searchExportImportConfigurations(company.getCompanyId(), ExportImportConfigurationConstants.TYPE_EXPORT_LAYOUT, searchTerms.getKeywords(), null, searchContainer.getStart(), searchContainer.getEnd(), sort);
-			}
-
-			results = baseModelSearchResult.getBaseModels();
-
-			searchContainer.setResults(results);
-			searchContainer.setTotal(baseModelSearchResult.getLength());
+			int exportImportConfigurationType = ExportImportConfigurationConstants.TYPE_EXPORT_LAYOUT;
 			%>
 
+			<%@ include file="/html/portlet/layouts_admin/export_import_configuration_search_results.jspf" %>
 		</liferay-ui:search-container-results>
 
 		<liferay-ui:search-container-row
@@ -137,5 +121,4 @@ String rootNodeName = ParamUtil.getString(request, "rootNodeName");
 
 		<liferay-ui:search-iterator />
 	</liferay-ui:search-container>
-
 </aui:form>
