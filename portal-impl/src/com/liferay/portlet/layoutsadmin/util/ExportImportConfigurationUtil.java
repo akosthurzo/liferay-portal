@@ -39,7 +39,7 @@ public class ExportImportConfigurationUtil {
 		List<Document> documents = hits.toList();
 
 		List<ExportImportConfiguration> exportImportConfigurations =
-			new ArrayList<ExportImportConfiguration>(documents.size());
+			new ArrayList<>(documents.size());
 
 		for (Document document : documents) {
 			long exportImportConfigurationId = GetterUtil.getLong(
