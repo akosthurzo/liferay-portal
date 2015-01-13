@@ -15,7 +15,6 @@
 package com.liferay.portal.service.impl;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.search.BaseModelSearchResult;
 import com.liferay.portal.kernel.search.Hits;
@@ -236,7 +235,8 @@ public class ExportImportConfigurationLocalServiceImpl
 	}
 
 	@Override
-	public BaseModelSearchResult<ExportImportConfiguration> searchExportImportConfigurations (
+	public BaseModelSearchResult<ExportImportConfiguration>
+		searchExportImportConfigurations(
 			long companyId, int type, String keywords,
 			LinkedHashMap<String, Object> params, int start, int end, Sort sort)
 		throws PortalException {
@@ -263,7 +263,8 @@ public class ExportImportConfigurationLocalServiceImpl
 	}
 
 	@Override
-	public BaseModelSearchResult<ExportImportConfiguration> searchExportImportConfigurations(
+	public BaseModelSearchResult<ExportImportConfiguration>
+		searchExportImportConfigurations(
 			long companyId, int type, String name, String description,
 			LinkedHashMap<String, Object> params, boolean andSearch, int start,
 			int end, Sort sort)
@@ -273,7 +274,7 @@ public class ExportImportConfigurationLocalServiceImpl
 			ExportImportConfiguration.class);
 
 		SearchContext searchContext = buildSearchContext(
-			companyId, type, name, description, params, andSearch, start,end,
+			companyId, type, name, description, params, andSearch, start, end,
 			sort);
 
 		for (int i = 0; i < 10; i++) {
@@ -291,50 +292,6 @@ public class ExportImportConfigurationLocalServiceImpl
 
 		throw new SearchException(
 			"Unable to fix the search index after 10 attempts");
-	}
-
-	protected SearchContext buildSearchContext(
-		long companyId, int type, String name, String description,
-		LinkedHashMap<String, Object> params, boolean andSearch, int start,
-		int end, Sort sort) {
-
-		SearchContext searchContext = new SearchContext();
-
-		searchContext.setAndSearch(andSearch);
-
-		Map<String, Serializable> attributes =
-			new HashMap<String, Serializable>();
-
-		attributes.put("description", description);
-		attributes.put("name", name);
-		attributes.put("params", params);
-		attributes.put("type", type);
-
-		searchContext.setAttributes(attributes);
-
-		searchContext.setCompanyId(companyId);
-		searchContext.setEnd(end);
-
-		if (params != null) {
-			String keywords = (String)params.remove("keywords");
-
-			if (Validator.isNotNull(keywords)) {
-				searchContext.setKeywords(keywords);
-			}
-		}
-
-		if (sort != null) {
-			searchContext.setSorts(sort);
-		}
-
-		searchContext.setStart(start);
-
-		QueryConfig queryConfig = searchContext.getQueryConfig();
-
-		queryConfig.setHighlightEnabled(false);
-		queryConfig.setScoreEnabled(false);
-
-		return searchContext;
 	}
 
 	@Indexable(type = IndexableType.REINDEX)
@@ -388,6 +345,49 @@ public class ExportImportConfigurationLocalServiceImpl
 		exportImportConfigurationPersistence.update(exportImportConfiguration);
 
 		return exportImportConfiguration;
+	}
+
+	protected SearchContext buildSearchContext(
+		long companyId, int type, String name, String description,
+		LinkedHashMap<String, Object> params, boolean andSearch, int start,
+		int end, Sort sort) {
+
+		SearchContext searchContext = new SearchContext();
+
+		searchContext.setAndSearch(andSearch);
+
+		Map<String, Serializable> attributes = new HashMap<>();
+
+		attributes.put("description", description);
+		attributes.put("name", name);
+		attributes.put("params", params);
+		attributes.put("type", type);
+
+		searchContext.setAttributes(attributes);
+
+		searchContext.setCompanyId(companyId);
+		searchContext.setEnd(end);
+
+		if (params != null) {
+			String keywords = (String)params.remove("keywords");
+
+			if (Validator.isNotNull(keywords)) {
+				searchContext.setKeywords(keywords);
+			}
+		}
+
+		if (sort != null) {
+			searchContext.setSorts(sort);
+		}
+
+		searchContext.setStart(start);
+
+		QueryConfig queryConfig = searchContext.getQueryConfig();
+
+		queryConfig.setHighlightEnabled(false);
+		queryConfig.setScoreEnabled(false);
+
+		return searchContext;
 	}
 
 }
