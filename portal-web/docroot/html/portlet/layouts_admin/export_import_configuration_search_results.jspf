@@ -22,10 +22,10 @@ BaseModelSearchResult<ExportImportConfiguration> baseModelSearchResult = null;
 Sort sort = SortFactoryUtil.getSort(ExportImportConfiguration.class, searchContainer.getOrderByCol(), searchContainer.getOrderByType());
 
 if (searchTerms.isAdvancedSearch()) {
-	baseModelSearchResult = ExportImportConfigurationLocalServiceUtil.searchExportImportConfigurations(company.getCompanyId(), exportImportConfigurationType, searchTerms.getName(), searchTerms.getDescription(), null, searchTerms.isAndOperator(), searchContainer.getStart(), searchContainer.getEnd(), sort);
+	baseModelSearchResult = ExportImportConfigurationLocalServiceUtil.searchExportImportConfigurations(company.getCompanyId(), groupId, exportImportConfigurationType, searchTerms.getName(), searchTerms.getDescription(), null, searchTerms.isAndOperator(), searchContainer.getStart(), searchContainer.getEnd(), sort);
 }
 else {
-	baseModelSearchResult = ExportImportConfigurationLocalServiceUtil.searchExportImportConfigurations(company.getCompanyId(), exportImportConfigurationType, searchTerms.getKeywords(), null, searchContainer.getStart(), searchContainer.getEnd(), sort);
+	baseModelSearchResult = ExportImportConfigurationLocalServiceUtil.searchExportImportConfigurations(company.getCompanyId(), groupId, exportImportConfigurationType, searchTerms.getKeywords(), null, searchContainer.getStart(), searchContainer.getEnd(), sort);
 }
 
 results = baseModelSearchResult.getBaseModels();

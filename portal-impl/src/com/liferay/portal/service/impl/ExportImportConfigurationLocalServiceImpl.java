@@ -258,8 +258,8 @@ public class ExportImportConfigurationLocalServiceImpl
 		}
 
 		return searchExportImportConfigurations(
-			companyId, type, name, description, params, andOperator, start, end,
-			sort);
+			companyId, groupId, type, name, description, params, andOperator,
+			start, end, sort);
 	}
 
 	@Override
