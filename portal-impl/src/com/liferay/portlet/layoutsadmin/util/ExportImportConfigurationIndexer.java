@@ -68,10 +68,16 @@ public class ExportImportConfigurationIndexer extends BaseIndexer {
 			BooleanQuery contextQuery, SearchContext searchContext)
 		throws Exception {
 
-		Integer type = (Integer)searchContext.getAttribute(Field.TYPE);
+		contextQuery.addRequiredTerm(
+			Field.COMPANY_ID, searchContext.getCompanyId());
+		contextQuery.addRequiredTerm(
+			Field.GROUP_ID,
+			GetterUtil.getLong(searchContext.getAttribute(Field.GROUP_ID)));
+
+		Serializable type = searchContext.getAttribute(Field.TYPE);
 
 		if (type != null) {
-			contextQuery.addRequiredTerm(Field.TYPE, type);
+			contextQuery.addRequiredTerm(Field.TYPE, (int)type);
 		}
 	}
 
