@@ -237,7 +237,7 @@ public class ExportImportConfigurationLocalServiceImpl
 	@Override
 	public BaseModelSearchResult<ExportImportConfiguration>
 		searchExportImportConfigurations(
-			long companyId, int type, String keywords,
+			long companyId, long groupId, int type, String keywords,
 			LinkedHashMap<String, Object> params, int start, int end, Sort sort)
 		throws PortalException {
 
@@ -265,17 +265,17 @@ public class ExportImportConfigurationLocalServiceImpl
 	@Override
 	public BaseModelSearchResult<ExportImportConfiguration>
 		searchExportImportConfigurations(
-			long companyId, int type, String name, String description,
-			LinkedHashMap<String, Object> params, boolean andSearch, int start,
-			int end, Sort sort)
+			long companyId, long groupId, int type, String name,
+			String description, LinkedHashMap<String, Object> params,
+			boolean andSearch, int start, int end, Sort sort)
 		throws PortalException {
 
 		Indexer indexer = IndexerRegistryUtil.nullSafeGetIndexer(
 			ExportImportConfiguration.class);
 
 		SearchContext searchContext = buildSearchContext(
-			companyId, type, name, description, params, andSearch, start, end,
-			sort);
+			companyId, groupId, type, name, description, params, andSearch,
+			start, end, sort);
 
 		for (int i = 0; i < 10; i++) {
 			Hits hits = indexer.search(searchContext);
@@ -348,7 +348,7 @@ public class ExportImportConfigurationLocalServiceImpl
 	}
 
 	protected SearchContext buildSearchContext(
-		long companyId, int type, String name, String description,
+		long companyId, long groupId, int type, String name, String description,
 		LinkedHashMap<String, Object> params, boolean andSearch, int start,
 		int end, Sort sort) {
 
@@ -359,6 +359,7 @@ public class ExportImportConfigurationLocalServiceImpl
 		Map<String, Serializable> attributes = new HashMap<>();
 
 		attributes.put("description", description);
+		attributes.put("groupId", groupId);
 		attributes.put("name", name);
 		attributes.put("params", params);
 		attributes.put("type", type);
