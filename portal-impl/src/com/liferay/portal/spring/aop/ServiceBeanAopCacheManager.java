@@ -171,7 +171,7 @@ public class ServiceBeanAopCacheManager {
 		_methodInterceptorBags.clear();
 	}
 
-	private static final Map<MethodInvocation, Annotation[]> _annotations =
+	private static Map<MethodInvocation, Annotation[]> _annotations =
 		new ConcurrentHashMap<>();
 	private static final Annotation[] _nullAnnotations = new Annotation[0];
 

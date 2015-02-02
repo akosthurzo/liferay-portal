@@ -91,11 +91,11 @@ public class LDAPSettingsUtil {
 	}
 
 	public static boolean isImportOnStartup(long companyId) {
-		return _getInstance().isImportOnStartup(companyId);
+		return false;
 	}
 
 	public static boolean isPasswordPolicyEnabled(long companyId) {
-		return _getInstance().isPasswordPolicyEnabled(companyId);
+		return false;
 	}
 
 	private static LDAPSettings _getInstance() {
