@@ -14,8 +14,6 @@
 
 package com.liferay.bookmarks.settings;
 
-import aQute.bnd.annotation.metatype.Configurable;
-
 import com.liferay.bookmarks.configuration.BookmarksServiceConfiguration;
 import com.liferay.bookmarks.constants.BookmarksConstants;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -30,14 +28,12 @@ import java.util.Map;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
-import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Adolfo Pérez
  */
 @Component(
-	configurationPid = "com.liferay.bookmarks.configuration.BookmarksServiceConfiguration",
 	immediate = true,
 	property = {
 		"class.name=com.liferay.bookmarks.settings.BookmarksSettings"
@@ -79,16 +75,11 @@ public class BookmarksSettingsProvider
 	}
 
 	@Activate
-	@Modified
-	protected void activate(Map<String, Object> properties) {
-		BookmarksServiceConfiguration bookmarksServiceConfiguration =
-			Configurable.createConfigurable(
-				BookmarksServiceConfiguration.class, properties);
-
+	protected void activate() {
 		_settingsFactory.registerSettingsMetadata(
 			BookmarksConstants.SERVICE_NAME,
 			BookmarksSettings.getFallbackKeys(),
-			BookmarksSettings.MULTI_VALUED_KEYS, bookmarksServiceConfiguration,
+			BookmarksSettings.MULTI_VALUED_KEYS, _bookmarksServiceConfiguration,
 			new ClassLoaderResourceManager(
 				BookmarksSettings.class.getClassLoader()));
 
@@ -100,6 +91,13 @@ public class BookmarksSettingsProvider
 		_bookmarksSettingsProvider = null;
 	}
 
+	@Reference(unbind = "-")
+	protected void setBookmarksServiceConfiguration(
+		BookmarksServiceConfiguration bookmarksServiceConfiguration) {
+
+		_bookmarksServiceConfiguration = bookmarksServiceConfiguration;
+	}
+
 	@Reference
 	protected void setSettingsFactory(SettingsFactory settingsFactory) {
 		_settingsFactory = settingsFactory;
@@ -107,6 +105,7 @@ public class BookmarksSettingsProvider
 
 	private static BookmarksSettingsProvider _bookmarksSettingsProvider;
 
+	private BookmarksServiceConfiguration _bookmarksServiceConfiguration;
 	private SettingsFactory _settingsFactory;
 
 }
