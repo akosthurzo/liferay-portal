@@ -55,19 +55,12 @@ public class DDLRecordSetStagedModelDataHandler
 	}
 
 	@Override
-	public DDLRecordSet fetchStagedModelByUuidAndCompanyId(
+	public List<DDLRecordSet> fetchStagedModelByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		List<DDLRecordSet> recordSets =
-			DDLRecordSetLocalServiceUtil.getDDLRecordSetsByUuidAndCompanyId(
-				uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				new StagedModelModifiedDateComparator<DDLRecordSet>());
-
-		if (ListUtil.isEmpty(recordSets)) {
-			return null;
-		}
-
-		return recordSets.get(0);
+		return DDLRecordSetLocalServiceUtil.getDDLRecordSetsByUuidAndCompanyId(
+			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			new StagedModelModifiedDateComparator<DDLRecordSet>());
 	}
 
 	@Override

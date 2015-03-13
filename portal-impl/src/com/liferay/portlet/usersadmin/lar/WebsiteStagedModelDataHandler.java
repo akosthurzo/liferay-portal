@@ -24,6 +24,8 @@ import com.liferay.portal.model.Website;
 import com.liferay.portal.service.GroupLocalServiceUtil;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.WebsiteLocalServiceUtil;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author David Mendez Gonzalez
@@ -40,8 +42,9 @@ public class WebsiteStagedModelDataHandler
 
 		Group group = GroupLocalServiceUtil.getGroup(groupId);
 
-		Website website = fetchStagedModelByUuidAndCompanyId(
-			uuid, group.getCompanyId());
+		Website website =
+			WebsiteLocalServiceUtil.fetchWebsiteByUuidAndCompanyId(
+				uuid, group.getCompanyId());
 
 		if (website != null) {
 			WebsiteLocalServiceUtil.deleteWebsite(website);
@@ -49,11 +52,16 @@ public class WebsiteStagedModelDataHandler
 	}
 
 	@Override
-	public Website fetchStagedModelByUuidAndCompanyId(
+	public List<Website> fetchStagedModelByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		return WebsiteLocalServiceUtil.fetchWebsiteByUuidAndCompanyId(
-			uuid, companyId);
+		List<Website> websites = new ArrayList<>();
+
+		websites.add(
+			WebsiteLocalServiceUtil.fetchWebsiteByUuidAndCompanyId(
+				uuid, companyId));
+
+		return websites;
 	}
 
 	@Override
@@ -84,8 +92,9 @@ public class WebsiteStagedModelDataHandler
 		ServiceContext serviceContext = portletDataContext.createServiceContext(
 			website);
 
-		Website existingWebsite = fetchStagedModelByUuidAndCompanyId(
-			website.getUuid(), portletDataContext.getCompanyGroupId());
+		Website existingWebsite =
+			WebsiteLocalServiceUtil.fetchWebsiteByUuidAndCompanyId(
+				website.getUuid(), portletDataContext.getCompanyGroupId());
 
 		Website importedWebsite = null;
 

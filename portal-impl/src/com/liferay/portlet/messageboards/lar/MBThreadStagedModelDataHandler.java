@@ -44,18 +44,11 @@ public class MBThreadStagedModelDataHandler
 	}
 
 	@Override
-	public MBThread fetchStagedModelByUuidAndCompanyId(
+	public List<MBThread> fetchStagedModelByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		List<MBThread> threads =
-			MBThreadLocalServiceUtil.getMBThreadsByUuidAndCompanyId(
-				uuid, companyId);
-
-		if (ListUtil.isEmpty(threads)) {
-			return null;
-		}
-
-		return threads.get(0);
+		return MBThreadLocalServiceUtil.getMBThreadsByUuidAndCompanyId(
+			uuid, companyId);
 	}
 
 	@Override

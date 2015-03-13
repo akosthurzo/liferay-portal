@@ -60,19 +60,12 @@ public class MBThreadFlagStagedModelDataHandler
 	}
 
 	@Override
-	public MBThreadFlag fetchStagedModelByUuidAndCompanyId(
+	public List<MBThreadFlag> fetchStagedModelByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		List<MBThreadFlag> threadFlags =
-			MBThreadFlagLocalServiceUtil.getMBThreadFlagsByUuidAndCompanyId(
-				uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				new StagedModelModifiedDateComparator<MBThreadFlag>());
-
-		if (ListUtil.isEmpty(threadFlags)) {
-			return null;
-		}
-
-		return threadFlags.get(0);
+		return MBThreadFlagLocalServiceUtil.getMBThreadFlagsByUuidAndCompanyId(
+			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			new StagedModelModifiedDateComparator<MBThreadFlag>());
 	}
 
 	@Override

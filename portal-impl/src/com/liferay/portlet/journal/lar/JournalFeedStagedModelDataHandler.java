@@ -68,19 +68,12 @@ public class JournalFeedStagedModelDataHandler
 	}
 
 	@Override
-	public JournalFeed fetchStagedModelByUuidAndCompanyId(
+	public List<JournalFeed> fetchStagedModelByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		List<JournalFeed> feeds =
-			JournalFeedLocalServiceUtil.getJournalFeedsByUuidAndCompanyId(
-				uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				new StagedModelModifiedDateComparator<JournalFeed>());
-
-		if (ListUtil.isEmpty(feeds)) {
-			return null;
-		}
-
-		return feeds.get(0);
+		return JournalFeedLocalServiceUtil.getJournalFeedsByUuidAndCompanyId(
+			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			new StagedModelModifiedDateComparator<JournalFeed>());
 	}
 
 	@Override

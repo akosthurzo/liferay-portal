@@ -67,19 +67,13 @@ public class AssetCategoryStagedModelDataHandler
 	}
 
 	@Override
-	public AssetCategory fetchStagedModelByUuidAndCompanyId(
+	public List<AssetCategory> fetchStagedModelByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		List<AssetCategory> categories =
-			AssetCategoryLocalServiceUtil.getAssetCategoriesByUuidAndCompanyId(
+		return AssetCategoryLocalServiceUtil.
+			getAssetCategoriesByUuidAndCompanyId(
 				uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
 				new StagedModelModifiedDateComparator<AssetCategory>());
-
-		if (ListUtil.isEmpty(categories)) {
-			return null;
-		}
-
-		return categories.get(0);
 	}
 
 	@Override

@@ -70,19 +70,12 @@ public class DDMTemplateStagedModelDataHandler
 	}
 
 	@Override
-	public DDMTemplate fetchStagedModelByUuidAndCompanyId(
+	public List<DDMTemplate> fetchStagedModelByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		List<DDMTemplate> templates =
-			DDMTemplateLocalServiceUtil.getDDMTemplatesByUuidAndCompanyId(
-				uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				new StagedModelModifiedDateComparator<DDMTemplate>());
-
-		if (ListUtil.isEmpty(templates)) {
-			return null;
-		}
-
-		return templates.get(0);
+		return DDMTemplateLocalServiceUtil.getDDMTemplatesByUuidAndCompanyId(
+			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			new StagedModelModifiedDateComparator<DDMTemplate>());
 	}
 
 	@Override

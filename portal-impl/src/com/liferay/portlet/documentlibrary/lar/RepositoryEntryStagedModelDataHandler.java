@@ -55,20 +55,14 @@ public class RepositoryEntryStagedModelDataHandler
 	}
 
 	@Override
-	public RepositoryEntry fetchStagedModelByUuidAndCompanyId(
+	public List<RepositoryEntry> fetchStagedModelByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		List<RepositoryEntry> entries =
+		return
 			RepositoryEntryLocalServiceUtil.
 				getRepositoryEntriesByUuidAndCompanyId(
 					uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
 					new StagedModelModifiedDateComparator<RepositoryEntry>());
-
-		if (ListUtil.isEmpty(entries)) {
-			return null;
-		}
-
-		return entries.get(0);
 	}
 
 	@Override

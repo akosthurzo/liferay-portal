@@ -54,19 +54,12 @@ public class MBCategoryStagedModelDataHandler
 	}
 
 	@Override
-	public MBCategory fetchStagedModelByUuidAndCompanyId(
+	public List<MBCategory> fetchStagedModelByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		List<MBCategory> categories =
-			MBCategoryLocalServiceUtil.getMBCategoriesByUuidAndCompanyId(
-				uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				new StagedModelModifiedDateComparator<MBCategory>());
-
-		if (ListUtil.isEmpty(categories)) {
-			return null;
-		}
-
-		return categories.get(0);
+		return MBCategoryLocalServiceUtil.getMBCategoriesByUuidAndCompanyId(
+			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			new StagedModelModifiedDateComparator<MBCategory>());
 	}
 
 	@Override

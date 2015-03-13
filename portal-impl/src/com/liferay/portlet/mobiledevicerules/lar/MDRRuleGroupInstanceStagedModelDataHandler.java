@@ -63,21 +63,15 @@ public class MDRRuleGroupInstanceStagedModelDataHandler
 	}
 
 	@Override
-	public MDRRuleGroupInstance fetchStagedModelByUuidAndCompanyId(
+	public List<MDRRuleGroupInstance> fetchStagedModelByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		List<MDRRuleGroupInstance> ruleGroupInstances =
+		return
 			MDRRuleGroupInstanceLocalServiceUtil.
 				getMDRRuleGroupInstancesByUuidAndCompanyId(
 					uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
 					new StagedModelModifiedDateComparator
 						<MDRRuleGroupInstance>());
-
-		if (ListUtil.isEmpty(ruleGroupInstances)) {
-			return null;
-		}
-
-		return ruleGroupInstances.get(0);
 	}
 
 	@Override

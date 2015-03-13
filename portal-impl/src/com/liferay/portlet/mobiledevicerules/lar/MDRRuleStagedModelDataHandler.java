@@ -52,19 +52,12 @@ public class MDRRuleStagedModelDataHandler
 	}
 
 	@Override
-	public MDRRule fetchStagedModelByUuidAndCompanyId(
+	public List<MDRRule> fetchStagedModelByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		List<MDRRule> rules =
-			MDRRuleLocalServiceUtil.getMDRRulesByUuidAndCompanyId(
-				uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				new StagedModelModifiedDateComparator<MDRRule>());
-
-		if (ListUtil.isEmpty(rules)) {
-			return null;
-		}
-
-		return rules.get(0);
+		return MDRRuleLocalServiceUtil.getMDRRulesByUuidAndCompanyId(
+			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			new StagedModelModifiedDateComparator<MDRRule>());
 	}
 
 	@Override

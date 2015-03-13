@@ -106,19 +106,13 @@ public class JournalArticleStagedModelDataHandler
 	}
 
 	@Override
-	public JournalArticle fetchStagedModelByUuidAndCompanyId(
+	public List<JournalArticle> fetchStagedModelByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		List<JournalArticle> articles =
+		return
 			JournalArticleLocalServiceUtil.getJournalArticlesByUuidAndCompanyId(
 				uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
 				new StagedModelModifiedDateComparator<JournalArticle>());
-
-		if (ListUtil.isEmpty(articles)) {
-			return null;
-		}
-
-		return articles.get(0);
 	}
 
 	@Override
