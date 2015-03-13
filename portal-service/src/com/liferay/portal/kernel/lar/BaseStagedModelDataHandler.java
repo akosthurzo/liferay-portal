@@ -257,7 +257,7 @@ public abstract class BaseStagedModelDataHandler<T extends StagedModel>
 				Group.class);
 
 		long liveGroupId = GetterUtil.getLong(
-			referenceElement.attributeValue("live-group-id"));
+			referenceElement.attributeValue("group-id"));
 
 		liveGroupId = MapUtil.getLong(groupIds, liveGroupId);
 
@@ -388,7 +388,7 @@ public abstract class BaseStagedModelDataHandler<T extends StagedModel>
 				Group.class);
 
 		long liveGroupId = GetterUtil.getLong(
-			referenceElement.attributeValue("live-group-id"));
+			referenceElement.attributeValue("group-id"));
 
 		liveGroupId = MapUtil.getLong(groupIds, liveGroupId);
 
