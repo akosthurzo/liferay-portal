@@ -71,19 +71,12 @@ public class BlogsEntryStagedModelDataHandler
 	}
 
 	@Override
-	public BlogsEntry fetchStagedModelByUuidAndCompanyId(
+	public List<BlogsEntry> fetchStagedModelByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		List<BlogsEntry> entries =
-			BlogsEntryLocalServiceUtil.getBlogsEntriesByUuidAndCompanyId(
-				uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				new StagedModelModifiedDateComparator<BlogsEntry>());
-
-		if (ListUtil.isEmpty(entries)) {
-			return null;
-		}
-
-		return entries.get(0);
+		return BlogsEntryLocalServiceUtil.getBlogsEntriesByUuidAndCompanyId(
+			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			new StagedModelModifiedDateComparator<BlogsEntry>());
 	}
 
 	@Override

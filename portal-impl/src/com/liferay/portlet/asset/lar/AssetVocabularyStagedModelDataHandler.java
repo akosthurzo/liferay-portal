@@ -62,20 +62,13 @@ public class AssetVocabularyStagedModelDataHandler
 	}
 
 	@Override
-	public AssetVocabulary fetchStagedModelByUuidAndCompanyId(
+	public List<AssetVocabulary> fetchStagedModelByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		List<AssetVocabulary> vocabularies =
-			AssetVocabularyLocalServiceUtil.
-				getAssetVocabulariesByUuidAndCompanyId(
-					uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					new StagedModelModifiedDateComparator<AssetVocabulary>());
-
-		if (ListUtil.isEmpty(vocabularies)) {
-			return null;
-		}
-
-		return vocabularies.get(0);
+		return AssetVocabularyLocalServiceUtil.
+			getAssetVocabulariesByUuidAndCompanyId(
+				uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+				new StagedModelModifiedDateComparator<AssetVocabulary>());
 	}
 
 	@Override

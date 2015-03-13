@@ -57,19 +57,12 @@ public class MBDiscussionStagedModelDataHandler
 	}
 
 	@Override
-	public MBDiscussion fetchStagedModelByUuidAndCompanyId(
+	public List<MBDiscussion> fetchStagedModelByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		List<MBDiscussion> discussions =
-			MBDiscussionLocalServiceUtil.getMBDiscussionsByUuidAndCompanyId(
-				uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				new StagedModelModifiedDateComparator<MBDiscussion>());
-
-		if (ListUtil.isEmpty(discussions)) {
-			return null;
-		}
-
-		return discussions.get(0);
+		return MBDiscussionLocalServiceUtil.getMBDiscussionsByUuidAndCompanyId(
+			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			new StagedModelModifiedDateComparator<MBDiscussion>());
 	}
 
 	@Override

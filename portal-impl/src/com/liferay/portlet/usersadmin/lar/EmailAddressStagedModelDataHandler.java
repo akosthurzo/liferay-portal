@@ -24,6 +24,8 @@ import com.liferay.portal.model.Group;
 import com.liferay.portal.service.EmailAddressLocalServiceUtil;
 import com.liferay.portal.service.GroupLocalServiceUtil;
 import com.liferay.portal.service.ServiceContext;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author David Mendez Gonzalez
@@ -40,18 +42,24 @@ public class EmailAddressStagedModelDataHandler
 
 		Group group = GroupLocalServiceUtil.getGroup(groupId);
 
-		EmailAddress emailAddress = fetchStagedModelByUuidAndCompanyId(
-			uuid, group.getCompanyId());
+		EmailAddress emailAddress =
+			EmailAddressLocalServiceUtil.fetchEmailAddressByUuidAndCompanyId(
+				uuid, group.getCompanyId());
 
 		EmailAddressLocalServiceUtil.deleteEmailAddress(emailAddress);
 	}
 
 	@Override
-	public EmailAddress fetchStagedModelByUuidAndCompanyId(
+	public List<EmailAddress> fetchStagedModelByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		return EmailAddressLocalServiceUtil.fetchEmailAddressByUuidAndCompanyId(
-			uuid, companyId);
+		List<EmailAddress> emailAddresses = new ArrayList<>();
+
+		emailAddresses.add(
+			EmailAddressLocalServiceUtil.fetchEmailAddressByUuidAndCompanyId(
+				uuid, companyId));
+
+		return emailAddresses;
 	}
 
 	@Override
@@ -82,8 +90,9 @@ public class EmailAddressStagedModelDataHandler
 		ServiceContext serviceContext = portletDataContext.createServiceContext(
 			emailAddress);
 
-		EmailAddress existingEmailAddress = fetchStagedModelByUuidAndCompanyId(
-			emailAddress.getUuid(), portletDataContext.getCompanyId());
+		EmailAddress existingEmailAddress =
+			EmailAddressLocalServiceUtil.fetchEmailAddressByUuidAndCompanyId(
+				emailAddress.getUuid(), portletDataContext.getCompanyId());
 
 		EmailAddress importedEmailAddress = null;
 

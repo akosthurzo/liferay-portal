@@ -39,9 +39,11 @@ import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Element;
+import com.liferay.portal.model.Group;
 import com.liferay.portal.model.Repository;
 import com.liferay.portal.repository.liferayrepository.model.LiferayFileEntry;
 import com.liferay.portal.repository.portletrepository.PortletRepository;
+import com.liferay.portal.service.GroupLocalServiceUtil;
 import com.liferay.portal.service.RepositoryLocalServiceUtil;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.util.PortalUtil;
@@ -68,6 +70,7 @@ import com.liferay.portlet.trash.util.TrashUtil;
 import java.io.IOException;
 import java.io.InputStream;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -95,19 +98,21 @@ public class FileEntryStagedModelDataHandler
 	}
 
 	@Override
-	public FileEntry fetchStagedModelByUuidAndCompanyId(
+	public List<FileEntry> fetchStagedModelByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		List<DLFileEntry> fileEntries =
+		List<DLFileEntry> dlFileEntries =
 			DLFileEntryLocalServiceUtil.getDLFileEntriesByUuidAndCompanyId(
 				uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
 				new StagedModelModifiedDateComparator<DLFileEntry>());
 
-		if (ListUtil.isEmpty(fileEntries)) {
-			return null;
+		List<FileEntry> fileEntries = new ArrayList<>();
+
+		for (DLFileEntry dlFileEntry : dlFileEntries) {
+			fileEntries.add(new LiferayFileEntry(dlFileEntry));
 		}
 
-		return new LiferayFileEntry(fileEntries.get(0));
+		return fileEntries;
 	}
 
 	@Override

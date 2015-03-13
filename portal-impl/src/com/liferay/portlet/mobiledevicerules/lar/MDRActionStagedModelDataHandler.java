@@ -61,19 +61,12 @@ public class MDRActionStagedModelDataHandler
 	}
 
 	@Override
-	public MDRAction fetchStagedModelByUuidAndCompanyId(
+	public List<MDRAction> fetchStagedModelByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		List<MDRAction> actions =
-			MDRActionLocalServiceUtil.getMDRActionsByUuidAndCompanyId(
-				uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				new StagedModelModifiedDateComparator<MDRAction>());
-
-		if (ListUtil.isEmpty(actions)) {
-			return null;
-		}
-
-		return actions.get(0);
+		return MDRActionLocalServiceUtil.getMDRActionsByUuidAndCompanyId(
+			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			new StagedModelModifiedDateComparator<MDRAction>());
 	}
 
 	@Override

@@ -54,19 +54,13 @@ public class JournalFolderStagedModelDataHandler
 	}
 
 	@Override
-	public JournalFolder fetchStagedModelByUuidAndCompanyId(
+	public List<JournalFolder> fetchStagedModelByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		List<JournalFolder> folders =
+		return
 			JournalFolderLocalServiceUtil.getJournalFoldersByUuidAndCompanyId(
 				uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
 				new StagedModelModifiedDateComparator<JournalFolder>());
-
-		if (ListUtil.isEmpty(folders)) {
-			return null;
-		}
-
-		return folders.get(0);
 	}
 
 	@Override

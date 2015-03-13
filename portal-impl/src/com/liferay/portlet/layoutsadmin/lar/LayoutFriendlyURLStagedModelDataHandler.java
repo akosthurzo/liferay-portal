@@ -51,20 +51,14 @@ public class LayoutFriendlyURLStagedModelDataHandler
 	}
 
 	@Override
-	public LayoutFriendlyURL fetchStagedModelByUuidAndCompanyId(
+	public List<LayoutFriendlyURL> fetchStagedModelByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		List<LayoutFriendlyURL> friendlyURLs =
+		return
 			LayoutFriendlyURLLocalServiceUtil.
 				getLayoutFriendlyURLsByUuidAndCompanyId(
 					uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
 					new StagedModelModifiedDateComparator<LayoutFriendlyURL>());
-
-		if (ListUtil.isEmpty(friendlyURLs)) {
-			return null;
-		}
-
-		return friendlyURLs.get(0);
 	}
 
 	@Override

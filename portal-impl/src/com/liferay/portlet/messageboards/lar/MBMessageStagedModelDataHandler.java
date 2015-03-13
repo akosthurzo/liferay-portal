@@ -75,19 +75,12 @@ public class MBMessageStagedModelDataHandler
 	}
 
 	@Override
-	public MBMessage fetchStagedModelByUuidAndCompanyId(
+	public List<MBMessage> fetchStagedModelByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		List<MBMessage> messages =
-			MBMessageLocalServiceUtil.getMBMessagesByUuidAndCompanyId(
-				uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				new StagedModelModifiedDateComparator<MBMessage>());
-
-		if (ListUtil.isEmpty(messages)) {
-			return null;
-		}
-
-		return messages.get(0);
+		return MBMessageLocalServiceUtil.getMBMessagesByUuidAndCompanyId(
+			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			new StagedModelModifiedDateComparator<MBMessage>());
 	}
 
 	@Override

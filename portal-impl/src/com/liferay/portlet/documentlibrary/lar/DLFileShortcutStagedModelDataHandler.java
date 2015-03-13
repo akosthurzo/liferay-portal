@@ -60,19 +60,13 @@ public class DLFileShortcutStagedModelDataHandler
 	}
 
 	@Override
-	public DLFileShortcut fetchStagedModelByUuidAndCompanyId(
+	public List<DLFileShortcut> fetchStagedModelByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		List<DLFileShortcut> fileShortcuts =
+		return
 			DLFileShortcutLocalServiceUtil.getDLFileShortcutsByUuidAndCompanyId(
 				uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
 				new StagedModelModifiedDateComparator<DLFileShortcut>());
-
-		if (ListUtil.isEmpty(fileShortcuts)) {
-			return null;
-		}
-
-		return fileShortcuts.get(0);
 	}
 
 	@Override
