@@ -354,9 +354,7 @@ public abstract class BaseStagedModelDataHandler<T extends StagedModel>
 				localizedModel.prepareLocalizedFieldsForImport();
 			}
 
-			if (stagedModel instanceof TrashedModel) {
-				restoreStagedModel(portletDataContext, stagedModel);
-			}
+			restoreStagedModel(portletDataContext, stagedModel);
 
 			importAssetCategories(portletDataContext, stagedModel);
 			importAssetTags(portletDataContext, stagedModel);
@@ -404,7 +402,9 @@ public abstract class BaseStagedModelDataHandler<T extends StagedModel>
 		throws PortletDataException {
 
 		try {
-			doRestoreStagedModel(portletDataContext, stagedModel);
+			if (stagedModel instanceof TrashedModel) {
+				doRestoreStagedModel(portletDataContext, stagedModel);
+			}
 		}
 		catch (PortletDataException pde) {
 			throw pde;
