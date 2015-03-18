@@ -41,7 +41,7 @@ public class StagedGroupStagedModelDataHandler
 	}
 
 	@Override
-	public List<StagedGroup> fetchStagedModelByUuidAndCompanyId(
+	public List<StagedGroup> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId) {
 
 		return null;
