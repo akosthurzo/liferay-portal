@@ -36,6 +36,7 @@ import com.liferay.portal.theme.ThemeDisplay;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -87,6 +88,30 @@ public class PortletDataContextFactoryImpl
 			portletDataContext.getUserIdStrategy());
 		clonePortletDataContext.setUserPersonalSiteGroupId(
 			portletDataContext.getUserPersonalSiteGroupId());
+
+		Map<String, Map<?, ?>> newPrimaryKeysMaps =
+			portletDataContext.getNewPrimaryKeysMaps();
+
+		Map<String, Map<?, ?>> cloneNewPrimaryKeysMaps =
+			clonePortletDataContext.getNewPrimaryKeysMaps();
+
+		for (Map.Entry<String, Map<?, ?>> newPrimaryKeysMapEntry :
+				newPrimaryKeysMaps.entrySet()) {
+
+			Map<?, ?> newPrimaryKeysMap = newPrimaryKeysMapEntry.getValue();
+
+			Map cloneNewPrimaryKeysMap = new HashMap<>();
+
+			for (Map.Entry<?, ?> primaryKeysEntry :
+					newPrimaryKeysMap.entrySet()) {
+
+				cloneNewPrimaryKeysMap.put(
+					primaryKeysEntry.getKey(), primaryKeysEntry.getValue());
+			}
+
+			cloneNewPrimaryKeysMaps.put(
+				newPrimaryKeysMapEntry.getKey(), cloneNewPrimaryKeysMap);
+		}
 
 		return clonePortletDataContext;
 	}
