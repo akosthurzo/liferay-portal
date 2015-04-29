@@ -1834,6 +1834,66 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 			layoutSetPrototype, layoutUuid);
 	}
 
+	@Override
+	public void importLayouts(
+			ExportImportConfiguration exportImportConfiguration, File file)
+		throws PortalException {
+
+		try {
+			LayoutImporter layoutImporter = LayoutImporter.getInstance();
+
+			Map<String, Serializable> settingsMap =
+				exportImportConfiguration.getSettingsMap();
+
+			long userId = MapUtil.getLong(settingsMap, "userId");
+			long targetGroupId = MapUtil.getLong(settingsMap, "targetGroupId");
+			boolean privateLayout = MapUtil.getBoolean(
+				settingsMap, "privateLayout");
+			Map<String, String[]> parameterMap =
+				(Map<String, String[]>)settingsMap.get("parameterMap");
+
+			layoutImporter.importLayouts(
+				userId, targetGroupId, privateLayout, parameterMap, file);
+		}
+		catch (PortalException pe) {
+			Throwable cause = pe.getCause();
+
+			if (cause instanceof LocaleException) {
+				throw (PortalException)cause;
+			}
+
+			throw pe;
+		}
+		catch (SystemException se) {
+			throw se;
+		}
+		catch (Exception e) {
+			throw new SystemException(e);
+		}
+	}
+
+	@Override
+	public void importLayouts(
+			ExportImportConfiguration exportImportConfiguration, InputStream is)
+		throws PortalException {
+
+		File file = null;
+
+		try {
+			file = FileUtil.createTempFile("lar");
+
+			FileUtil.write(file, is);
+
+			importLayouts(exportImportConfiguration, file);
+		}
+		catch (IOException ioe) {
+			throw new SystemException(ioe);
+		}
+		finally {
+			FileUtil.delete(file);
+		}
+	}
+
 	/**
 	 * Imports the layouts from the byte array.
 	 *
@@ -1874,34 +1934,16 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 	 * @throws PortalException if a group or user with the primary key could not
 	 *         be found, or if some other portal exception occurred
 	 * @see    com.liferay.portal.lar.LayoutImporter
+	 * @deprecated As of 7.0.0, with no direct replacement
 	 */
+	@Deprecated
 	@Override
 	public void importLayouts(
 			long userId, long groupId, boolean privateLayout,
 			Map<String, String[]> parameterMap, File file)
 		throws PortalException {
 
-		try {
-			LayoutImporter layoutImporter = LayoutImporter.getInstance();
-
-			layoutImporter.importLayouts(
-				userId, groupId, privateLayout, parameterMap, file);
-		}
-		catch (PortalException pe) {
-			Throwable cause = pe.getCause();
-
-			if (cause instanceof LocaleException) {
-				throw (PortalException)cause;
-			}
-
-			throw pe;
-		}
-		catch (SystemException se) {
-			throw se;
-		}
-		catch (Exception e) {
-			throw new SystemException(e);
-		}
+		throw new UnsupportedOperationException();
 	}
 
 	/**
@@ -1918,7 +1960,9 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 	 * @throws PortalException if a group or user with the primary key could not
 	 *         be found, or if some other portal exception occurred
 	 * @see    com.liferay.portal.lar.LayoutImporter
+	 * @deprecated As of 7.0.0, with no direct replacement
 	 */
+	@Deprecated
 	@Override
 	public void importLayouts(
 			long userId, long groupId, boolean privateLayout,
