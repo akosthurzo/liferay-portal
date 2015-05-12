@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.lar.PortletDataContext;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.model.Group;
 import com.liferay.portal.model.PasswordPolicy;
+import com.liferay.portal.model.StagedModel;
 import com.liferay.portal.service.GroupLocalServiceUtil;
 import com.liferay.portal.service.PasswordPolicyLocalServiceUtil;
 import com.liferay.portal.service.ServiceContext;
@@ -37,6 +38,16 @@ public class PasswordPolicyStagedModelDataHandler
 	public static final String[] CLASS_NAMES = {PasswordPolicy.class.getName()};
 
 	@Override
+	public void deleteStagedModel(StagedModel stagedModel)
+		throws PortalException {
+
+		if (stagedModel instanceof PasswordPolicy) {
+			PasswordPolicyLocalServiceUtil.deletePasswordPolicy(
+				(PasswordPolicy)stagedModel);
+		}
+	}
+
+	@Override
 	public void deleteStagedModel(
 			String uuid, long groupId, String className, String extraData)
 		throws PortalException {
@@ -49,7 +60,7 @@ public class PasswordPolicyStagedModelDataHandler
 					uuid, group.getCompanyId());
 
 		if (passwordPolicy != null) {
-			PasswordPolicyLocalServiceUtil.deletePasswordPolicy(passwordPolicy);
+			deleteStagedModel(passwordPolicy);
 		}
 	}
 
