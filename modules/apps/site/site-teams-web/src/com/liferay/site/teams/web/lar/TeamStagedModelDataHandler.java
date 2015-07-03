@@ -21,9 +21,9 @@ import com.liferay.portal.service.TeamLocalServiceUtil;
 import com.liferay.portlet.exportimport.lar.BaseStagedModelDataHandler;
 import com.liferay.portlet.exportimport.lar.ExportImportPathUtil;
 import com.liferay.portlet.exportimport.lar.PortletDataContext;
-
 import com.liferay.portlet.exportimport.lar.StagedModelDataHandler;
 import com.liferay.site.teams.web.constants.SiteTeamsPortletKeys;
+
 import java.util.List;
 
 import org.osgi.service.component.annotations.Component;
@@ -42,11 +42,6 @@ public class TeamStagedModelDataHandler
 	public static final String[] CLASS_NAMES = {Team.class.getName()};
 
 	@Override
-	public void deleteStagedModel(Team team) throws PortalException {
-		TeamLocalServiceUtil.deleteTeam(team);
-	}
-
-	@Override
 	public void deleteStagedModel(
 			String uuid, long groupId, String className, String extraData)
 		throws PortalException {
@@ -57,6 +52,11 @@ public class TeamStagedModelDataHandler
 		if (team != null) {
 			deleteStagedModel(team);
 		}
+	}
+
+	@Override
+	public void deleteStagedModel(Team team) throws PortalException {
+		TeamLocalServiceUtil.deleteTeam(team);
 	}
 
 	@Override

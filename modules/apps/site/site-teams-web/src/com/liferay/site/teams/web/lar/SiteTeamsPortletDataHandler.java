@@ -109,4 +109,5 @@ public class SiteTeamsPortletDataHandler extends BasePortletDataHandler {
 
 		teamActionableDynamicQuery.performCount();
 	}
+
 }
