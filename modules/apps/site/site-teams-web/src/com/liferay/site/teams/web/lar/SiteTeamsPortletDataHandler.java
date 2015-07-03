@@ -14,9 +14,19 @@
 
 package com.liferay.site.teams.web.lar;
 
+import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
+import com.liferay.portal.kernel.xml.Element;
+import com.liferay.portal.model.Team;
+import com.liferay.portal.service.TeamLocalServiceUtil;
 import com.liferay.portlet.exportimport.lar.BasePortletDataHandler;
+import com.liferay.portlet.exportimport.lar.PortletDataContext;
 import com.liferay.portlet.exportimport.lar.PortletDataHandler;
+import com.liferay.portlet.exportimport.lar.StagedModelDataHandlerUtil;
 import com.liferay.site.teams.web.constants.SiteTeamsPortletKeys;
+
+import java.util.List;
+
+import javax.portlet.PortletPreferences;
 
 import org.osgi.service.component.annotations.Component;
 
@@ -29,9 +39,74 @@ import org.osgi.service.component.annotations.Component;
 )
 public class SiteTeamsPortletDataHandler extends BasePortletDataHandler {
 
-	/*public SiteTeamsPortletDataHandler() {
-	}*/
-
 	public static final String NAMESPACE = "team";
 
+	@Override
+	protected PortletPreferences doDeleteData(
+			PortletDataContext portletDataContext, String portletId,
+			PortletPreferences portletPreferences)
+		throws Exception {
+
+		if (portletDataContext.addPrimaryKey(
+				SiteTeamsPortletDataHandler.class, "deleteData")) {
+
+			return portletPreferences;
+		}
+
+		TeamLocalServiceUtil.deleteTeams(portletDataContext.getScopeGroupId());
+
+		return portletPreferences;
+	}
+
+	@Override
+	protected String doExportData(
+			final PortletDataContext portletDataContext, String portletId,
+			PortletPreferences portletPreferences)
+		throws Exception {
+
+		Element rootElement = addExportDataRootElement(portletDataContext);
+
+		rootElement.addAttribute(
+			"group-id", String.valueOf(portletDataContext.getScopeGroupId()));
+
+		ActionableDynamicQuery teamActionableDynamicQuery =
+			TeamLocalServiceUtil.getExportActionableDynamicQuery(
+				portletDataContext);
+
+		teamActionableDynamicQuery.performActions();
+
+		return getExportDataRootElementString(rootElement);
+	}
+
+	@Override
+	protected PortletPreferences doImportData(
+			PortletDataContext portletDataContext, String portletId,
+			PortletPreferences portletPreferences, String data)
+		throws Exception {
+
+		Element teamsElement = portletDataContext.getImportDataGroupElement(
+			Team.class);
+
+		List<Element> teamElements = teamsElement.elements();
+
+		for (Element teamElement : teamElements) {
+			StagedModelDataHandlerUtil.importStagedModel(
+				portletDataContext, teamElement);
+		}
+
+		return portletPreferences;
+	}
+
+	@Override
+	protected void doPrepareManifestSummary(
+			PortletDataContext portletDataContext,
+			PortletPreferences portletPreferences)
+		throws Exception {
+
+		ActionableDynamicQuery teamActionableDynamicQuery =
+			TeamLocalServiceUtil.getExportActionableDynamicQuery(
+				portletDataContext);
+
+		teamActionableDynamicQuery.performCount();
+	}
 }
