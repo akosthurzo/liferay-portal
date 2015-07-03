@@ -17,6 +17,7 @@ package com.liferay.site.teams.web.lar;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.model.Team;
+import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.TeamLocalServiceUtil;
 import com.liferay.portlet.exportimport.lar.BaseStagedModelDataHandler;
 import com.liferay.portlet.exportimport.lar.ExportImportPathUtil;
@@ -95,9 +96,14 @@ public class TeamStagedModelDataHandler
 		Team importedTeam = null;
 
 		if (existingTeam == null) {
+			ServiceContext serviceContext =
+				portletDataContext.createServiceContext(team);
+
+			serviceContext.setUuid(team.getUuid());
+
 			importedTeam = TeamLocalServiceUtil.addTeam(
 				userId, portletDataContext.getScopeGroupId(), team.getName(),
-				team.getDescription());
+				team.getDescription(), serviceContext);
 		}
 		else {
 			importedTeam = TeamLocalServiceUtil.updateTeam(
