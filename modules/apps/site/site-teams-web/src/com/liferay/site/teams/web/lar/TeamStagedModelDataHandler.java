@@ -15,10 +15,16 @@
 package com.liferay.site.teams.web.lar;
 
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.model.Team;
+import com.liferay.portal.model.User;
+import com.liferay.portal.model.UserGroup;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.TeamLocalServiceUtil;
+import com.liferay.portal.service.UserGroupLocalServiceUtil;
+import com.liferay.portal.service.UserLocalServiceUtil;
 import com.liferay.portlet.exportimport.lar.BaseStagedModelDataHandler;
 import com.liferay.portlet.exportimport.lar.ExportImportPathUtil;
 import com.liferay.portlet.exportimport.lar.PortletDataContext;
@@ -67,6 +73,28 @@ public class TeamStagedModelDataHandler
 
 		Element teamElement = portletDataContext.getExportDataElement(team);
 
+		List<User> teamUsers = UserLocalServiceUtil.getTeamUsers(
+			team.getTeamId());
+
+		if (ListUtil.isNotEmpty(teamUsers)) {
+			for (User user : teamUsers) {
+				portletDataContext.addReferenceElement(
+					team, teamElement, user,
+					PortletDataContext.REFERENCE_TYPE_WEAK, true);
+			}
+		}
+
+		List<UserGroup> teamUserGroups =
+			UserGroupLocalServiceUtil.getTeamUserGroups(team.getTeamId());
+
+		if (ListUtil.isNotEmpty(teamUserGroups)) {
+			for (UserGroup userGroup : teamUserGroups) {
+				portletDataContext.addReferenceElement(
+					team, teamElement, userGroup,
+					PortletDataContext.REFERENCE_TYPE_WEAK, true);
+			}
+		}
+
 		portletDataContext.addClassedModel(
 			teamElement, ExportImportPathUtil.getModelPath(team), team);
 	}
@@ -109,6 +137,47 @@ public class TeamStagedModelDataHandler
 			importedTeam = TeamLocalServiceUtil.updateTeam(
 				existingTeam.getTeamId(), team.getName(),
 				team.getDescription());
+		}
+
+		List<Element> userElements = portletDataContext.getReferenceElements(
+			team, User.class);
+
+		for (Element element : userElements) {
+			long companyId = GetterUtil.getLong(
+				element.attributeValue("company-id"));
+			String uuid = element.attributeValue("uuid");
+
+			User user = UserLocalServiceUtil.fetchUserByUuidAndCompanyId(
+				uuid, companyId);
+
+			if ((user != null) &&
+				!UserLocalServiceUtil.hasTeamUser(
+					importedTeam.getTeamId(), user.getUserId())) {
+
+				UserLocalServiceUtil.addTeamUser(
+					importedTeam.getTeamId(), user);
+			}
+		}
+
+		List<Element> userGroupElements =
+			portletDataContext.getReferenceElements(team, UserGroup.class);
+
+		for (Element element : userGroupElements) {
+			long companyId = GetterUtil.getLong(
+				element.attributeValue("company-id"));
+			String uuid = element.attributeValue("uuid");
+
+			UserGroup userGroup =
+				UserGroupLocalServiceUtil.fetchUserGroupByUuidAndCompanyId(
+					uuid, companyId);
+
+			if ((userGroup != null) &&
+				!UserGroupLocalServiceUtil.hasTeamUserGroup(
+					importedTeam.getTeamId(), userGroup.getUserGroupId())) {
+
+				UserGroupLocalServiceUtil.addTeamUserGroup(
+					importedTeam.getTeamId(), userGroup);
+			}
 		}
 
 		portletDataContext.importClassedModel(team, importedTeam);
