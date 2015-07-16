@@ -84,8 +84,6 @@ public class TeamStagedModelDataHandlerTest
 
 		_user = UserTestUtil.addUser();
 
-		//UserLocalServiceUtil.addGroupUser(group.getGroupId(), user);
-
 		UserLocalServiceUtil.addTeamUser(team.getTeamId(), _user);
 
 		_userGroup = UserGroupLocalServiceUtil.addUserGroup(
