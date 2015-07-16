@@ -137,13 +137,18 @@ public class TeamStagedModelDataHandlerTest
 		Assert.assertEquals(
 			team.getDescription(), importedTeam.getDescription());
 
-		Assert.assertEquals(
-			1,
-			UserLocalServiceUtil.getTeamUsersCount(importedTeam.getTeamId()));
-		Assert.assertEquals(
-			1,
-			UserGroupLocalServiceUtil.getTeamUserGroupsCount(
-				importedTeam.getTeamId()));
+		List<User> teamUsers = UserLocalServiceUtil.getTeamUsers(
+			importedTeam.getTeamId());
+
+		Assert.assertEquals(1, teamUsers.size());
+		Assert.assertEquals(_user, teamUsers.get(0));
+
+		List<UserGroup> teamUserGroups =
+			UserGroupLocalServiceUtil.getTeamUserGroups(
+				importedTeam.getTeamId());
+
+		Assert.assertEquals(1, teamUserGroups.size());
+		Assert.assertEquals(_userGroup, teamUserGroups.get(0));
 	}
 
 	private User _user;
