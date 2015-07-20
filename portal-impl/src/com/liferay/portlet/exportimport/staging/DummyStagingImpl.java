@@ -235,12 +235,39 @@ public class DummyStagingImpl implements Staging {
 
 	@Override
 	public JSONArray getErrorMessagesJSONArray(
+		Locale locale, Map<String, MissingReference> missingReferences) {
+
+		return JSONFactoryUtil.createJSONArray();
+	}
+
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             #getErrorMessagesJSONArray(Locale, Map<String,
+	 *             MissingReference>)}
+	 */
+	@Deprecated
+	@Override
+	public JSONArray getErrorMessagesJSONArray(
 		Locale locale, Map<String, MissingReference> missingReferences,
 		Map<String, Serializable> contextMap) {
 
 		return JSONFactoryUtil.createJSONArray();
 	}
 
+	@Override
+	public JSONObject getExceptionMessagesJSONObject(
+		Locale locale, Exception e,
+		ExportImportConfiguration exportImportConfiguration) {
+
+		return JSONFactoryUtil.createJSONObject();
+	}
+
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             #getExceptionMessagesJSONObject(Locale, Exception,
+	 *             ExportImportConfiguration)}
+	 */
+	@Deprecated
 	@Override
 	public JSONObject getExceptionMessagesJSONObject(
 		Locale locale, Exception e, Map<String, Serializable> contextMap) {
@@ -336,6 +363,19 @@ public class DummyStagingImpl implements Staging {
 		return Collections.<String, String[]>emptyMap();
 	}
 
+	@Override
+	public JSONArray getWarningMessagesJSONArray(
+		Locale locale, Map<String, MissingReference> missingReferences) {
+
+		return JSONFactoryUtil.createJSONArray();
+	}
+
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             #getWarningMessagesJSONArray(Locale, Map<String,
+	 *             MissingReference>)}
+	 */
+	@Deprecated
 	@Override
 	public JSONArray getWarningMessagesJSONArray(
 		Locale locale, Map<String, MissingReference> missingReferences,
