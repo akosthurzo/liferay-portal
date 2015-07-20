@@ -316,6 +316,20 @@ public class BridgeStagingImpl implements Staging {
 
 	@Override
 	public JSONArray getErrorMessagesJSONArray(
+		Locale locale, Map<String, MissingReference> missingReferences) {
+
+		return getStaging().getErrorMessagesJSONArray(
+			locale, missingReferences);
+	}
+
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             #getErrorMessagesJSONArray(Locale, Map<String,
+	 *             MissingReference>)}
+	 */
+	@Deprecated
+	@Override
+	public JSONArray getErrorMessagesJSONArray(
 		Locale locale, Map<String, MissingReference> missingReferences,
 		Map<String, Serializable> contextMap) {
 
@@ -323,6 +337,21 @@ public class BridgeStagingImpl implements Staging {
 			locale, missingReferences, contextMap);
 	}
 
+	@Override
+	public JSONObject getExceptionMessagesJSONObject(
+		Locale locale, Exception e,
+		ExportImportConfiguration exportImportConfiguration) {
+
+		return getStaging().getExceptionMessagesJSONObject(
+			locale, e, exportImportConfiguration);
+	}
+
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             #getExceptionMessagesJSONObject(Locale, Exception,
+	 *             ExportImportConfiguration)}
+	 */
+	@Deprecated
 	@Override
 	public JSONObject getExceptionMessagesJSONObject(
 		Locale locale, Exception e, Map<String, Serializable> contextMap) {
@@ -423,6 +452,20 @@ public class BridgeStagingImpl implements Staging {
 		return getStaging().getStagingParameters(portletRequest);
 	}
 
+	@Override
+	public JSONArray getWarningMessagesJSONArray(
+		Locale locale, Map<String, MissingReference> missingReferences) {
+
+		return getStaging().getWarningMessagesJSONArray(
+			locale, missingReferences);
+	}
+
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             #getWarningMessagesJSONArray(Locale, Map<String,
+	 *             MissingReference>)}
+	 */
+	@Deprecated
 	@Override
 	public JSONArray getWarningMessagesJSONArray(
 		Locale locale, Map<String, MissingReference> missingReferences,
