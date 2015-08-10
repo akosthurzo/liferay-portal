@@ -217,9 +217,17 @@ public class ExportImportDateUtil {
 			themeDisplay.getTimeZone());
 	}
 
-	public static Date getLastPublishDate(LayoutSet layoutSet) {
+	public static Date getLastPublishDate(LayoutSet layoutSet)
+		throws PortalException {
+
 		long lastPublishDate = GetterUtil.getLong(
 			layoutSet.getSettingsProperty(_LAST_PUBLISH_DATE));
+
+		Group group = layoutSet.getGroup();
+
+		if (group.isStagedRemotely() && (lastPublishDate == 0)) {
+			return new Date(Long.MIN_VALUE);
+		}
 
 		if (lastPublishDate == 0) {
 			return null;
