@@ -95,7 +95,25 @@ public class BookmarksEntryLocalServiceImpl
 
 		// Entry
 
-		User user = userPersistence.findByPrimaryKey(userId);
+		String remoteURL = StagingUtil.buildRemoteURL(
+			"localhost", 8081, "", false,
+			GroupConstants.DEFAULT_LIVE_GROUP_ID, false);
+
+		remoteURL += "/o/com.liferay.journal.service";
+
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
+
+		User user = permissionChecker.getUser();
+
+		HttpPrincipal httpPrincipal = new HttpPrincipal(
+			remoteURL, user.getLogin(), user.getPassword(),
+			user.getPasswordEncrypted());
+		_log.error("----------GETARTICLE--------");
+		JournalArticleServiceHttp.getArticle(httpPrincipal, 0);
+		_log.error("----------GETARTICLE-DONE--------");
+
+		user = userPersistence.findByPrimaryKey(userId);
 
 		if (Validator.isNull(name)) {
 			name = url;
