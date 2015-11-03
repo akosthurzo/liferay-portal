@@ -21,6 +21,8 @@ import com.liferay.journal.test.util.JournalTestUtil;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.repository.capabilities.ThumbnailCapability;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
@@ -200,8 +202,13 @@ public class ExportImportHelperUtilTest {
 
 			int actualRank = portletDataHandler.getRank();
 
+			_log.error(
+				"actual=" + actualRank + ",prev=" + previousRank + "->" +
+					portletDataHandler.getClass());
+
 			if ((previousRank != null) && (actualRank < previousRank)) {
-				Assert.fail();
+				Assert.fail(
+					"Portlets should be in ascending order by their rank");
 			}
 
 			previousRank = actualRank;
@@ -1007,5 +1014,8 @@ public class ExportImportHelperUtilTest {
 		}
 
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		ExportImportHelperUtilTest.class);
 
 }
