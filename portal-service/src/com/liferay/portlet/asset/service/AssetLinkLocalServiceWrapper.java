@@ -147,6 +147,11 @@ public class AssetLinkLocalServiceWrapper implements AssetLinkLocalService,
 		_assetLinkLocalService.deleteLinks(entryId1, entryId2);
 	}
 
+	@Override
+	public void deleteLinksByGroupId(long groupId) {
+		_assetLinkLocalService.deleteLinksByGroupId(groupId);
+	}
+
 	/**
 	* @throws PortalException
 	*/
