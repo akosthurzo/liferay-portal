@@ -1,3 +1,10 @@
+buildService {
+	apiDir = "../export-import-api/src"
+	autoNamespaceTables = false
+	//remotingFileName = "src/META-INF/remoting-servlet.xml"
+	testDir = "../export-import-test/test/integration"
+}
+
 configurations.compile {
 	transitive = false
 }
