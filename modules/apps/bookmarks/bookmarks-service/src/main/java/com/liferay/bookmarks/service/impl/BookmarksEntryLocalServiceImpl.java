@@ -27,6 +27,7 @@ import com.liferay.bookmarks.service.base.BookmarksEntryLocalServiceBaseImpl;
 import com.liferay.bookmarks.service.permission.BookmarksResourcePermissionChecker;
 import com.liferay.bookmarks.social.BookmarksActivityKeys;
 import com.liferay.bookmarks.util.comparator.EntryModifiedDateComparator;
+import com.liferay.journal.service.http.JournalArticleServiceHttp;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.IndexableActionableDynamicQuery;
@@ -61,9 +62,13 @@ import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.model.Group;
+import com.liferay.portal.model.GroupConstants;
 import com.liferay.portal.model.ResourceConstants;
 import com.liferay.portal.model.SystemEventConstants;
 import com.liferay.portal.model.User;
+import com.liferay.portal.security.auth.HttpPrincipal;
+import com.liferay.portal.security.permission.PermissionChecker;
+import com.liferay.portal.security.permission.PermissionThreadLocal;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.spring.extender.service.ServiceReference;
 import com.liferay.portal.util.GroupSubscriptionCheckSubscriptionSender;
@@ -71,6 +76,7 @@ import com.liferay.portal.util.Portal;
 import com.liferay.portal.util.SubscriptionSender;
 import com.liferay.portlet.asset.model.AssetEntry;
 import com.liferay.portlet.asset.model.AssetLinkConstants;
+import com.liferay.portlet.exportimport.staging.StagingUtil;
 import com.liferay.portlet.social.model.SocialActivityConstants;
 import com.liferay.portlet.trash.model.TrashEntry;
 import com.liferay.portlet.trash.model.TrashVersion;
@@ -96,7 +102,25 @@ public class BookmarksEntryLocalServiceImpl
 
 		// Entry
 
-		User user = userPersistence.findByPrimaryKey(userId);
+		String remoteURL = StagingUtil.buildRemoteURL(
+			"localhost", 8081, "", false,
+			GroupConstants.DEFAULT_LIVE_GROUP_ID, false);
+
+		remoteURL += "/o/com.liferay.journal.service";
+
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
+
+		User user = permissionChecker.getUser();
+
+		HttpPrincipal httpPrincipal = new HttpPrincipal(
+			remoteURL, user.getLogin(), user.getPassword(),
+			user.getPasswordEncrypted());
+		_log.error("----------GETARTICLE--------");
+		JournalArticleServiceHttp.getArticle(httpPrincipal, 0);
+		_log.error("----------GETARTICLE-DONE--------");
+
+		user = userPersistence.findByPrimaryKey(userId);
 
 		if (Validator.isNull(name)) {
 			name = url;

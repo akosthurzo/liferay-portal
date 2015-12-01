@@ -9,6 +9,7 @@ Export-Package:\
 	com.liferay.journal.model.listener,\
 	com.liferay.journal.search,\
 	com.liferay.journal.service.configuration.configurator,\
+	com.liferay.journal.service.http,\
 	com.liferay.journal.service.impl,\
 	com.liferay.journal.service.permission,\
 	com.liferay.journal.service.util,\
@@ -19,6 +20,7 @@ Export-Package:\
 	com.liferay.journal.util.impl,\
 	com.liferay.journal.verify,\
 	com.liferay.journal.workflow
+Http-Tunnel: true
 Include-Resource:\
 	classes,\
 	custom-sql/default.xml=classes/META-INF/custom-sql/default.xml,\
