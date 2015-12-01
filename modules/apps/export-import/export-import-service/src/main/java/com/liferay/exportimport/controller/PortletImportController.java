@@ -20,19 +20,27 @@ import static com.liferay.portlet.exportimport.lifecycle.ExportImportLifecycleCo
 import static com.liferay.portlet.exportimport.lifecycle.ExportImportLifecycleConstants.PROCESS_FLAG_PORTLET_IMPORT_IN_PROCESS;
 import static com.liferay.portlet.exportimport.lifecycle.ExportImportLifecycleConstants.PROCESS_FLAG_PORTLET_STAGING_IN_PROCESS;
 
+import com.liferay.exportimport.api.validator.ExportImportValidator;
+import com.liferay.exportimport.api.validator.ExportImportValidatorParameters;
+import com.liferay.exportimport.api.validator.ExportImportValidatorRegistryUtil;
 import com.liferay.exportimport.lar.DeletionSystemEventImporter;
 import com.liferay.exportimport.lar.LayoutCache;
 import com.liferay.exportimport.lar.PermissionImporter;
 import com.liferay.exportimport.portlet.preferences.processor.Capability;
 import com.liferay.exportimport.portlet.preferences.processor.ExportImportPortletPreferencesProcessor;
 import com.liferay.exportimport.portlet.preferences.processor.ExportImportPortletPreferencesProcessorRegistryUtil;
-import com.liferay.portal.LocaleException;
+import com.liferay.exportimport.validator.AvailableLocalesExportImportValidator;
+import com.liferay.exportimport.validator.AvailableLocalesExportImportValidatorParameters;
+import com.liferay.exportimport.validator.BuildNumberExportImportValidator;
+import com.liferay.exportimport.validator.BuildNumberExportImportValidatorParameters;
+import com.liferay.exportimport.validator.LarTypeExportImportValidator;
+import com.liferay.exportimport.validator.LarTypeExportImportValidatorParameters;
+import com.liferay.exportimport.validator.PortletCompatibilityExportImportValidator;
+import com.liferay.exportimport.validator.PortletCompatibilityExportImportValidatorParameters;
 import com.liferay.portal.NoSuchPortletPreferencesException;
-import com.liferay.portal.PortletIdException;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskThreadLocal;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.lock.Lock;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -43,7 +51,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
-import com.liferay.portal.kernel.util.ReleaseInfo;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -59,7 +66,6 @@ import com.liferay.portal.model.Group;
 import com.liferay.portal.model.Layout;
 import com.liferay.portal.model.LayoutConstants;
 import com.liferay.portal.model.Portlet;
-import com.liferay.portal.model.PortletConstants;
 import com.liferay.portal.model.PortletItem;
 import com.liferay.portal.model.PortletPreferences;
 import com.liferay.portal.model.User;
@@ -86,8 +92,6 @@ import com.liferay.portlet.expando.service.ExpandoColumnLocalService;
 import com.liferay.portlet.expando.service.ExpandoTableLocalService;
 import com.liferay.portlet.expando.util.ExpandoConverterUtil;
 import com.liferay.portlet.exportimport.LARFileException;
-import com.liferay.portlet.exportimport.LARTypeException;
-import com.liferay.portlet.exportimport.LayoutImportException;
 import com.liferay.portlet.exportimport.MissingReferenceException;
 import com.liferay.portlet.exportimport.controller.ExportImportController;
 import com.liferay.portlet.exportimport.controller.ImportController;
@@ -1348,36 +1352,46 @@ public class PortletImportController implements ImportController {
 
 		// Build compatibility
 
-		int buildNumber = ReleaseInfo.getBuildNumber();
-
 		Element headerElement = rootElement.element("header");
 
-		int importBuildNumber = GetterUtil.getInteger(
+		int buildNumber = GetterUtil.getInteger(
 			headerElement.attributeValue("build-number"));
 
-		if (buildNumber != importBuildNumber) {
-			throw new LayoutImportException(
-				"LAR build number " + importBuildNumber + " does not match " +
-					"portal build number " + buildNumber);
-		}
+		ExportImportValidatorParameters exportImportValidatorParameters =
+			new BuildNumberExportImportValidatorParameters(buildNumber);
+
+		ExportImportValidator exportImportValidator =
+			ExportImportValidatorRegistryUtil.getExportImportValidator(
+				BuildNumberExportImportValidator.class.getName());
+
+		exportImportValidator.validate(exportImportValidatorParameters);
 
 		// Type
 
 		String larType = headerElement.attributeValue("type");
 
-		if (!larType.equals("portlet")) {
-			throw new LARTypeException(larType);
-		}
+		exportImportValidatorParameters =
+			new LarTypeExportImportValidatorParameters("portlet", larType);
+
+		exportImportValidator =
+			ExportImportValidatorRegistryUtil.getExportImportValidator(
+				LarTypeExportImportValidator.class.getName());
+
+		exportImportValidator.validate(exportImportValidatorParameters);
 
 		// Portlet compatibility
 
 		String rootPortletId = headerElement.attributeValue("root-portlet-id");
 
-		if (!PortletConstants.getRootPortletId(portletId).equals(
-				rootPortletId)) {
+		exportImportValidatorParameters =
+			new PortletCompatibilityExportImportValidatorParameters(
+				portletId, rootPortletId);
 
-			throw new PortletIdException("Invalid portlet id " + rootPortletId);
-		}
+		exportImportValidator =
+			ExportImportValidatorRegistryUtil.getExportImportValidator(
+				PortletCompatibilityExportImportValidator.class.getName());
+
+		exportImportValidator.validate(exportImportValidatorParameters);
 
 		// Available locales
 
@@ -1393,24 +1407,15 @@ public class PortletImportController implements ImportController {
 					StringUtil.split(
 						headerElement.attributeValue("available-locales"))));
 
-			for (Locale sourceAvailableLocale : sourceAvailableLocales) {
-				if (!LanguageUtil.isAvailableLocale(
-						PortalUtil.getSiteGroupId(groupId),
-						sourceAvailableLocale)) {
+			exportImportValidatorParameters =
+				new AvailableLocalesExportImportValidatorParameters(
+					sourceAvailableLocales, PortalUtil.getSiteGroupId(groupId));
 
-					LocaleException le = new LocaleException(
-						LocaleException.TYPE_EXPORT_IMPORT,
-						"Locale " + sourceAvailableLocale + " is not " +
-							"available in company " + companyId);
+			exportImportValidator =
+				ExportImportValidatorRegistryUtil.getExportImportValidator(
+					AvailableLocalesExportImportValidator.class.getName());
 
-					le.setSourceAvailableLocales(sourceAvailableLocales);
-					le.setTargetAvailableLocales(
-						LanguageUtil.getAvailableLocales(
-							PortalUtil.getSiteGroupId(groupId)));
-
-					throw le;
-				}
-			}
+			exportImportValidator.validate(exportImportValidatorParameters);
 		}
 	}
 

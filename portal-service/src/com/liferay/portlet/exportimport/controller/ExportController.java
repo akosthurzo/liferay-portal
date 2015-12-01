@@ -26,4 +26,7 @@ public interface ExportController extends ExportImportController {
 	public File export(ExportImportConfiguration exportImportConfiguration)
 		throws Exception;
 
+	public void validate(ExportImportConfiguration exportImportConfiguration)
+		throws Exception;
+
 }

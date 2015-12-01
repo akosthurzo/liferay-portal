@@ -23,18 +23,25 @@ import static com.liferay.portlet.exportimport.lifecycle.ExportImportLifecycleCo
 import static com.liferay.portlet.exportimport.lifecycle.ExportImportLifecycleConstants.PROCESS_FLAG_LAYOUT_IMPORT_IN_PROCESS;
 import static com.liferay.portlet.exportimport.lifecycle.ExportImportLifecycleConstants.PROCESS_FLAG_LAYOUT_STAGING_IN_PROCESS;
 
+import com.liferay.exportimport.api.validator.ExportImportValidator;
+import com.liferay.exportimport.api.validator.ExportImportValidatorParameters;
+import com.liferay.exportimport.api.validator.ExportImportValidatorRegistryUtil;
 import com.liferay.exportimport.lar.DeletionSystemEventImporter;
 import com.liferay.exportimport.lar.LayoutCache;
 import com.liferay.exportimport.lar.PermissionImporter;
 import com.liferay.exportimport.lar.ThemeImporter;
+import com.liferay.exportimport.validator.AvailableLocalesExportImportValidator;
+import com.liferay.exportimport.validator.AvailableLocalesExportImportValidatorParameters;
+import com.liferay.exportimport.validator.BuildNumberExportImportValidator;
+import com.liferay.exportimport.validator.BuildNumberExportImportValidatorParameters;
+import com.liferay.exportimport.validator.LarTypeExportImportValidator;
+import com.liferay.exportimport.validator.LarTypeExportImportValidatorParameters;
 import com.liferay.portal.LayoutPrototypeException;
-import com.liferay.portal.LocaleException;
 import com.liferay.portal.NoSuchLayoutException;
 import com.liferay.portal.NoSuchLayoutPrototypeException;
 import com.liferay.portal.NoSuchLayoutSetPrototypeException;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskThreadLocal;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -42,7 +49,6 @@ import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
-import com.liferay.portal.kernel.util.ReleaseInfo;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Tuple;
 import com.liferay.portal.kernel.util.UnicodeProperties;
@@ -70,8 +76,6 @@ import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.ServiceContextThreadLocal;
 import com.liferay.portal.service.persistence.LayoutUtil;
 import com.liferay.portlet.exportimport.LARFileException;
-import com.liferay.portlet.exportimport.LARTypeException;
-import com.liferay.portlet.exportimport.LayoutImportException;
 import com.liferay.portlet.exportimport.MissingReferenceException;
 import com.liferay.portlet.exportimport.controller.ExportImportController;
 import com.liferay.portlet.exportimport.controller.ImportController;
@@ -1275,82 +1279,52 @@ public class LayoutImportController implements ImportController {
 
 		// Build compatibility
 
-		int buildNumber = ReleaseInfo.getBuildNumber();
-
 		Element headerElement = rootElement.element("header");
 
 		int importBuildNumber = GetterUtil.getInteger(
 			headerElement.attributeValue("build-number"));
 
-		if (buildNumber != importBuildNumber) {
-			throw new LayoutImportException(
-				"LAR build number " + importBuildNumber + " does not match " +
-					"portal build number " + buildNumber);
-		}
+		ExportImportValidator exportImportValidator =
+			ExportImportValidatorRegistryUtil.getExportImportValidator(
+				BuildNumberExportImportValidator.class.getName());
+
+		ExportImportValidatorParameters exportImportValidatorParameters =
+			new BuildNumberExportImportValidatorParameters(importBuildNumber);
+
+		exportImportValidator.validate(exportImportValidatorParameters);
 
 		// Type
 
-		String larType = headerElement.attributeValue("type");
+		Group group = _groupLocalService.fetchGroup(groupId);
+		long sourceGroupId = GetterUtil.getLong(
+			headerElement.attributeValue("group-id"));
 
-		if (!larType.equals("layout-prototype") &&
-			!larType.equals("layout-set") &&
-			!larType.equals("layout-set-prototype")) {
+		boolean sourceGroupIsCompany = false;
 
-			throw new LARTypeException(larType);
+		if (group.isStaged() || group.hasStagingGroup()) {
+			Group sourceGroup = _groupLocalService.fetchGroup(sourceGroupId);
+
+			sourceGroupIsCompany = sourceGroup.isCompany();
 		}
 
-		Group group = _groupLocalService.fetchGroup(groupId);
-
+		String larType = headerElement.attributeValue("type");
 		String layoutsImportMode = MapUtil.getString(
 			parameterMap, PortletDataHandlerKeys.LAYOUTS_IMPORT_MODE);
+		long sourceCompanyGroupId = GetterUtil.getLong(
+			headerElement.attributeValue("company-group-id"));
 
-		if (larType.equals("layout-prototype") && !group.isLayoutPrototype() &&
-			!layoutsImportMode.equals(
-				PortletDataHandlerKeys.
-					LAYOUTS_IMPORT_MODE_CREATED_FROM_PROTOTYPE)) {
+		exportImportValidatorParameters =
+			new LarTypeExportImportValidatorParameters(
+				"layout", group.isCompany(), group.hasStagingGroup(),
+				group.isLayoutPrototype(), group.isLayoutSetPrototype(),
+				group.isStaged(), larType, layoutsImportMode,
+				sourceGroupIsCompany, sourceCompanyGroupId, sourceGroupId);
 
-			throw new LARTypeException(
-				"A page template can only be imported to a page template");
-		}
+		exportImportValidator =
+			ExportImportValidatorRegistryUtil.getExportImportValidator(
+				LarTypeExportImportValidator.class.getName());
 
-		if (larType.equals("layout-set")) {
-			if (group.isLayoutPrototype() || group.isLayoutSetPrototype()) {
-				throw new LARTypeException(
-					"A site can only be imported to a site");
-			}
-
-			long sourceCompanyGroupId = GetterUtil.getLong(
-				headerElement.attributeValue("company-group-id"));
-			long sourceGroupId = GetterUtil.getLong(
-				headerElement.attributeValue("group-id"));
-
-			boolean companySourceGroup = false;
-
-			if (sourceCompanyGroupId == sourceGroupId) {
-				companySourceGroup = true;
-			}
-			else if (group.isStaged() || group.hasStagingGroup()) {
-				Group sourceGroup = _groupLocalService.fetchGroup(
-					sourceGroupId);
-
-				companySourceGroup = sourceGroup.isCompany();
-			}
-
-			if (group.isCompany() ^ companySourceGroup) {
-				throw new LARTypeException(
-					"A company site can only be imported to a company site");
-			}
-		}
-
-		if (larType.equals("layout-set-prototype") &&
-			!group.isLayoutSetPrototype() &&
-			!layoutsImportMode.equals(
-				PortletDataHandlerKeys.
-					LAYOUTS_IMPORT_MODE_CREATED_FROM_PROTOTYPE)) {
-
-			throw new LARTypeException(
-				"A site template can only be imported to a site template");
-		}
+		exportImportValidator.validate(exportImportValidatorParameters);
 
 		// Available locales
 
@@ -1359,20 +1333,15 @@ public class LayoutImportController implements ImportController {
 				StringUtil.split(
 					headerElement.attributeValue("available-locales"))));
 
-		for (Locale sourceAvailableLocale : sourceAvailableLocales) {
-			if (!LanguageUtil.isAvailableLocale(
-					groupId, sourceAvailableLocale)) {
+		exportImportValidatorParameters =
+			new AvailableLocalesExportImportValidatorParameters(
+				sourceAvailableLocales, groupId);
 
-				LocaleException le = new LocaleException(
-					LocaleException.TYPE_EXPORT_IMPORT);
+		exportImportValidator =
+			ExportImportValidatorRegistryUtil.getExportImportValidator(
+				AvailableLocalesExportImportValidator.class.getName());
 
-				le.setSourceAvailableLocales(sourceAvailableLocales);
-				le.setTargetAvailableLocales(
-					LanguageUtil.getAvailableLocales(groupId));
-
-				throw le;
-			}
-		}
+		exportImportValidator.validate(exportImportValidatorParameters);
 
 		// Layout prototypes validity
 

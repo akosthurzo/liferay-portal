@@ -14,17 +14,29 @@
 
 package com.liferay.exportimport.controller;
 
+import static com.liferay.portlet.exportimport.configuration.ExportImportConfigurationConstants.*;
+import static com.liferay.portlet.exportimport.configuration.ExportImportConfigurationConstants.TYPE_PUBLISH_LAYOUT_LOCAL;
+import static com.liferay.portlet.exportimport.configuration.ExportImportConfigurationConstants.TYPE_SCHEDULED_PUBLISH_LAYOUT_LOCAL;
 import static com.liferay.portlet.exportimport.lifecycle.ExportImportLifecycleConstants.EVENT_PORTLET_EXPORT_FAILED;
 import static com.liferay.portlet.exportimport.lifecycle.ExportImportLifecycleConstants.EVENT_PORTLET_EXPORT_STARTED;
 import static com.liferay.portlet.exportimport.lifecycle.ExportImportLifecycleConstants.EVENT_PORTLET_EXPORT_SUCCEEDED;
 import static com.liferay.portlet.exportimport.lifecycle.ExportImportLifecycleConstants.PROCESS_FLAG_PORTLET_EXPORT_IN_PROCESS;
 import static com.liferay.portlet.exportimport.lifecycle.ExportImportLifecycleConstants.PROCESS_FLAG_PORTLET_STAGING_IN_PROCESS;
 
+import com.liferay.exportimport.api.validator.ExportImportValidator;
+import com.liferay.exportimport.api.validator.ExportImportValidatorParameters;
+import com.liferay.exportimport.api.validator.ExportImportValidatorRegistryUtil;
 import com.liferay.exportimport.lar.DeletionSystemEventExporter;
 import com.liferay.exportimport.lar.PermissionExporter;
 import com.liferay.exportimport.portlet.preferences.processor.Capability;
 import com.liferay.exportimport.portlet.preferences.processor.ExportImportPortletPreferencesProcessor;
 import com.liferay.exportimport.portlet.preferences.processor.ExportImportPortletPreferencesProcessorRegistryUtil;
+import com.liferay.exportimport.service.ExportImportValidatorLocalServiceUtil;
+import com.liferay.exportimport.validator.AvailableLocalesExportImportValidator;
+import com.liferay.exportimport.validator.AvailableLocalesExportImportValidatorParameters;
+import com.liferay.exportimport.validator.BuildNumberExportImportValidator;
+import com.liferay.exportimport.validator.BuildNumberExportImportValidatorParameters;
+import com.liferay.exportimport.validator.LarTypeExportImportValidatorParameters;
 import com.liferay.portal.NoSuchPortletPreferencesException;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskThreadLocal;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
@@ -78,6 +90,7 @@ import com.liferay.portlet.asset.service.AssetEntryLocalService;
 import com.liferay.portlet.asset.service.AssetLinkLocalService;
 import com.liferay.portlet.expando.model.ExpandoColumn;
 import com.liferay.portlet.exportimport.LayoutImportException;
+import com.liferay.portlet.exportimport.configuration.ExportImportConfigurationConstants;
 import com.liferay.portlet.exportimport.controller.ExportController;
 import com.liferay.portlet.exportimport.controller.ExportImportController;
 import com.liferay.portlet.exportimport.lar.ExportImportDateUtil;
@@ -102,7 +115,10 @@ import java.io.Serializable;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.lang.time.StopWatch;
@@ -145,6 +161,8 @@ public class PortletExportController implements ExportController {
 				PortletDataContextFactoryUtil.clonePortletDataContext(
 					portletDataContext));
 
+			validate(exportImportConfiguration);
+
 			File file = doExport(portletDataContext);
 
 			ExportImportThreadLocal.setPortletExportInProcess(false);
@@ -167,6 +185,40 @@ public class PortletExportController implements ExportController {
 
 			throw t;
 		}
+	}
+
+	@Override
+	public void validate(ExportImportConfiguration exportImportConfiguration)
+		throws Exception {
+
+		if (exportImportConfiguration.getType() != TYPE_PUBLISH_PORTLET) {
+			return;
+		}
+
+		// Available locales
+
+		PortletDataContext portletDataContext = getPortletDataContext(
+			exportImportConfiguration);
+
+		List<Locale> availableLocales = ListUtil.fromCollection(
+			LanguageUtil.getAvailableLocales(
+				PortalUtil.getSiteGroupId(
+					portletDataContext.getScopeGroupId())));
+
+		Map<String, Serializable> settingsMap =
+			exportImportConfiguration.getSettingsMap();
+
+		long targetGroupId = MapUtil.getLong(settingsMap, "targetGroupId");
+
+		ExportImportValidatorParameters exportImportValidatorParameters =
+			new AvailableLocalesExportImportValidatorParameters(
+				availableLocales, targetGroupId);
+
+		ExportImportValidator exportImportValidator =
+			ExportImportValidatorRegistryUtil.getExportImportValidator(
+				AvailableLocalesExportImportValidator.class.getName());
+
+		exportImportValidator.validate(exportImportValidatorParameters);
 	}
 
 	public void exportPortletData(

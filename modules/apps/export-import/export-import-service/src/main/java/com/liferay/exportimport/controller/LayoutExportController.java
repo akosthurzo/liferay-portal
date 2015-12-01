@@ -14,6 +14,10 @@
 
 package com.liferay.exportimport.controller;
 
+import static com.liferay.portlet.exportimport.configuration.ExportImportConfigurationConstants.TYPE_PUBLISH_LAYOUT_LOCAL;
+import static com.liferay.portlet.exportimport.configuration.ExportImportConfigurationConstants.TYPE_PUBLISH_LAYOUT_REMOTE;
+import static com.liferay.portlet.exportimport.configuration.ExportImportConfigurationConstants.TYPE_SCHEDULED_PUBLISH_LAYOUT_LOCAL;
+import static com.liferay.portlet.exportimport.configuration.ExportImportConfigurationConstants.TYPE_SCHEDULED_PUBLISH_LAYOUT_REMOTE;
 import static com.liferay.portlet.exportimport.lifecycle.ExportImportLifecycleConstants.EVENT_LAYOUT_EXPORT_FAILED;
 import static com.liferay.portlet.exportimport.lifecycle.ExportImportLifecycleConstants.EVENT_LAYOUT_EXPORT_STARTED;
 import static com.liferay.portlet.exportimport.lifecycle.ExportImportLifecycleConstants.EVENT_LAYOUT_EXPORT_SUCCEEDED;
@@ -23,9 +27,19 @@ import static com.liferay.portlet.exportimport.lifecycle.ExportImportLifecycleCo
 import static com.liferay.portlet.exportimport.lifecycle.ExportImportLifecycleConstants.PROCESS_FLAG_LAYOUT_EXPORT_IN_PROCESS;
 import static com.liferay.portlet.exportimport.lifecycle.ExportImportLifecycleConstants.PROCESS_FLAG_LAYOUT_STAGING_IN_PROCESS;
 
+import com.liferay.exportimport.api.validator.ExportImportValidator;
+import com.liferay.exportimport.api.validator.ExportImportValidatorParameters;
+import com.liferay.exportimport.api.validator.ExportImportValidatorRegistryUtil;
 import com.liferay.exportimport.lar.DeletionSystemEventExporter;
 import com.liferay.exportimport.lar.PermissionExporter;
 import com.liferay.exportimport.lar.ThemeExporter;
+import com.liferay.exportimport.service.ExportImportValidatorLocalServiceUtil;
+import com.liferay.exportimport.service.http.ExportImportValidatorServiceHttp;
+import com.liferay.exportimport.validator.AvailableLocalesExportImportValidator;
+import com.liferay.exportimport.validator.AvailableLocalesExportImportValidatorParameters;
+import com.liferay.exportimport.validator.BuildNumberExportImportValidator;
+import com.liferay.exportimport.validator.LarTypeExportImportValidator;
+import com.liferay.exportimport.validator.LarTypeExportImportValidatorParameters;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskThreadLocal;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -38,6 +52,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.DateRange;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.ReleaseInfo;
@@ -50,6 +65,7 @@ import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import com.liferay.portal.kernel.zip.ZipWriter;
 import com.liferay.portal.model.Group;
+import com.liferay.portal.model.GroupConstants;
 import com.liferay.portal.model.Image;
 import com.liferay.portal.model.Layout;
 import com.liferay.portal.model.LayoutConstants;
@@ -61,7 +77,11 @@ import com.liferay.portal.model.LayoutSetPrototype;
 import com.liferay.portal.model.LayoutStagingHandler;
 import com.liferay.portal.model.LayoutTypePortlet;
 import com.liferay.portal.model.Portlet;
+import com.liferay.portal.model.User;
 import com.liferay.portal.model.impl.LayoutImpl;
+import com.liferay.portal.security.auth.HttpPrincipal;
+import com.liferay.portal.security.permission.PermissionChecker;
+import com.liferay.portal.security.permission.PermissionThreadLocal;
 import com.liferay.portal.service.GroupLocalService;
 import com.liferay.portal.service.ImageLocalService;
 import com.liferay.portal.service.LayoutLocalService;
@@ -92,6 +112,8 @@ import com.liferay.portlet.exportimport.lar.StagedModelType;
 import com.liferay.portlet.exportimport.lifecycle.ExportImportLifecycleManager;
 import com.liferay.portlet.exportimport.model.ExportImportConfiguration;
 import com.liferay.portlet.exportimport.staging.LayoutStagingUtil;
+import com.liferay.portlet.exportimport.staging.StagingUtil;
+import com.liferay.portlet.exportimport.xstream.XStreamAliasRegistryUtil;
 
 import java.io.File;
 import java.io.Serializable;
@@ -99,11 +121,15 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.lang.time.StopWatch;
 
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -149,6 +175,8 @@ public class LayoutExportController implements ExportController {
 				PortletDataContextFactoryUtil.clonePortletDataContext(
 					portletDataContext));
 
+			validate(exportImportConfiguration);
+
 			File file = doExport(portletDataContext, layoutIds);
 
 			ExportImportThreadLocal.setLayoutExportInProcess(false);
@@ -171,6 +199,156 @@ public class LayoutExportController implements ExportController {
 
 			throw t;
 		}
+	}
+
+	@Override
+	public void validate(ExportImportConfiguration exportImportConfiguration)
+		throws Exception {
+
+		boolean localStaging =
+			(exportImportConfiguration.getType() ==
+				TYPE_PUBLISH_LAYOUT_LOCAL) ||
+			(exportImportConfiguration.getType() ==
+				TYPE_SCHEDULED_PUBLISH_LAYOUT_LOCAL);
+		boolean remoteStaging =
+			(exportImportConfiguration.getType() ==
+				TYPE_PUBLISH_LAYOUT_REMOTE) ||
+			(exportImportConfiguration.getType() ==
+				TYPE_SCHEDULED_PUBLISH_LAYOUT_REMOTE);
+
+		if (!localStaging && !remoteStaging) {
+			return;
+		}
+
+		// Build compatibility
+
+		Map<String, Serializable> settingsMap =
+			exportImportConfiguration.getSettingsMap();
+
+		HttpPrincipal httpPrincipal = null;
+
+		ExportImportValidator exportImportValidator = null;
+
+		if (remoteStaging) {
+			String remoteAddress = MapUtil.getString(
+				settingsMap, "remoteAddress");
+			int remotePort = MapUtil.getInteger(settingsMap, "remotePort");
+			String remotePathContext = MapUtil.getString(
+				settingsMap, "remotePathContext");
+			boolean remotePrivateLayout = MapUtil.getBoolean(
+				settingsMap, "remotePrivateLayout");
+			boolean secureConnection = MapUtil.getBoolean(
+				settingsMap, "secureConnection");
+
+			String remoteURL = StagingUtil.buildRemoteURL(
+				remoteAddress, remotePort, remotePathContext, secureConnection,
+				GroupConstants.DEFAULT_LIVE_GROUP_ID, remotePrivateLayout);
+
+			Bundle bundle = FrameworkUtil.getBundle(getClass());
+
+			remoteURL += "/o/" + bundle.getSymbolicName();
+
+			PermissionChecker permissionChecker =
+				PermissionThreadLocal.getPermissionChecker();
+
+			User user = permissionChecker.getUser();
+
+			httpPrincipal = new HttpPrincipal(
+				remoteURL, user.getLogin(), user.getPassword(),
+				user.getPasswordEncrypted());
+
+			ExportImportValidatorParameters exportImportValidatorParameters =
+				ExportImportValidatorServiceHttp.
+					getBuildNumberExportImportValidatorParameters(
+						httpPrincipal);
+
+			exportImportValidator =
+				ExportImportValidatorRegistryUtil.getExportImportValidator(
+					BuildNumberExportImportValidator.class.getName());
+
+			exportImportValidator.validate(exportImportValidatorParameters);
+		}
+
+		// Type
+
+		LarTypeExportImportValidatorParameters
+			larTypeExportImportValidatorParameters = null;
+		long targetGroupId = MapUtil.getLong(settingsMap, "targetGroupId");
+
+		if(localStaging) {
+			larTypeExportImportValidatorParameters =
+				(LarTypeExportImportValidatorParameters)
+					ExportImportValidatorLocalServiceUtil.
+						getRemoteLayoutLarTypeExportImportValidatorParameters(
+							targetGroupId);
+		}
+		else {
+			larTypeExportImportValidatorParameters =
+				(LarTypeExportImportValidatorParameters)
+					ExportImportValidatorServiceHttp.
+						getRemoteLayoutLarTypeExportImportValidatorParameters(
+							httpPrincipal, targetGroupId);
+		}
+
+		PortletDataContext portletDataContext = getPortletDataContext(
+			exportImportConfiguration);
+
+		Group group = _groupLocalService.getGroup(
+			portletDataContext.getGroupId());
+
+		String larType = "layout-set";
+
+		if (group.isLayoutPrototype()) {
+			larType = "layout-prototype";
+		}
+		else if (group.isLayoutSetPrototype()) {
+			larType = "layout-set-prototype";
+		}
+
+		Map<String, String[]> parameterMap =
+			(Map<String, String[]>)settingsMap.get("parameterMap");
+
+		String layoutsImportMode = MapUtil.getString(
+			parameterMap, PortletDataHandlerKeys.LAYOUTS_IMPORT_MODE);
+
+		larTypeExportImportValidatorParameters.setLocalParameters(
+			"layout", larType, layoutsImportMode, group.isCompany(),
+			portletDataContext.getCompanyGroupId(),
+			portletDataContext.getGroupId());
+
+		exportImportValidator =
+			ExportImportValidatorRegistryUtil.getExportImportValidator(
+				LarTypeExportImportValidator.class.getName());
+
+		exportImportValidator.validate(larTypeExportImportValidatorParameters);
+
+		// Available locales
+
+		List<Locale> availableLocales = ListUtil.fromCollection(
+			LanguageUtil.getAvailableLocales(
+				portletDataContext.getScopeGroupId()));
+
+		AvailableLocalesExportImportValidatorParameters
+			availableLocalesExportImportValidatorParameters =
+				new AvailableLocalesExportImportValidatorParameters(
+					availableLocales, targetGroupId);
+
+		if (localStaging) {
+			ExportImportValidatorLocalServiceUtil.validate(
+				AvailableLocalesExportImportValidator.class.getName(),
+				availableLocalesExportImportValidatorParameters);
+		}
+		else {
+			ExportImportValidatorServiceHttp.validate(
+				httpPrincipal,
+				AvailableLocalesExportImportValidator.class.getName(),
+				availableLocalesExportImportValidatorParameters);
+		}
+	}
+
+	@Activate
+	protected void activate() {
+		XStreamAliasRegistryUtil.register(LayoutImpl.class, "Layout");
 	}
 
 	protected File doExport(
@@ -282,7 +460,7 @@ public class LayoutExportController implements ExportController {
 			headerElement.addAttribute("type-uuid", layoutPrototype.getUuid());
 		}
 		else if (group.isLayoutSetPrototype()) {
-			type ="layout-set-prototype";
+			type = "layout-set-prototype";
 
 			LayoutSetPrototype layoutSetPrototype =
 				_layoutSetPrototypeLocalService.getLayoutSetPrototype(
