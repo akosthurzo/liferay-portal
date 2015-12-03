@@ -31,7 +31,6 @@ import com.liferay.exportimport.lar.PermissionExporter;
 import com.liferay.exportimport.portlet.preferences.processor.Capability;
 import com.liferay.exportimport.portlet.preferences.processor.ExportImportPortletPreferencesProcessor;
 import com.liferay.exportimport.portlet.preferences.processor.ExportImportPortletPreferencesProcessorRegistryUtil;
-import com.liferay.exportimport.service.ExportImportValidatorLocalServiceUtil;
 import com.liferay.exportimport.validator.AvailableLocalesExportImportValidator;
 import com.liferay.exportimport.validator.AvailableLocalesExportImportValidatorParameters;
 import com.liferay.exportimport.validator.BuildNumberExportImportValidator;

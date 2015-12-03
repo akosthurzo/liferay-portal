@@ -33,7 +33,7 @@ import com.liferay.exportimport.api.validator.ExportImportValidatorRegistryUtil;
 import com.liferay.exportimport.lar.DeletionSystemEventExporter;
 import com.liferay.exportimport.lar.PermissionExporter;
 import com.liferay.exportimport.lar.ThemeExporter;
-import com.liferay.exportimport.service.ExportImportValidatorLocalServiceUtil;
+import com.liferay.exportimport.service.ExportImportValidatorLocalService;
 import com.liferay.exportimport.service.http.ExportImportValidatorServiceHttp;
 import com.liferay.exportimport.validator.AvailableLocalesExportImportValidator;
 import com.liferay.exportimport.validator.AvailableLocalesExportImportValidatorParameters;
@@ -278,7 +278,7 @@ public class LayoutExportController implements ExportController {
 		if(localStaging) {
 			larTypeExportImportValidatorParameters =
 				(LarTypeExportImportValidatorParameters)
-					ExportImportValidatorLocalServiceUtil.
+					_exportImportValidatorLocalService.
 						getRemoteLayoutLarTypeExportImportValidatorParameters(
 							targetGroupId);
 		}
@@ -334,7 +334,7 @@ public class LayoutExportController implements ExportController {
 					availableLocales, targetGroupId);
 
 		if (localStaging) {
-			ExportImportValidatorLocalServiceUtil.validate(
+			_exportImportValidatorLocalService.validate(
 				AvailableLocalesExportImportValidator.class.getName(),
 				availableLocalesExportImportValidatorParameters);
 		}
@@ -1009,6 +1009,13 @@ public class LayoutExportController implements ExportController {
 	}
 
 	@Reference(unbind = "-")
+	protected void setExportImportValidatorLocalService(
+		ExportImportValidatorLocalService exportImportValidatorLocalService) {
+
+		_exportImportValidatorLocalService = exportImportValidatorLocalService;
+	}
+
+	@Reference(unbind = "-")
 	protected void setUserLocalService(UserLocalService userLocalService) {
 		_userLocalService = userLocalService;
 	}
@@ -1022,6 +1029,8 @@ public class LayoutExportController implements ExportController {
 	private volatile GroupLocalService _groupLocalService;
 	private volatile ImageLocalService _imageLocalService;
 	private volatile LayoutLocalService _layoutLocalService;
+	private volatile ExportImportValidatorLocalService
+		_exportImportValidatorLocalService;
 	private volatile LayoutPrototypeLocalService _layoutPrototypeLocalService;
 	private volatile LayoutRevisionLocalService _layoutRevisionLocalService;
 	private volatile LayoutSetBranchLocalService _layoutSetBranchLocalService;
