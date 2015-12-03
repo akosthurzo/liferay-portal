@@ -1,8 +1,8 @@
 buildService {
-	apiDir = "../export-import-api/src"
+	apiDir = "../export-import-api/src/main/java"
 	autoNamespaceTables = false
 	//remotingFileName = "src/META-INF/remoting-servlet.xml"
-	testDir = "../export-import-test/test/integration"
+	testDir = "../export-import-test/src/testIntegration/java"
 }
 
 configurations.compile {
@@ -10,6 +10,7 @@ configurations.compile {
 }
 
 dependencies {
+	compile group: "biz.aQute.bnd", name: "biz.aQute.bnd", version: "2.4.1"
 	compile group: "com.liferay.portal", name: "portal-impl", version: liferay.portalVersion
 	compile group: "com.liferay.portal", name: "portal-service", version: liferay.portalVersion
 	compile group: "com.thoughtworks.xstream", name: "xstream", version: "1.4.7"
