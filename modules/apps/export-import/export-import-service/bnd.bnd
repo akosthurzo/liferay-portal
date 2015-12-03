@@ -10,6 +10,9 @@ Export-Package:\
 	com.liferay.exportimport.portlet.preferences.processor.base,\
 	com.liferay.exportimport.portlet.preferences.processor.capability,\
 	com.liferay.exportimport.search,\
+	com.liferay.exportimport.service.http,\
+	com.liferay.exportimport.service.impl,\
+	com.liferay.exportimport.service.util,\
 	com.liferay.exportimport.staged.model.repository.base,\
 	com.liferay.exportimport.staging,\
 	com.liferay.exportimport.xstream
