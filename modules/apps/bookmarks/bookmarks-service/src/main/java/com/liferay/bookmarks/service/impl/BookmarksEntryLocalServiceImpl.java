@@ -27,6 +27,7 @@ import com.liferay.bookmarks.service.base.BookmarksEntryLocalServiceBaseImpl;
 import com.liferay.bookmarks.service.permission.BookmarksResourcePermissionChecker;
 import com.liferay.bookmarks.social.BookmarksActivityKeys;
 import com.liferay.bookmarks.util.comparator.EntryModifiedDateComparator;
+import com.liferay.exportimport.service.http.ExportImportValidatorServiceHttp;
 import com.liferay.journal.service.http.JournalArticleServiceHttp;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
@@ -106,7 +107,8 @@ public class BookmarksEntryLocalServiceImpl
 			"localhost", 8081, "", false,
 			GroupConstants.DEFAULT_LIVE_GROUP_ID, false);
 
-		remoteURL += "/o/com.liferay.journal.service";
+		//remoteURL += "/o/com.liferay.journal.service";
+		remoteURL += "/o/com.liferay.exportimport.service";
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
@@ -117,7 +119,8 @@ public class BookmarksEntryLocalServiceImpl
 			remoteURL, user.getLogin(), user.getPassword(),
 			user.getPasswordEncrypted());
 		_log.error("----------GETARTICLE--------");
-		JournalArticleServiceHttp.getArticle(httpPrincipal, 0);
+		ExportImportValidatorServiceHttp.getBuildNumberExportImportValidatorParameters(httpPrincipal);
+		//JournalArticleServiceHttp.getArticle(httpPrincipal, 0);
 		_log.error("----------GETARTICLE-DONE--------");
 
 		user = userPersistence.findByPrimaryKey(userId);
