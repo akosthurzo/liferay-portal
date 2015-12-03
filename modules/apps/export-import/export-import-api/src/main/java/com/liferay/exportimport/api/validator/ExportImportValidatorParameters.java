@@ -14,8 +14,10 @@
 
 package com.liferay.exportimport.api.validator;
 
+import java.io.Serializable;
+
 /**
  * @author Akos Thurzo
  */
-public interface ExportImportValidatorParameters {
+public interface ExportImportValidatorParameters extends Serializable {
 }
