@@ -103,6 +103,8 @@ public class BookmarksEntryLocalServiceImpl
 
 		// Entry
 
+		_log.error("----------GETARTICLE--------");
+
 		String remoteURL = StagingUtil.buildRemoteURL(
 			"localhost", 8081, "", false,
 			GroupConstants.DEFAULT_LIVE_GROUP_ID, false);
@@ -118,9 +120,30 @@ public class BookmarksEntryLocalServiceImpl
 		HttpPrincipal httpPrincipal = new HttpPrincipal(
 			remoteURL, user.getLogin(), user.getPassword(),
 			user.getPasswordEncrypted());
-		_log.error("----------GETARTICLE--------");
-		ExportImportValidatorServiceHttp.getBuildNumberExportImportValidatorParameters(httpPrincipal);
-		//JournalArticleServiceHttp.getArticle(httpPrincipal, 0);
+
+		try {
+			ExportImportValidatorServiceHttp.getBuildNumberExportImportValidatorParameters(httpPrincipal);
+		}
+		catch(Exception e) {
+			_log.error(e);
+		}
+
+		remoteURL = StagingUtil.buildRemoteURL(
+				"localhost", 8081, "", false,
+				GroupConstants.DEFAULT_LIVE_GROUP_ID, false);
+
+		remoteURL += "/o/com.liferay.journal.service";
+
+		httpPrincipal = new HttpPrincipal(
+				remoteURL, user.getLogin(), user.getPassword(),
+				user.getPasswordEncrypted());
+
+		try {
+			JournalArticleServiceHttp.getArticle(httpPrincipal, 0);
+		}
+		catch(Exception e) {
+			_log.error(e);
+		}
 		_log.error("----------GETARTICLE-DONE--------");
 
 		user = userPersistence.findByPrimaryKey(userId);
