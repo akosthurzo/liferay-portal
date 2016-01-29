@@ -46,10 +46,12 @@ public class DeleteBackgroundTaskMVCActionCommand extends BaseMVCActionCommand {
 	protected void deleteBackgroundTask(ActionRequest actionRequest)
 		throws PortalException {
 
-		long backgroundTaskId = ParamUtil.getLong(
+		long[] backgroundTaskIds = ParamUtil.getLongValues(
 			actionRequest, BackgroundTaskConstants.BACKGROUND_TASK_ID);
 
-		BackgroundTaskManagerUtil.deleteBackgroundTask(backgroundTaskId);
+		for (long backgroundTaskId : backgroundTaskIds) {
+			BackgroundTaskManagerUtil.deleteBackgroundTask(backgroundTaskId);
+		}
 	}
 
 	@Override
