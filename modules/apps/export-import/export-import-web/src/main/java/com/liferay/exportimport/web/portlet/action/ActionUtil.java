@@ -57,10 +57,12 @@ public class ActionUtil {
 	public static void deleteBackgroundTask(ActionRequest actionRequest)
 		throws PortalException {
 
-		long backgroundTaskId = ParamUtil.getLong(
+		long[] backgroundTaskIds = ParamUtil.getLongValues(
 			actionRequest, BackgroundTaskConstants.BACKGROUND_TASK_ID);
 
-		BackgroundTaskManagerUtil.deleteBackgroundTask(backgroundTaskId);
+		for (long backgroundTaskId : backgroundTaskIds) {
+			BackgroundTaskManagerUtil.deleteBackgroundTask(backgroundTaskId);
+		}
 	}
 
 	public static Group getGroup(HttpServletRequest request) throws Exception {
