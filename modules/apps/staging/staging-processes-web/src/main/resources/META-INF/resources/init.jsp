@@ -52,6 +52,7 @@ page import="com.liferay.portal.kernel.backgroundtask.BackgroundTaskStatusRegist
 page import="com.liferay.portal.kernel.dao.search.SearchContainer" %><%@
 page import="com.liferay.portal.kernel.exception.SystemException" %><%@
 page import="com.liferay.portal.kernel.language.LanguageUtil" %><%@
+page import="com.liferay.portal.kernel.language.UnicodeLanguageUtil" %><%@
 page import="com.liferay.portal.kernel.lock.DuplicateLockException" %><%@
 page import="com.liferay.portal.kernel.messaging.DestinationNames" %><%@
 page import="com.liferay.portal.kernel.messaging.Message" %><%@

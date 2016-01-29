@@ -31,3 +31,11 @@
 		<aui:a cssClass="btn" href="<%= taglibURL %>" iconCssClass="icon-remove" />
 	</liferay-frontend:management-bar-action-buttons>
 </liferay-frontend:management-bar>
+
+<aui:script>
+	function <portlet:namespace />deleteBackgroundTasks() {
+		if (confirm('<%= UnicodeLanguageUtil.get(request, "are-you-sure-you-want-to-delete-the-selected-entries") %>')) {
+			submitForm(document.<portlet:namespace />fm);
+		}
+	}
+</aui:script>

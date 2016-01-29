@@ -52,125 +52,129 @@ String taskExecutorClassName = localPublishing ? BackgroundTaskExecutorNames.LAY
 %>
 
 <div id="<portlet:namespace />publishProcessesSearchContainer">
-	<liferay-ui:search-container
-		emptyResultsMessage="no-publication-processes-were-found"
-		id="publishProcesses"
-		iteratorURL="<%= renderURL %>"
-		orderByCol="<%= orderByCol %>"
-		orderByType="<%= orderByType %>"
-		rowChecker="<%= new BackgroundTaskChecker(liferayPortletResponse) %>"
-	>
+	<portlet:actionURL name="deleteBackgroundTask" var="deleteBackgroundTasksURL" />
 
-		<liferay-ui:search-container-results>
-
-			<%
-			List<BackgroundTask> backgroundTasks = BackgroundTaskManagerUtil.getBackgroundTasks(groupId, taskExecutorClassName);
-
-			results.addAll(backgroundTasks);
-
-			if (localPublishing) {
-				results.addAll(BackgroundTaskManagerUtil.getBackgroundTasks(liveGroupId, taskExecutorClassName));
-			}
-
-			searchContainer.setTotal(results.size());
-
-			results = ListUtil.subList(results, searchContainer.getStart(), searchContainer.getEnd());
-
-			searchContainer.setResults(results);
-			%>
-
-		</liferay-ui:search-container-results>
-
-		<liferay-ui:search-container-row
-			className="com.liferay.portal.kernel.backgroundtask.BackgroundTask"
-			keyProperty="backgroundTaskId"
-			modelVar="backgroundTask"
+	<aui:form action="<%= deleteBackgroundTasksURL %>" method="post" name="fm">
+		<liferay-ui:search-container
+			emptyResultsMessage="no-publication-processes-were-found"
+			id="publishProcesses"
+			iteratorURL="<%= renderURL %>"
+			orderByCol="<%= orderByCol %>"
+			orderByType="<%= orderByType %>"
+			rowChecker="<%= new BackgroundTaskChecker(liferayPortletResponse) %>"
 		>
 
-			<liferay-ui:search-container-column-text
-				cssClass="background-task-user-column"
-				name="user"
-			>
-				<liferay-ui:user-display
-					displayStyle="3"
-					showUserDetails="<%= false %>"
-					showUserName="<%= false %>"
-					userId="<%= backgroundTask.getUserId() %>"
-				/>
-			</liferay-ui:search-container-column-text>
-
-			<liferay-ui:search-container-column-text
-				name="title"
-			>
+			<liferay-ui:search-container-results>
 
 				<%
-				String backgroundTaskName = backgroundTask.getName();
+				List<BackgroundTask> backgroundTasks = BackgroundTaskManagerUtil.getBackgroundTasks(groupId, taskExecutorClassName);
 
-				if (backgroundTask.getGroupId() == liveGroupId) {
-					backgroundTaskName = LanguageUtil.get(request, "initial-publication");
+				results.addAll(backgroundTasks);
+
+				if (localPublishing) {
+					results.addAll(BackgroundTaskManagerUtil.getBackgroundTasks(liveGroupId, taskExecutorClassName));
 				}
 
-				if (backgroundTaskName.equals(StringPool.BLANK)) {
-					backgroundTaskName = LanguageUtil.get(request, "untitled");
-				}
+				searchContainer.setTotal(results.size());
+
+				results = ListUtil.subList(results, searchContainer.getStart(), searchContainer.getEnd());
+
+				searchContainer.setResults(results);
 				%>
 
-				<liferay-ui:message key="<%= HtmlUtil.escape(backgroundTaskName) %>" />
-			</liferay-ui:search-container-column-text>
+			</liferay-ui:search-container-results>
 
-			<liferay-ui:search-container-column-jsp
-				cssClass="background-task-status-column"
-				name="status"
-				path="/processes_list/publish_process_message.jsp"
-			/>
+			<liferay-ui:search-container-row
+				className="com.liferay.portal.kernel.backgroundtask.BackgroundTask"
+				keyProperty="backgroundTaskId"
+				modelVar="backgroundTask"
+			>
 
-			<liferay-ui:search-container-column-date
-				name="create-date"
-				orderable="<%= true %>"
-				value="<%= backgroundTask.getCreateDate() %>"
-			/>
+				<liferay-ui:search-container-column-text
+					cssClass="background-task-user-column"
+					name="user"
+				>
+					<liferay-ui:user-display
+						displayStyle="3"
+						showUserDetails="<%= false %>"
+						showUserName="<%= false %>"
+						userId="<%= backgroundTask.getUserId() %>"
+					/>
+				</liferay-ui:search-container-column-text>
 
-			<liferay-ui:search-container-column-date
-				name="completion-date"
-				orderable="<%= true %>"
-				value="<%= backgroundTask.getCompletionDate() %>"
-			/>
+				<liferay-ui:search-container-column-text
+					name="title"
+				>
 
-			<liferay-ui:search-container-column-text>
-				<liferay-ui:icon-menu direction="left-side" icon="<%= StringPool.BLANK %>" markupView="lexicon" message="<%= StringPool.BLANK %>" showWhenSingleIcon="<%= true %>">
-					<c:if test="<%= backgroundTask.getGroupId() != liveGroupId %>">
-						<portlet:actionURL name="editPublishConfiguration" var="relaunchURL">
-							<portlet:param name="mvcRenderCommandName" value="editPublishConfiguration" />
-							<portlet:param name="<%= Constants.CMD %>" value="<%= Constants.RELAUNCH %>" />
+					<%
+					String backgroundTaskName = backgroundTask.getName();
+
+					if (backgroundTask.getGroupId() == liveGroupId) {
+						backgroundTaskName = LanguageUtil.get(request, "initial-publication");
+					}
+
+					if (backgroundTaskName.equals(StringPool.BLANK)) {
+						backgroundTaskName = LanguageUtil.get(request, "untitled");
+					}
+					%>
+
+					<liferay-ui:message key="<%= HtmlUtil.escape(backgroundTaskName) %>" />
+				</liferay-ui:search-container-column-text>
+
+				<liferay-ui:search-container-column-jsp
+					cssClass="background-task-status-column"
+					name="status"
+					path="/processes_list/publish_process_message.jsp"
+				/>
+
+				<liferay-ui:search-container-column-date
+					name="create-date"
+					orderable="<%= true %>"
+					value="<%= backgroundTask.getCreateDate() %>"
+				/>
+
+				<liferay-ui:search-container-column-date
+					name="completion-date"
+					orderable="<%= true %>"
+					value="<%= backgroundTask.getCompletionDate() %>"
+				/>
+
+				<liferay-ui:search-container-column-text>
+					<liferay-ui:icon-menu direction="left-side" icon="<%= StringPool.BLANK %>" markupView="lexicon" message="<%= StringPool.BLANK %>" showWhenSingleIcon="<%= true %>">
+						<c:if test="<%= backgroundTask.getGroupId() != liveGroupId %>">
+							<portlet:actionURL name="editPublishConfiguration" var="relaunchURL">
+								<portlet:param name="mvcRenderCommandName" value="editPublishConfiguration" />
+								<portlet:param name="<%= Constants.CMD %>" value="<%= Constants.RELAUNCH %>" />
+								<portlet:param name="redirect" value="<%= currentURL.toString() %>" />
+								<portlet:param name="backgroundTaskId" value="<%= String.valueOf(backgroundTask.getBackgroundTaskId()) %>" />
+							</portlet:actionURL>
+
+							<liferay-ui:icon
+								message="relaunch"
+								url="<%= relaunchURL %>"
+							/>
+						</c:if>
+
+						<portlet:actionURL name="deleteBackgroundTask" var="deleteBackgroundTaskURL">
 							<portlet:param name="redirect" value="<%= currentURL.toString() %>" />
 							<portlet:param name="backgroundTaskId" value="<%= String.valueOf(backgroundTask.getBackgroundTaskId()) %>" />
 						</portlet:actionURL>
 
+						<%
+						Date completionDate = backgroundTask.getCompletionDate();
+						%>
+
 						<liferay-ui:icon
-							message="relaunch"
-							url="<%= relaunchURL %>"
+							message='<%= LanguageUtil.get(request, ((completionDate != null) && completionDate.before(new Date())) ? "clear" : "cancel") %>'
+							url="<%= deleteBackgroundTaskURL %>"
 						/>
-					</c:if>
+					</liferay-ui:icon-menu>
+				</liferay-ui:search-container-column-text>
+			</liferay-ui:search-container-row>
 
-					<portlet:actionURL name="deleteBackgroundTask" var="deleteBackgroundTaskURL">
-						<portlet:param name="redirect" value="<%= currentURL.toString() %>" />
-						<portlet:param name="backgroundTaskId" value="<%= String.valueOf(backgroundTask.getBackgroundTaskId()) %>" />
-					</portlet:actionURL>
-
-					<%
-					Date completionDate = backgroundTask.getCompletionDate();
-					%>
-
-					<liferay-ui:icon
-						message='<%= LanguageUtil.get(request, ((completionDate != null) && completionDate.before(new Date())) ? "clear" : "cancel") %>'
-						url="<%= deleteBackgroundTaskURL %>"
-					/>
-				</liferay-ui:icon-menu>
-			</liferay-ui:search-container-column-text>
-		</liferay-ui:search-container-row>
-
-		<liferay-ui:search-iterator markupView="lexicon" />
-	</liferay-ui:search-container>
+			<liferay-ui:search-iterator markupView="lexicon" />
+		</liferay-ui:search-container>
+	</aui:form>
 </div>
 
 <%
