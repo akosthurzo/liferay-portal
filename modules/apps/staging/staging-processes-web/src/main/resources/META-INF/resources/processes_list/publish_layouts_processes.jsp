@@ -58,7 +58,7 @@ String taskExecutorClassName = localPublishing ? BackgroundTaskExecutorNames.LAY
 		iteratorURL="<%= renderURL %>"
 		orderByCol="<%= orderByCol %>"
 		orderByType="<%= orderByType %>"
-		rowChecker="<%= new EmptyOnClickRowChecker(liferayPortletResponse) %>"
+		rowChecker="<%= new BackgroundTaskChecker(liferayPortletResponse) %>"
 	>
 
 		<liferay-ui:search-container-results>
