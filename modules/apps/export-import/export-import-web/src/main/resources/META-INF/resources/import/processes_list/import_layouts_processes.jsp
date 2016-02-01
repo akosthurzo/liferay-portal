@@ -48,6 +48,7 @@ OrderByComparator<BackgroundTask> orderByComparator = BackgroundTaskComparatorFa
 		orderByCol="<%= orderByCol %>"
 		orderByComparator="<%= orderByComparator %>"
 		orderByType="<%= orderByType %>"
+		rowChecker="<%= new BackgroundTaskChecker(liferayPortletResponse) %>"
 		total="<%= BackgroundTaskManagerUtil.getBackgroundTasksCount(groupId, BackgroundTaskExecutorNames.LAYOUT_IMPORT_BACKGROUND_TASK_EXECUTOR) %>"
 	>
 		<liferay-ui:search-container-results

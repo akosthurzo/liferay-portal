@@ -60,6 +60,7 @@ page import="com.liferay.exportimport.util.comparator.ExportImportConfigurationN
 page import="com.liferay.exportimport.web.constants.ExportImportPortletKeys" %><%@
 page import="com.liferay.exportimport.web.constants.ExportImportWebKeys" %><%@
 page import="com.liferay.exportimport.web.portlet.action.ExportImportMVCActionCommand" %><%@
+page import="com.liferay.exportimport.web.search.BackgroundTaskChecker" %><%@
 page import="com.liferay.exportimport.web.search.ExportImportConfigurationDisplayTerms" %><%@
 page import="com.liferay.exportimport.web.search.ExportImportConfigurationSearchTerms" %><%@
 page import="com.liferay.portal.LocaleException" %><%@
