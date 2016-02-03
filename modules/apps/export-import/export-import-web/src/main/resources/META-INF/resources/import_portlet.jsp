@@ -52,7 +52,13 @@ String[] tempFileNames = LayoutServiceUtil.getTempFileNames(scopeGroupId, Export
 	</liferay-ui:section>
 
 	<liferay-ui:section>
-		<div class="process-list" id="<portlet:namespace />importProcesses">
+		<div class="container-fluid-1280" id="<portlet:namespace />importProcessesContainer">
+			<liferay-util:include page="/toolbar.jsp" servletContext="<%= application %>">
+				<liferay-util:param name="searchContainerId" value="importProcessesSearchContainerId" />
+			</liferay-util:include>
+		</div>
+
+		<div class="container-fluid-1280 process-list" id="<portlet:namespace />importProcesses">
 			<liferay-util:include page="/import_portlet_processes.jsp" servletContext="<%= application %>" />
 		</div>
 	</liferay-ui:section>

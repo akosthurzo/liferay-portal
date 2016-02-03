@@ -44,6 +44,7 @@ OrderByComparator<BackgroundTask> orderByComparator = BackgroundTaskComparatorFa
 <div id="<portlet:namespace />exportProcessesSearchContainer">
 	<liferay-ui:search-container
 		emptyResultsMessage="no-export-processes-were-found"
+		id="exportProcessesSearchContainerId"
 		iteratorURL="<%= portletURL %>"
 		orderByCol="<%= orderByCol %>"
 		orderByComparator="<%= orderByComparator %>"

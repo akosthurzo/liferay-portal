@@ -732,7 +732,7 @@ AUI.add(
 					_renderProcesses: function() {
 						var instance = this;
 
-						var checkedCheckboxes = A.all('input[name="' + instance.ns('rowIds') + '"]:checked');
+						var checkedCheckboxes = A.all('input[name="' + instance.ns('backgroundTaskId') + '"]:checked');
 
 						if (checkedCheckboxes && checkedCheckboxes.size() > 0) {
 							instance._scheduleRenderProcess();

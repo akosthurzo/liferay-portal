@@ -410,7 +410,13 @@ Layout exportableLayout = ExportImportHelperUtil.getExportableLayout(themeDispla
 	</liferay-ui:section>
 
 	<liferay-ui:section>
-		<div class="process-list" id="<portlet:namespace />exportProcesses">
+		<div class="container-fluid-1280" id="<portlet:namespace />exportProcessesContainer">
+			<liferay-util:include page="/toolbar.jsp" servletContext="<%= application %>">
+				<liferay-util:param name="searchContainerId" value="exportProcessesSearchContainerId" />
+			</liferay-util:include>
+		</div>
+
+		<div class="container-fluid-1280 process-list" id="<portlet:namespace />exportProcesses">
 			<liferay-util:include page="/export_portlet_processes.jsp" servletContext="<%= application %>" />
 		</div>
 	</liferay-ui:section>

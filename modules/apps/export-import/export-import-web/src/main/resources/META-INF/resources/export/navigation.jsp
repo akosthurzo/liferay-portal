@@ -24,3 +24,9 @@
 		/>
 	</aui:nav>
 </aui:nav-bar>
+
+<div class="container-fluid-1280" id="<portlet:namespace />exportProcessesContainer">
+	<liferay-util:include page="/toolbar.jsp" servletContext="<%= application %>">
+		<liferay-util:param name="searchContainerId" value="exportProcessesSearchContainerId" />
+	</liferay-util:include>
+</div>
