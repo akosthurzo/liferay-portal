@@ -116,6 +116,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 
 import org.apache.commons.lang.time.StopWatch;
 
@@ -477,6 +478,9 @@ public class PortletImportController implements ImportController {
 	protected void doImportPortletInfo(
 			PortletDataContext portletDataContext, long userId)
 		throws Exception {
+
+		if (new Random().nextBoolean())
+			throw new RuntimeException("muhaha " + new Random().nextInt());
 
 		Map<String, String[]> parameterMap =
 			portletDataContext.getParameterMap();

@@ -102,6 +102,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import org.apache.commons.lang.time.StopWatch;
@@ -196,6 +197,9 @@ public class LayoutImportController implements ImportController {
 	public void importFile(
 			ExportImportConfiguration exportImportConfiguration, File file)
 		throws Exception {
+
+		if (new Random().nextBoolean())
+			throw new RuntimeException("muhaha " + new Random().nextInt());
 
 		PortletDataContext portletDataContext = null;
 

@@ -103,6 +103,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.lang.time.StopWatch;
@@ -300,6 +301,9 @@ public class PortletExportController implements ExportController {
 
 	protected File doExport(PortletDataContext portletDataContext)
 		throws Exception {
+
+		if (new Random().nextBoolean())
+			throw new RuntimeException("muhaha " + new Random().nextInt());
 
 		boolean exportPermissions = MapUtil.getBoolean(
 			portletDataContext.getParameterMap(),

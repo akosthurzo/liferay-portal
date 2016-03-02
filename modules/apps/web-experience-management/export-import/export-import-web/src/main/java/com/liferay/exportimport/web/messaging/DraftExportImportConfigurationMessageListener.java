@@ -80,6 +80,8 @@ public class DraftExportImportConfigurationMessageListener
 
 	@Override
 	protected void doReceive(Message message) throws PortalException {
+		if (true)return;
+
 		if (ExportImportWebConfigurationValues.
 				DRAFT_EXPORT_IMPORT_CONFIGURATION_CLEAN_UP_COUNT == -1) {
 

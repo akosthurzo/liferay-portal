@@ -100,6 +100,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.lang.time.StopWatch;
@@ -176,6 +177,9 @@ public class LayoutExportController implements ExportController {
 	protected File doExport(
 			PortletDataContext portletDataContext, long[] layoutIds)
 		throws Exception {
+
+		if (new Random().nextBoolean())
+			throw new RuntimeException("muhaha " + new Random().nextInt());
 
 		Map<String, String[]> parameterMap =
 			portletDataContext.getParameterMap();
