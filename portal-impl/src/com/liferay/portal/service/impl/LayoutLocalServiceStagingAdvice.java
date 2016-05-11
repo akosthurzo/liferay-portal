@@ -14,6 +14,7 @@
 
 package com.liferay.portal.service.impl;
 
+import com.liferay.exportimport.kernel.staging.LayoutRevisionThreadLocal;
 import com.liferay.exportimport.kernel.staging.LayoutStagingUtil;
 import com.liferay.exportimport.kernel.staging.MergeLayoutPrototypesThreadLocal;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
@@ -356,7 +357,10 @@ public class LayoutLocalServiceStagingAdvice implements MethodInterceptor {
 
 		serviceContext.setAttribute("revisionInProgress", hasWorkflowTask);
 
-		if (!MergeLayoutPrototypesThreadLocal.isInProgress()) {
+		if (!MergeLayoutPrototypesThreadLocal.isInProgress() &&
+			!LayoutRevisionThreadLocal.isAdditionInProgress(
+				layoutRevision.getLayoutRevisionId())) {
+
 			serviceContext.setWorkflowAction(
 				WorkflowConstants.ACTION_SAVE_DRAFT);
 		}
@@ -405,7 +409,10 @@ public class LayoutLocalServiceStagingAdvice implements MethodInterceptor {
 
 		serviceContext.setAttribute("revisionInProgress", hasWorkflowTask);
 
-		if (!MergeLayoutPrototypesThreadLocal.isInProgress()) {
+		if (!MergeLayoutPrototypesThreadLocal.isInProgress() &&
+			!LayoutRevisionThreadLocal.isAdditionInProgress(
+				layoutRevision.getLayoutRevisionId())) {
+
 			serviceContext.setWorkflowAction(
 				WorkflowConstants.ACTION_SAVE_DRAFT);
 		}

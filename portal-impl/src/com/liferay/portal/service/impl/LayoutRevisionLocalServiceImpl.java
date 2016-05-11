@@ -14,6 +14,7 @@
 
 package com.liferay.portal.service.impl;
 
+import com.liferay.exportimport.kernel.staging.LayoutRevisionThreadLocal;
 import com.liferay.exportimport.kernel.staging.MergeLayoutPrototypesThreadLocal;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.portal.kernel.exception.NoSuchLayoutRevisionException;
@@ -69,6 +70,9 @@ public class LayoutRevisionLocalServiceImpl
 
 		long layoutRevisionId = counterLocalService.increment();
 
+		LayoutRevisionThreadLocal.changeAdditionInProgress(
+			layoutRevisionId, true);
+
 		LayoutRevision layoutRevision = layoutRevisionPersistence.create(
 			layoutRevisionId);
 
@@ -92,7 +96,7 @@ public class LayoutRevisionLocalServiceImpl
 		layoutRevision.setThemeId(themeId);
 		layoutRevision.setColorSchemeId(colorSchemeId);
 		layoutRevision.setCss(css);
-		layoutRevision.setStatus(WorkflowConstants.STATUS_APPROVED);
+		layoutRevision.setStatus(WorkflowConstants.STATUS_DRAFT);
 		layoutRevision.setStatusDate(serviceContext.getModifiedDate(now));
 
 		layoutRevisionPersistence.update(layoutRevision);

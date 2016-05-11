@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.model;
 
+import com.liferay.exportimport.kernel.staging.LayoutRevisionThreadLocal;
 import com.liferay.exportimport.kernel.staging.MergeLayoutPrototypesThreadLocal;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -222,7 +223,10 @@ public class LayoutStagingHandler implements InvocationHandler, Serializable {
 			LayoutBranchLocalServiceUtil.getMasterLayoutBranch(
 				layoutSetBranchId, layout.getPlid(), serviceContext);
 
-		if (!MergeLayoutPrototypesThreadLocal.isInProgress()) {
+		if (!MergeLayoutPrototypesThreadLocal.isInProgress() &&
+			!LayoutRevisionThreadLocal.isAdditionInProgress(
+				layoutRevision.getLayoutRevisionId())) {
+
 			serviceContext.setWorkflowAction(
 				WorkflowConstants.ACTION_SAVE_DRAFT);
 		}
