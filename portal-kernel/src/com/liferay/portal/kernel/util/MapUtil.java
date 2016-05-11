@@ -253,21 +253,6 @@ public class MapUtil {
 		return GetterUtil.getLong(String.valueOf(value), defaultValue);
 	}
 
-	public static <T> long getLong(Map<T, Long> map, T key) {
-		return getLong(map, key, GetterUtil.DEFAULT_LONG);
-	}
-
-	public static <T> long getLong(Map<T, Long> map, T key, long defaultValue) {
-		Long value = map.get(key);
-
-		if (value == null) {
-			return defaultValue;
-		}
-		else {
-			return value;
-		}
-	}
-
 	public static <T> short getShort(Map<T, ?> map, T key) {
 		return getShort(map, key, GetterUtil.DEFAULT_SHORT);
 	}
