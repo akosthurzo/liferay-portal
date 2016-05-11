@@ -137,12 +137,12 @@ public class MapUtil {
 		return map;
 	}
 
-	public static boolean getBoolean(Map<String, ?> map, String key) {
+	public static <T> boolean getBoolean(Map<T, ?> map, T key) {
 		return getBoolean(map, key, GetterUtil.DEFAULT_BOOLEAN);
 	}
 
-	public static boolean getBoolean(
-		Map<String, ?> map, String key, boolean defaultValue) {
+	public static <T> boolean getBoolean(
+		Map<T, ?> map, T key, boolean defaultValue) {
 
 		Object value = map.get(key);
 
@@ -167,12 +167,12 @@ public class MapUtil {
 		return GetterUtil.getBoolean(String.valueOf(value), defaultValue);
 	}
 
-	public static double getDouble(Map<String, ?> map, String key) {
+	public static <T> double getDouble(Map<T, ?> map, T key) {
 		return getDouble(map, key, GetterUtil.DEFAULT_DOUBLE);
 	}
 
-	public static double getDouble(
-		Map<String, ?> map, String key, double defaultValue) {
+	public static <T> double getDouble(
+		Map<T, ?> map, T key, double defaultValue) {
 
 		Object value = map.get(key);
 
@@ -201,9 +201,7 @@ public class MapUtil {
 		return getInteger(map, key, GetterUtil.DEFAULT_INTEGER);
 	}
 
-	public static int getInteger(
-		Map<String, ?> map, String key, int defaultValue) {
-
+	public static <T> int getInteger(Map<T, ?> map, T key, int defaultValue) {
 		Object value = map.get(key);
 
 		if (value == null) {
@@ -227,30 +225,11 @@ public class MapUtil {
 		return GetterUtil.getInteger(String.valueOf(value), defaultValue);
 	}
 
-	public static long getLong(Map<Long, Long> map, long key) {
+	public static <T> long getLong(Map<T, ?> map, T key) {
 		return getLong(map, key, GetterUtil.DEFAULT_LONG);
 	}
 
-	public static long getLong(
-		Map<Long, Long> map, long key, long defaultValue) {
-
-		Long value = map.get(key);
-
-		if (value == null) {
-			return defaultValue;
-		}
-		else {
-			return value;
-		}
-	}
-
-	public static long getLong(Map<String, ?> map, String key) {
-		return getLong(map, key, GetterUtil.DEFAULT_LONG);
-	}
-
-	public static long getLong(
-		Map<String, ?> map, String key, long defaultValue) {
-
+	public static <T> long getLong(Map<T, ?> map, T key, long defaultValue) {
 		Object value = map.get(key);
 
 		if (value == null) {
@@ -274,13 +253,26 @@ public class MapUtil {
 		return GetterUtil.getLong(String.valueOf(value), defaultValue);
 	}
 
-	public static short getShort(Map<String, ?> map, String key) {
+	public static <T> long getLong(Map<T, Long> map, T key) {
+		return getLong(map, key, GetterUtil.DEFAULT_LONG);
+	}
+
+	public static <T> long getLong(Map<T, Long> map, T key, long defaultValue) {
+		Long value = map.get(key);
+
+		if (value == null) {
+			return defaultValue;
+		}
+		else {
+			return value;
+		}
+	}
+
+	public static <T> short getShort(Map<T, ?> map, T key) {
 		return getShort(map, key, GetterUtil.DEFAULT_SHORT);
 	}
 
-	public static short getShort(
-		Map<String, ?> map, String key, short defaultValue) {
-
+	public static <T> short getShort(Map<T, ?> map, T key, short defaultValue) {
 		Object value = map.get(key);
 
 		if (value == null) {
@@ -304,12 +296,12 @@ public class MapUtil {
 		return GetterUtil.getShort(String.valueOf(value), defaultValue);
 	}
 
-	public static String getString(Map<String, ?> map, String key) {
+	public static <T> String getString(Map<T, ?> map, T key) {
 		return getString(map, key, GetterUtil.DEFAULT_STRING);
 	}
 
-	public static String getString(
-		Map<String, ?> map, String key, String defaultValue) {
+	public static <T> String getString(
+		Map<T, ?> map, T key, String defaultValue) {
 
 		Object value = map.get(key);
 
