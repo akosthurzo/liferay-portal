@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.document.library.web.lar;
+package com.liferay.document.library.web.exportimport.data.handler;
 
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFileEntryConstants;
