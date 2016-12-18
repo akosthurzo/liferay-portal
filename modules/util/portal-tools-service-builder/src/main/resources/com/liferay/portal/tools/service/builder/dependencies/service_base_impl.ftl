@@ -487,6 +487,15 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 
 							@Override
 							public void addCriteria(DynamicQuery dynamicQuery) {
+
+								Set<Serializable> primaryKeyObjs = portletDataContext.getEntites("${entity.name}");
+
+								Property primaryKeyProperty = PropertyFactoryUtil.forName("${entity.PKVarName}");
+
+								if (primaryKeyObjs != null && !primaryKeyObjs.isEmpty()) {
+									dynamicQuery.add(primaryKeyProperty.in(primaryKeyObjs));
+								}
+
 								<#if entity.isWorkflowEnabled()>
 									Criterion modifiedDateCriterion = portletDataContext.getDateRangeCriteria("modifiedDate");
 
