@@ -141,6 +141,10 @@ public interface PortletDataContext extends Serializable {
 	public void addPermissions(Class<?> clazz, long classPK)
 		throws PortalException;
 
+	public void addEntity(ClassedModel classedModel);
+
+	public Set<Serializable> getEntites(String modelClassName);
+
 	public void addPermissions(Class<?> clazz, Serializable classPK)
 		throws PortalException;
 

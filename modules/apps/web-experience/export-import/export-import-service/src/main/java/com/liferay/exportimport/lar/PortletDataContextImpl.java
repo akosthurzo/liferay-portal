@@ -189,6 +189,31 @@ public class PortletDataContextImpl implements PortletDataContext {
 	}
 
 	@Override
+	public void addEntity(ClassedModel classedModel) {
+		Serializable primaryKeyObj = classedModel.getPrimaryKeyObj();
+		String modelClassName = classedModel.getModelClassName();
+
+		Set<Serializable> primaryKeyObjs = _entityMap.get(modelClassName);
+
+		if (primaryKeyObjs == null) {
+			primaryKeyObjs = new HashSet<>();
+		}
+
+		primaryKeyObjs.add(primaryKeyObj);
+
+		_entityMap.put(modelClassName, primaryKeyObjs);
+	}
+
+	@Override
+	public Set<Serializable> getEntites(String modelClassName) {
+		if (_entityMap.containsKey(modelClassName)) {
+			return _entityMap.get(modelClassName);
+		}
+
+		return Collections.emptySet();
+	}
+
+	@Override
 	public void addAssetTags(
 		String className, long classPK, String[] assetTagNames) {
 
@@ -2738,6 +2763,7 @@ public class PortletDataContextImpl implements PortletDataContext {
 	private final Map<String, long[]> _assetCategoryIdsMap = new HashMap<>();
 	private final Set<Long> _assetLinkIds = new HashSet<>();
 	private final Map<String, String[]> _assetTagNamesMap = new HashMap<>();
+	private final Map<String, Set<Serializable>> _entityMap = new HashMap<>();
 	private long _companyGroupId;
 	private long _companyId;
 	private String _dataStrategy;
