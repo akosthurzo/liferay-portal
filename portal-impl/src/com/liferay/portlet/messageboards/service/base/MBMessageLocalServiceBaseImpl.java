@@ -88,6 +88,7 @@ import com.liferay.ratings.kernel.service.persistence.RatingsStatsPersistence;
 import java.io.Serializable;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -339,6 +340,16 @@ public abstract class MBMessageLocalServiceBaseImpl extends BaseLocalServiceImpl
 		exportActionableDynamicQuery.setAddCriteriaMethod(new ActionableDynamicQuery.AddCriteriaMethod() {
 				@Override
 				public void addCriteria(DynamicQuery dynamicQuery) {
+					Set<Serializable> primaryKeyObjs = portletDataContext.getEntites(
+							"MBMessage");
+
+					if ((primaryKeyObjs != null) && !primaryKeyObjs.isEmpty()) {
+						Property primaryKeyProperty = PropertyFactoryUtil.forName(
+								"messageId");
+
+						dynamicQuery.add(primaryKeyProperty.in(primaryKeyObjs));
+					}
+
 					Criterion modifiedDateCriterion = portletDataContext.getDateRangeCriteria(
 							"modifiedDate");
 

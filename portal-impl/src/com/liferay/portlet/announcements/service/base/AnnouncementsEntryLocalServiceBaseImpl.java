@@ -70,6 +70,7 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import java.io.Serializable;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -328,6 +329,16 @@ public abstract class AnnouncementsEntryLocalServiceBaseImpl
 		exportActionableDynamicQuery.setAddCriteriaMethod(new ActionableDynamicQuery.AddCriteriaMethod() {
 				@Override
 				public void addCriteria(DynamicQuery dynamicQuery) {
+					Set<Serializable> primaryKeyObjs = portletDataContext.getEntites(
+							"AnnouncementsEntry");
+
+					if ((primaryKeyObjs != null) && !primaryKeyObjs.isEmpty()) {
+						Property primaryKeyProperty = PropertyFactoryUtil.forName(
+								"entryId");
+
+						dynamicQuery.add(primaryKeyProperty.in(primaryKeyObjs));
+					}
+
 					portletDataContext.addDateRangeCriteria(dynamicQuery,
 						"modifiedDate");
 

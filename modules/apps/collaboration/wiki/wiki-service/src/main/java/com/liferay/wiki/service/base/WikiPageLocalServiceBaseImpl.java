@@ -86,6 +86,7 @@ import com.liferay.wiki.service.persistence.WikiPageResourcePersistence;
 import java.io.Serializable;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -342,6 +343,16 @@ public abstract class WikiPageLocalServiceBaseImpl extends BaseLocalServiceImpl
 		exportActionableDynamicQuery.setAddCriteriaMethod(new ActionableDynamicQuery.AddCriteriaMethod() {
 				@Override
 				public void addCriteria(DynamicQuery dynamicQuery) {
+					Set<Serializable> primaryKeyObjs = portletDataContext.getEntites(
+							"WikiPage");
+
+					if ((primaryKeyObjs != null) && !primaryKeyObjs.isEmpty()) {
+						Property primaryKeyProperty = PropertyFactoryUtil.forName(
+								"pageId");
+
+						dynamicQuery.add(primaryKeyProperty.in(primaryKeyObjs));
+					}
+
 					Criterion modifiedDateCriterion = portletDataContext.getDateRangeCriteria(
 							"modifiedDate");
 

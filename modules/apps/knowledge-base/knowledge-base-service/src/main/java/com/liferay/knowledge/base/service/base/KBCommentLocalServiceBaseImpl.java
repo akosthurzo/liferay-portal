@@ -67,6 +67,7 @@ import com.liferay.social.kernel.service.persistence.SocialActivityPersistence;
 import java.io.Serializable;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -321,6 +322,16 @@ public abstract class KBCommentLocalServiceBaseImpl extends BaseLocalServiceImpl
 		exportActionableDynamicQuery.setAddCriteriaMethod(new ActionableDynamicQuery.AddCriteriaMethod() {
 				@Override
 				public void addCriteria(DynamicQuery dynamicQuery) {
+					Set<Serializable> primaryKeyObjs = portletDataContext.getEntites(
+							"KBComment");
+
+					if ((primaryKeyObjs != null) && !primaryKeyObjs.isEmpty()) {
+						Property primaryKeyProperty = PropertyFactoryUtil.forName(
+								"kbCommentId");
+
+						dynamicQuery.add(primaryKeyProperty.in(primaryKeyObjs));
+					}
+
 					portletDataContext.addDateRangeCriteria(dynamicQuery,
 						"modifiedDate");
 

@@ -57,6 +57,7 @@ import com.liferay.portal.spring.extender.service.ServiceReference;
 import java.io.Serializable;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -313,6 +314,16 @@ public abstract class FriendlyURLLocalServiceBaseImpl
 		exportActionableDynamicQuery.setAddCriteriaMethod(new ActionableDynamicQuery.AddCriteriaMethod() {
 				@Override
 				public void addCriteria(DynamicQuery dynamicQuery) {
+					Set<Serializable> primaryKeyObjs = portletDataContext.getEntites(
+							"FriendlyURL");
+
+					if ((primaryKeyObjs != null) && !primaryKeyObjs.isEmpty()) {
+						Property primaryKeyProperty = PropertyFactoryUtil.forName(
+								"friendlyURLId");
+
+						dynamicQuery.add(primaryKeyProperty.in(primaryKeyObjs));
+					}
+
 					portletDataContext.addDateRangeCriteria(dynamicQuery,
 						"modifiedDate");
 
