@@ -2613,7 +2613,7 @@ public class StagingImpl implements Staging {
 		ClassName className = ClassNameServiceHttp.fetchByClassNameId(
 			httpPrincipal, group.getClassNameId());
 
-		if (Objects.equals(className.getClassName(), Company.class.getName())) {
+		if (Objects.equals(className.getValue(), Company.class.getName())) {
 			return true;
 		}
 
