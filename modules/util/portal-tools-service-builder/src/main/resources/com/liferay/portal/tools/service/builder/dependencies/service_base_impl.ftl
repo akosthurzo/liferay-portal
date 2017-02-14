@@ -52,6 +52,7 @@ import com.liferay.portal.spring.extender.service.ServiceReference;
 import java.io.Serializable;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.sql.DataSource;
 import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
@@ -487,6 +488,15 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 
 							@Override
 							public void addCriteria(DynamicQuery dynamicQuery) {
+
+								Set<Serializable> primaryKeyObjs = portletDataContext.getEntites("${entity.name}");
+
+								if (primaryKeyObjs != null && !primaryKeyObjs.isEmpty()) {
+									Property primaryKeyProperty = PropertyFactoryUtil.forName("${entity.PKVarName}");
+
+									dynamicQuery.add(primaryKeyProperty.in(primaryKeyObjs));
+								}
+
 								<#if entity.isWorkflowEnabled()>
 									Criterion modifiedDateCriterion = portletDataContext.getDateRangeCriteria("modifiedDate");
 
