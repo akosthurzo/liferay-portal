@@ -328,6 +328,16 @@ public abstract class AnnouncementsEntryLocalServiceBaseImpl
 		exportActionableDynamicQuery.setAddCriteriaMethod(new ActionableDynamicQuery.AddCriteriaMethod() {
 				@Override
 				public void addCriteria(DynamicQuery dynamicQuery) {
+					Set<Serializable> primaryKeyObjs = portletDataContext.getEntites(
+							"AnnouncementsEntry");
+
+					Property primaryKeyProperty = PropertyFactoryUtil.forName(
+							"entryId");
+
+					if ((primaryKeyObjs != null) && !primaryKeyObjs.isEmpty()) {
+						dynamicQuery.add(primaryKeyProperty.in(primaryKeyObjs));
+					}
+
 					portletDataContext.addDateRangeCriteria(dynamicQuery,
 						"modifiedDate");
 

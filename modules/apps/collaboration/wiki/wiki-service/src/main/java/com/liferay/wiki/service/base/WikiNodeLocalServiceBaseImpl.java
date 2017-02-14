@@ -323,6 +323,16 @@ public abstract class WikiNodeLocalServiceBaseImpl extends BaseLocalServiceImpl
 		exportActionableDynamicQuery.setAddCriteriaMethod(new ActionableDynamicQuery.AddCriteriaMethod() {
 				@Override
 				public void addCriteria(DynamicQuery dynamicQuery) {
+					Set<Serializable> primaryKeyObjs = portletDataContext.getEntites(
+							"WikiNode");
+
+					Property primaryKeyProperty = PropertyFactoryUtil.forName(
+							"nodeId");
+
+					if ((primaryKeyObjs != null) && !primaryKeyObjs.isEmpty()) {
+						dynamicQuery.add(primaryKeyProperty.in(primaryKeyObjs));
+					}
+
 					Criterion modifiedDateCriterion = portletDataContext.getDateRangeCriteria(
 							"modifiedDate");
 

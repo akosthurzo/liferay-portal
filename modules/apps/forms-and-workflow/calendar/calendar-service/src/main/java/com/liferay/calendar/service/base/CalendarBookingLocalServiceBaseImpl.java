@@ -343,6 +343,16 @@ public abstract class CalendarBookingLocalServiceBaseImpl
 		exportActionableDynamicQuery.setAddCriteriaMethod(new ActionableDynamicQuery.AddCriteriaMethod() {
 				@Override
 				public void addCriteria(DynamicQuery dynamicQuery) {
+					Set<Serializable> primaryKeyObjs = portletDataContext.getEntites(
+							"CalendarBooking");
+
+					Property primaryKeyProperty = PropertyFactoryUtil.forName(
+							"calendarBookingId");
+
+					if ((primaryKeyObjs != null) && !primaryKeyObjs.isEmpty()) {
+						dynamicQuery.add(primaryKeyProperty.in(primaryKeyObjs));
+					}
+
 					Criterion modifiedDateCriterion = portletDataContext.getDateRangeCriteria(
 							"modifiedDate");
 

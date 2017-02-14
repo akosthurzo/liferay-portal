@@ -336,6 +336,16 @@ public abstract class JournalFolderLocalServiceBaseImpl
 		exportActionableDynamicQuery.setAddCriteriaMethod(new ActionableDynamicQuery.AddCriteriaMethod() {
 				@Override
 				public void addCriteria(DynamicQuery dynamicQuery) {
+					Set<Serializable> primaryKeyObjs = portletDataContext.getEntites(
+							"JournalFolder");
+
+					Property primaryKeyProperty = PropertyFactoryUtil.forName(
+							"folderId");
+
+					if ((primaryKeyObjs != null) && !primaryKeyObjs.isEmpty()) {
+						dynamicQuery.add(primaryKeyProperty.in(primaryKeyObjs));
+					}
+
 					Criterion modifiedDateCriterion = portletDataContext.getDateRangeCriteria(
 							"modifiedDate");
 

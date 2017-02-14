@@ -332,6 +332,16 @@ public abstract class MBThreadLocalServiceBaseImpl extends BaseLocalServiceImpl
 		exportActionableDynamicQuery.setAddCriteriaMethod(new ActionableDynamicQuery.AddCriteriaMethod() {
 				@Override
 				public void addCriteria(DynamicQuery dynamicQuery) {
+					Set<Serializable> primaryKeyObjs = portletDataContext.getEntites(
+							"MBThread");
+
+					Property primaryKeyProperty = PropertyFactoryUtil.forName(
+							"threadId");
+
+					if ((primaryKeyObjs != null) && !primaryKeyObjs.isEmpty()) {
+						dynamicQuery.add(primaryKeyProperty.in(primaryKeyObjs));
+					}
+
 					Criterion modifiedDateCriterion = portletDataContext.getDateRangeCriteria(
 							"modifiedDate");
 
