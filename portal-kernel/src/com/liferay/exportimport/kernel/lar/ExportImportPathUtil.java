@@ -301,7 +301,7 @@ public class ExportImportPathUtil {
 	}
 
 	/**
-	 * Returns a portlet path for the portlet ID.
+	 * Returns a portlet path for the portlet ID..
 	 *
 	 * <p>
 	 * For example, a portlet path would resemble the following:
