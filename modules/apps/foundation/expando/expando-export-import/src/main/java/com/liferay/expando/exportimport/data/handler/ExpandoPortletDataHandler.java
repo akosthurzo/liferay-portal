@@ -14,7 +14,9 @@
 
 package com.liferay.expando.exportimport.data.handler;
 
-import com.liferay.expando.web.internal.constants.ExpandoPortletKeys;
+import com.liferay.expando.kernel.model.ExpandoTable;
+import com.liferay.expando.kernel.service.ExpandoTableLocalService;
+import com.liferay.expando.web.constants.ExpandoPortletKeys;
 import com.liferay.exportimport.kernel.lar.BasePortletDataHandler;
 import com.liferay.exportimport.kernel.lar.DataLevel;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
@@ -24,11 +26,24 @@ import com.liferay.exportimport.kernel.lar.PortletDataHandlerControl;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
+import com.liferay.portal.kernel.dao.orm.Criterion;
+import com.liferay.portal.kernel.dao.orm.Disjunction;
+import com.liferay.portal.kernel.dao.orm.DynamicQuery;
+import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery;
+import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Property;
+import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.LayoutSetPrototype;
-import com.liferay.portal.kernel.model.PortletPreferences;
+import javax.portlet.PortletPreferences;
+
+import com.liferay.portal.kernel.model.adapter.ModelAdapterUtil;
 import com.liferay.portal.kernel.xml.Element;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 import java.util.List;
 
@@ -60,12 +75,8 @@ public class ExpandoPortletDataHandler extends BasePortletDataHandler {
 			new StagedModelType(LayoutSetPrototype.class));
 		setExportControls(
 			new PortletDataHandlerBoolean(
-				NAMESPACE, "expando", true, true,
-				new PortletDataHandlerControl[] {
-					new PortletDataHandlerBoolean(
-						NAMESPACE, "page-templates", true, false)
-				},
-				LayoutSetPrototype.class.getName()));
+				NAMESPACE, "expando", true, true, null,
+				ExpandoTable.class.getName()));
 	}
 
 	@Override
@@ -92,12 +103,14 @@ public class ExpandoPortletDataHandler extends BasePortletDataHandler {
 		PortletPreferences portletPreferences)
 		throws Exception {
 
-		portletDataContext.addPortalPermissions();
+		portletDataContext.addPortalPermissions(); ///////////////////////////////// ????????????????
 
 		Element rootElement = addExportDataRootElement(portletDataContext);
 
 		rootElement.addAttribute(
 			"group-id", String.valueOf(portletDataContext.getScopeGroupId()));
+
+		_expandoTableLocalService.getdynam
 
 //		ActionableDynamicQuery actionableDynamicQuery =
 //			layoutSetPrototypeLocalService.getExportActionableDynamicQuery(
@@ -143,4 +156,7 @@ public class ExpandoPortletDataHandler extends BasePortletDataHandler {
 //
 //		layoutSetPrototypeExportActionableDynamicQuery.performCount();
 	}
+
+	@Reference
+	private ExpandoTableLocalService _expandoTableLocalService;
 }

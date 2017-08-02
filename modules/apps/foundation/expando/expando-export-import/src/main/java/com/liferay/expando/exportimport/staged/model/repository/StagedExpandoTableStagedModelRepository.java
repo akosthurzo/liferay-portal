@@ -20,7 +20,10 @@ import com.liferay.expando.kernel.model.ExpandoTable;
 import com.liferay.expando.kernel.service.ExpandoTableLocalService;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataException;
+import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
+import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
+import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Property;
@@ -139,11 +142,50 @@ public class StagedExpandoTableStagedModelRepository
 		return Collections.emptyList();
 	}
 
+//	@Override
+//	public ExportActionableDynamicQuery getExportActionableDynamicQuery(
+//		PortletDataContext portletDataContext) {
+//
+//		return null;
+//	}
+
 	@Override
 	public ExportActionableDynamicQuery getExportActionableDynamicQuery(
 		PortletDataContext portletDataContext) {
 
-		return null;
+		final ExportActionableDynamicQuery exportActionableDynamicQuery =
+			new ExportActionableDynamicQuery();
+
+		exportActionableDynamicQuery.setBaseLocalService(
+			_expandoTableLocalService);
+
+		Class<? extends ExpandoTableLocalService> expandoTableLocalServiceClass = _expandoTableLocalService.getClass();
+
+		exportActionableDynamicQuery.setClassLoader(
+			expandoTableLocalServiceClass.getClassLoader());
+		exportActionableDynamicQuery.setCompanyId(
+			portletDataContext.getCompanyId());
+		exportActionableDynamicQuery.setModelClass(ExpandoTable.class);
+		exportActionableDynamicQuery.setPerformActionMethod(
+			new ActionableDynamicQuery.PerformActionMethod<ExpandoTable>() {
+
+				@Override
+				public void performAction(ExpandoTable expandoTable)
+					throws PortalException {
+
+					StagedExpandoTable stagedExpandoTable = ModelAdapterUtil.adapt(
+						expandoTable, ExpandoTable.class, StagedExpandoTable.class);
+
+					StagedModelDataHandlerUtil.exportStagedModel(
+						portletDataContext, stagedExpandoTable);
+				}
+
+			});
+		exportActionableDynamicQuery.setPrimaryKeyPropertyName("linkId");
+		exportActionableDynamicQuery.setStagedModelType(
+			new StagedModelType(StagedModelType.class));
+
+		return exportActionableDynamicQuery;
 	}
 
 	@Override
