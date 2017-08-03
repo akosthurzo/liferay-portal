@@ -81,7 +81,7 @@ public class StagedExpandoTableImpl implements StagedExpandoTable {
 
 	@Override
 	public ExpandoBridge getExpandoBridge() {
-		return _expandoTable.getExpandoBridge();
+		return null;
 	}
 
 	public ExpandoTable getExpandoTable() {

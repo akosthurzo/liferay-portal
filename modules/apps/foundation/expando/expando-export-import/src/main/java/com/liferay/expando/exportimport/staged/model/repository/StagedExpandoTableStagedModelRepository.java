@@ -142,16 +142,9 @@ public class StagedExpandoTableStagedModelRepository
 		return Collections.emptyList();
 	}
 
-//	@Override
-//	public ExportActionableDynamicQuery getExportActionableDynamicQuery(
-//		PortletDataContext portletDataContext) {
-//
-//		return null;
-//	}
-
 	@Override
 	public ExportActionableDynamicQuery getExportActionableDynamicQuery(
-		PortletDataContext portletDataContext) {
+		final PortletDataContext portletDataContext) {
 
 		final ExportActionableDynamicQuery exportActionableDynamicQuery =
 			new ExportActionableDynamicQuery();
@@ -159,10 +152,12 @@ public class StagedExpandoTableStagedModelRepository
 		exportActionableDynamicQuery.setBaseLocalService(
 			_expandoTableLocalService);
 
-		Class<? extends ExpandoTableLocalService> expandoTableLocalServiceClass = _expandoTableLocalService.getClass();
+		Class<? extends ExpandoTableLocalService> expandoTableLocalServiceClass =
+			_expandoTableLocalService.getClass();
 
 		exportActionableDynamicQuery.setClassLoader(
 			expandoTableLocalServiceClass.getClassLoader());
+
 		exportActionableDynamicQuery.setCompanyId(
 			portletDataContext.getCompanyId());
 		exportActionableDynamicQuery.setModelClass(ExpandoTable.class);
@@ -173,17 +168,19 @@ public class StagedExpandoTableStagedModelRepository
 				public void performAction(ExpandoTable expandoTable)
 					throws PortalException {
 
-					StagedExpandoTable stagedExpandoTable = ModelAdapterUtil.adapt(
-						expandoTable, ExpandoTable.class, StagedExpandoTable.class);
+					StagedExpandoTable stagedExpandoTable =
+						ModelAdapterUtil.adapt(
+							expandoTable, ExpandoTable.class,
+							StagedExpandoTable.class);
 
 					StagedModelDataHandlerUtil.exportStagedModel(
 						portletDataContext, stagedExpandoTable);
 				}
 
 			});
-		exportActionableDynamicQuery.setPrimaryKeyPropertyName("linkId");
+		exportActionableDynamicQuery.setPrimaryKeyPropertyName("tableId");
 		exportActionableDynamicQuery.setStagedModelType(
-			new StagedModelType(StagedModelType.class));
+			new StagedModelType(StagedExpandoTable.class));
 
 		return exportActionableDynamicQuery;
 	}

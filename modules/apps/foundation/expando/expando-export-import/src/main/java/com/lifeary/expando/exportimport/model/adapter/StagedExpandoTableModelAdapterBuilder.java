@@ -16,10 +16,12 @@ package com.lifeary.expando.exportimport.model.adapter;
 
 import com.liferay.expando.kernel.model.ExpandoTable;
 import com.liferay.portal.kernel.model.adapter.builder.ModelAdapterBuilder;
+import org.osgi.service.component.annotations.Component;
 
 /**
  * @author Akos Thurzo
  */
+@Component(immediate = true, service = ModelAdapterBuilder.class)
 public class StagedExpandoTableModelAdapterBuilder
 	implements ModelAdapterBuilder<ExpandoTable, StagedExpandoTable> {
 
