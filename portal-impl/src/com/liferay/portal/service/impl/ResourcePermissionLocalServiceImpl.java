@@ -14,6 +14,7 @@
 
 package com.liferay.portal.service.impl;
 
+import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.exportimport.kernel.staging.MergeLayoutPrototypesThreadLocal;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.SQLQuery;
@@ -1438,7 +1439,9 @@ public class ResourcePermissionLocalServiceImpl
 					ResourcePermissionConstants.OPERATOR_SET, false);
 			}
 
-			if (!MergeLayoutPrototypesThreadLocal.isInProgress()) {
+			if (!MergeLayoutPrototypesThreadLocal.isInProgress() &&
+				!ExportImportThreadLocal.isImportInProcess()) {
+
 				PermissionUpdateHandler permissionUpdateHandler =
 					PermissionUpdateHandlerRegistryUtil.
 						getPermissionUpdateHandler(name);
