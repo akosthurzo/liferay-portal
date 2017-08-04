@@ -27,8 +27,8 @@ import com.liferay.exportimport.kernel.lar.PortletDataHandlerBoolean;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
+import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery;
-import com.liferay.portal.kernel.model.LayoutSetPrototype;
 import com.liferay.portal.kernel.xml.Element;
 
 import java.util.List;
@@ -62,11 +62,11 @@ public class ExpandoPortletDataHandler extends BasePortletDataHandler {
 	protected void activate() {
 		setDataLevel(DataLevel.PORTAL);
 		setDeletionSystemEventStagedModelTypes(
-			new StagedModelType(LayoutSetPrototype.class));
+			new StagedModelType(StagedExpandoTable.class));
 		setExportControls(
 			new PortletDataHandlerBoolean(
 				NAMESPACE, "expando", true, true, null,
-				ExpandoTable.class.getName()));
+				StagedExpandoTable.class.getName()));
 	}
 
 	@Override
@@ -138,12 +138,11 @@ public class ExpandoPortletDataHandler extends BasePortletDataHandler {
 			PortletPreferences portletPreferences)
 		throws Exception {
 
-//		ActionableDynamicQuery layoutSetPrototypeExportActionableDynamicQuery =
-//			layoutSetPrototypeLocalService.getExportActionableDynamicQuery(
-//				portletDataContext);
+		ActionableDynamicQuery exportActionableDynamicQuery =
+			_stagedModelRepository.getExportActionableDynamicQuery(
+				portletDataContext);
 
-//
-//		layoutSetPrototypeExportActionableDynamicQuery.performCount();
+		exportActionableDynamicQuery.performCount();
 	}
 
 	@Reference(

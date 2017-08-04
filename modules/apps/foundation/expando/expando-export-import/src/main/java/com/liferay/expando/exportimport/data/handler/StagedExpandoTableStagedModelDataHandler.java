@@ -89,9 +89,6 @@ public class StagedExpandoTableStagedModelDataHandler
 			StagedExpandoTable stagedExpandoTable)
 		throws Exception {
 
-		StagedExpandoTable importedExpandoTable =
-			(StagedExpandoTable)stagedExpandoTable.clone();
-
 		List<StagedExpandoTable> stagedExpandoTables =
 			_stagedModelRepository.fetchStagedModelsByUuidAndCompanyId(
 				stagedExpandoTable.getUuid(),
@@ -101,15 +98,9 @@ public class StagedExpandoTableStagedModelDataHandler
 			_stagedModelRepository.addStagedModel(
 				portletDataContext, stagedExpandoTable);
 		}
-		else {
-			StagedExpandoTable existingExpandoTable = stagedExpandoTables.get(
-				0);
 
-			importedExpandoTable.setTableId(existingExpandoTable.getTableId());
-
-			_stagedModelRepository.updateStagedModel(
-				portletDataContext, importedExpandoTable);
-		}
+		// Updating the expandoTable is not necessary because all of its
+		// attributes are either IDs or used as IDs
 	}
 
 	@Reference(

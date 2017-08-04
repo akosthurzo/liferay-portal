@@ -18,6 +18,8 @@ import com.lifeary.expando.exportimport.model.adapter.StagedExpandoTable;
 
 import com.liferay.expando.kernel.model.ExpandoTable;
 import com.liferay.expando.kernel.service.ExpandoTableLocalService;
+import com.liferay.exportimport.kernel.lar.ExportImportHelperUtil;
+import com.liferay.exportimport.kernel.lar.ManifestSummary;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataException;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
@@ -29,6 +31,7 @@ import com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Property;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
+import com.liferay.portal.kernel.exception.NoSuchModelException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.adapter.ModelAdapterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -78,7 +81,7 @@ public class StagedExpandoTableStagedModelRepository
 			String uuid, long groupId, String className, String extraData)
 		throws PortalException {
 
-		//_expandoTableLocalService.deleteTable(
+		//_expandoTableLocalService.deleteTable(                   ///////////////////////////
 		//	, ,ExpandoTableConstants.DEFAULT_TABLE_NAME);
 	}
 
@@ -147,7 +150,27 @@ public class StagedExpandoTableStagedModelRepository
 		final PortletDataContext portletDataContext) {
 
 		final ExportActionableDynamicQuery exportActionableDynamicQuery =
-			new ExportActionableDynamicQuery();
+			new ExportActionableDynamicQuery() {
+				@Override
+				public long performCount() throws PortalException {
+					ManifestSummary manifestSummary = portletDataContext.getManifestSummary();
+
+					StagedModelType stagedModelType = getStagedModelType();
+
+					long modelAdditionCount = super.performCount();
+
+					manifestSummary.addModelAdditionCount(stagedModelType,
+						modelAdditionCount);
+
+					long modelDeletionCount = ExportImportHelperUtil.getModelDeletionCount(portletDataContext,
+						stagedModelType);
+
+					manifestSummary.addModelDeletionCount(stagedModelType,
+						modelDeletionCount);
+
+					return modelAdditionCount;
+				}
+			};
 
 		exportActionableDynamicQuery.setBaseLocalService(
 			_expandoTableLocalService);
@@ -193,19 +216,23 @@ public class StagedExpandoTableStagedModelRepository
 	}
 
 	@Override
-	public StagedExpandoTable saveStagedModel(StagedExpandoTable stagedModel)
+	public StagedExpandoTable saveStagedModel(
+			StagedExpandoTable stagedExpandoTable)
 		throws PortalException {
 
-		return null;
+		_expandoTableLocalService.updateExpandoTable(stagedExpandoTable);
+
+		return ModelAdapterUtil.adapt(
+			stagedExpandoTable, ExpandoTable.class, StagedExpandoTable.class);
 	}
 
 	@Override
 	public StagedExpandoTable updateStagedModel(
 			PortletDataContext portletDataContext,
-			StagedExpandoTable stagedModel)
+			StagedExpandoTable stagedExpandoTable)
 		throws PortalException {
 
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	private String _parseClassName(String uuid) {
