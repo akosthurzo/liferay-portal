@@ -222,10 +222,11 @@ public class StagedExpandoTableStagedModelRepository
 			StagedExpandoTable stagedExpandoTable)
 		throws PortalException {
 
-		_expandoTableLocalService.updateExpandoTable(stagedExpandoTable);
+		ExpandoTable expandoTable =
+			_expandoTableLocalService.updateExpandoTable(stagedExpandoTable);
 
 		return ModelAdapterUtil.adapt(
-			stagedExpandoTable, ExpandoTable.class, StagedExpandoTable.class);
+			expandoTable, ExpandoTable.class, StagedExpandoTable.class);
 	}
 
 	@Override

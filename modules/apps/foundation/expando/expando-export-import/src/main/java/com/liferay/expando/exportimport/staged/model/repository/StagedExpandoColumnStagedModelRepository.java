@@ -228,10 +228,11 @@ public class StagedExpandoColumnStagedModelRepository
 			StagedExpandoColumn stagedExpandoColumn)
 		throws PortalException {
 
-		_expandoColumnLocalService.updateExpandoColumn(stagedExpandoColumn);
+		ExpandoColumn expandoColumn =
+			_expandoColumnLocalService.updateExpandoColumn(stagedExpandoColumn);
 
 		return ModelAdapterUtil.adapt(
-			stagedExpandoColumn, ExpandoColumn.class, StagedExpandoColumn.class);
+			expandoColumn, ExpandoColumn.class, StagedExpandoColumn.class);
 	}
 
 	@Override
@@ -240,7 +241,18 @@ public class StagedExpandoColumnStagedModelRepository
 			StagedExpandoColumn stagedExpandoColumn)
 		throws PortalException {
 
-		throw new UnsupportedOperationException();
+		_expandoColumnLocalService.updateColumn(
+			stagedExpandoColumn.getColumnId(), stagedExpandoColumn.getName(),
+			stagedExpandoColumn.getType(),
+			stagedExpandoColumn.getDefaultData());
+
+		ExpandoColumn expandoColumn =
+			_expandoColumnLocalService.updateTypeSettings(
+				stagedExpandoColumn.getColumnId(),
+				stagedExpandoColumn.getTypeSettings());
+
+		return ModelAdapterUtil.adapt(
+			expandoColumn, ExpandoColumn.class, StagedExpandoColumn.class);
 	}
 
 	private String _parseExpandoTableClassName(String uuid) {
