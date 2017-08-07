@@ -14,8 +14,9 @@
 
 package com.liferay.expando.exportimport.data.handler;
 
-import com.lifeary.expando.exportimport.model.adapter.StagedExpandoTable;
-
+import com.lifeary.expando.exportimport.model.adapter.StagedExpandoColumn;
+import com.liferay.expando.kernel.model.ExpandoTable;
+import com.liferay.expando.kernel.service.ExpandoTableLocalService;
 import com.liferay.exportimport.kernel.lar.BaseStagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
@@ -24,27 +25,26 @@ import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.xml.Element;
-
-import java.util.List;
-
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+
+import java.util.List;
 
 /**
  * @author Akos Thurzo
  */
 @Component(immediate = true, service = StagedModelDataHandler.class)
-public class StagedExpandoTableStagedModelDataHandler
-	extends BaseStagedModelDataHandler<StagedExpandoTable> {
+public class StagedExpandoColumnStagedModelDataHandler
+	extends BaseStagedModelDataHandler<StagedExpandoColumn> {
 
 	public static final String[] CLASS_NAMES =
-		{StagedExpandoTable.class.getName()};
+		{StagedExpandoColumn.class.getName()};
 
 	@Override
-	public void deleteStagedModel(StagedExpandoTable stagedExpandoTable)
+	public void deleteStagedModel(StagedExpandoColumn stagedExpandoColumn)
 		throws PortalException {
 
-		_stagedModelRepository.deleteStagedModel(stagedExpandoTable);
+		_stagedModelRepository.deleteStagedModel(stagedExpandoColumn);
 	}
 
 	@Override
@@ -57,7 +57,7 @@ public class StagedExpandoTableStagedModelDataHandler
 	}
 
 	@Override
-	public List<StagedExpandoTable> fetchStagedModelsByUuidAndCompanyId(
+	public List<StagedExpandoColumn> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId) {
 
 		return _stagedModelRepository.fetchStagedModelsByUuidAndCompanyId(
@@ -72,48 +72,69 @@ public class StagedExpandoTableStagedModelDataHandler
 	@Override
 	protected void doExportStagedModel(
 			PortletDataContext portletDataContext,
-			StagedExpandoTable stagedExpandoTable)
+			StagedExpandoColumn stagedExpandoColumn)
 		throws Exception {
 
 		Element entryElement = portletDataContext.getExportDataElement(
-			stagedExpandoTable);
+			stagedExpandoColumn);
 
 		portletDataContext.addClassedModel(
-			entryElement, ExportImportPathUtil.getModelPath(stagedExpandoTable),
-			stagedExpandoTable);
+			entryElement,
+			ExportImportPathUtil.getModelPath(stagedExpandoColumn),
+			stagedExpandoColumn);
 	}
 
 	@Override
 	protected void doImportStagedModel(
 			PortletDataContext portletDataContext,
-			StagedExpandoTable stagedExpandoTable)
+			StagedExpandoColumn stagedExpandoColumn)
 		throws Exception {
 
-		List<StagedExpandoTable> stagedExpandoTables =
+		StagedExpandoColumn importedExpandoColumn =
+			(StagedExpandoColumn)stagedExpandoColumn.clone();
+
+		List<StagedExpandoColumn> stagedExpandoColumns =
 			_stagedModelRepository.fetchStagedModelsByUuidAndCompanyId(
-				stagedExpandoTable.getUuid(),
+				stagedExpandoColumn.getUuid(),
 				portletDataContext.getCompanyId());
 
-		if (ListUtil.isEmpty(stagedExpandoTables)) {
-			_stagedModelRepository.addStagedModel(
-				portletDataContext, stagedExpandoTable);
-		}
+		if (ListUtil.isEmpty(stagedExpandoColumns)) {
+			ExpandoTable expandoTable = _expandoTableLocalService.getTable(
+				portletDataContext.getCompanyId(),
+				stagedExpandoColumn.getExpandoTableClassName(),
+				stagedExpandoColumn.getExpandoTableName());
 
-		// Updating the expandoTable is not necessary because all of its
-		// attributes are either IDs or used as IDs
+			importedExpandoColumn.setTableId(expandoTable.getTableId());
+
+			_stagedModelRepository.addStagedModel(
+				portletDataContext, importedExpandoColumn);
+		}
+		else {
+			StagedExpandoColumn existingExpandoColumn =
+				stagedExpandoColumns.get(0);
+
+			importedExpandoColumn.setColumnId(
+				existingExpandoColumn.getColumnId());
+
+			_stagedModelRepository.updateStagedModel(
+				portletDataContext, importedExpandoColumn);
+		}
 
 	}
 
 	@Reference(
-		target = "(model.class.name=com.lifeary.expando.exportimport.model.adapter.StagedExpandoTable)",
+		target = "(model.class.name=com.lifeary.expando.exportimport.model.adapter.StagedExpandoColumn)",
 		unbind = "-"
 	)
 	protected void setStagedModelRepository(
-		StagedModelRepository<StagedExpandoTable> stagedModelRepository) {
+		StagedModelRepository<StagedExpandoColumn> stagedModelRepository) {
 
 		_stagedModelRepository = stagedModelRepository;
 	}
 
-	private StagedModelRepository<StagedExpandoTable> _stagedModelRepository;
+	private StagedModelRepository<StagedExpandoColumn> _stagedModelRepository;
+
+	@Reference
+	private ExpandoTableLocalService _expandoTableLocalService;
 
 }

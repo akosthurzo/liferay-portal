@@ -14,9 +14,9 @@
 
 package com.liferay.expando.exportimport.data.handler;
 
+import com.lifeary.expando.exportimport.model.adapter.StagedExpandoColumn;
 import com.lifeary.expando.exportimport.model.adapter.StagedExpandoTable;
 
-import com.liferay.expando.kernel.model.ExpandoTable;
 import com.liferay.expando.kernel.service.ExpandoTableLocalService;
 import com.liferay.expando.web.constants.ExpandoPortletKeys;
 import com.liferay.exportimport.kernel.lar.BasePortletDataHandler;
@@ -24,6 +24,7 @@ import com.liferay.exportimport.kernel.lar.DataLevel;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataHandler;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerBoolean;
+import com.liferay.exportimport.kernel.lar.PortletDataHandlerControl;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
@@ -62,11 +63,15 @@ public class ExpandoPortletDataHandler extends BasePortletDataHandler {
 	protected void activate() {
 		setDataLevel(DataLevel.PORTAL);
 		setDeletionSystemEventStagedModelTypes(
+			new StagedModelType(StagedExpandoTable.class),
 			new StagedModelType(StagedExpandoTable.class));
 		setExportControls(
 			new PortletDataHandlerBoolean(
-				NAMESPACE, "expando", true, true, null,
-				StagedExpandoTable.class.getName()));
+				NAMESPACE, "expando-table", true, true, null,
+				StagedExpandoTable.class.getName()),
+			new PortletDataHandlerBoolean(
+				NAMESPACE, "expando-column", true, true, null,
+				StagedExpandoColumn.class.getName()));
 	}
 
 	@Override
@@ -101,8 +106,14 @@ public class ExpandoPortletDataHandler extends BasePortletDataHandler {
 			"group-id", String.valueOf(portletDataContext.getScopeGroupId()));
 
 		ExportActionableDynamicQuery actionableDynamicQuery =
-			_stagedModelRepository.getExportActionableDynamicQuery(
-				portletDataContext);
+			_stagedExpandoTableStagedModelRepository.
+				getExportActionableDynamicQuery(portletDataContext);
+
+		actionableDynamicQuery.performActions();
+
+		actionableDynamicQuery =
+			_stagedExpandoColumnStagedModelRepository.
+				getExportActionableDynamicQuery(portletDataContext);
 
 		actionableDynamicQuery.performActions();
 
@@ -129,6 +140,18 @@ public class ExpandoPortletDataHandler extends BasePortletDataHandler {
 				portletDataContext, stagedExpandoTableElement);
 		}
 
+		Element stagedExpandoColumnsElement =
+			portletDataContext.getImportDataGroupElement(
+				StagedExpandoColumn.class);
+
+		List<Element> stagedExpandoColumnsElements =
+			stagedExpandoColumnsElement.elements();
+
+		for (Element stagedExpandoColumnElement : stagedExpandoColumnsElements) {
+			StagedModelDataHandlerUtil.importStagedModel(
+				portletDataContext, stagedExpandoColumnElement);
+		}
+
 		return null;
 	}
 
@@ -139,8 +162,14 @@ public class ExpandoPortletDataHandler extends BasePortletDataHandler {
 		throws Exception {
 
 		ActionableDynamicQuery exportActionableDynamicQuery =
-			_stagedModelRepository.getExportActionableDynamicQuery(
-				portletDataContext);
+			_stagedExpandoTableStagedModelRepository.
+				getExportActionableDynamicQuery(portletDataContext);
+
+		exportActionableDynamicQuery.performCount();
+
+		exportActionableDynamicQuery =
+			_stagedExpandoColumnStagedModelRepository.
+				getExportActionableDynamicQuery(portletDataContext);
 
 		exportActionableDynamicQuery.performCount();
 	}
@@ -149,15 +178,30 @@ public class ExpandoPortletDataHandler extends BasePortletDataHandler {
 		target = "(model.class.name=com.lifeary.expando.exportimport.model.adapter.StagedExpandoTable)",
 		unbind = "-"
 	)
-	protected void setStagedModelRepository(
-		StagedModelRepository<StagedExpandoTable> stagedModelRepository) {
+	protected void setStagedExpandoTableStagedModelRepository(
+		StagedModelRepository<StagedExpandoTable>
+			stagedExpandoTableStagedModelRepository) {
 
-		_stagedModelRepository = stagedModelRepository;
+		_stagedExpandoTableStagedModelRepository =
+			stagedExpandoTableStagedModelRepository;
+	}
+
+	@Reference(
+		target = "(model.class.name=com.lifeary.expando.exportimport.model.adapter.StagedExpandoColumn)",
+		unbind = "-"
+	)
+	protected void setStagedExpandoColumnStagedModelRepository(
+		StagedModelRepository<StagedExpandoColumn>
+			stagedExpandoColumnStagedModelRepository) {
+
+		_stagedExpandoColumnStagedModelRepository =
+			stagedExpandoColumnStagedModelRepository;
 	}
 
 	@Reference
 	private ExpandoTableLocalService _expandoTableLocalService;
 
-	private StagedModelRepository<StagedExpandoTable> _stagedModelRepository;
+	private StagedModelRepository<StagedExpandoTable> _stagedExpandoTableStagedModelRepository;
+	private StagedModelRepository<StagedExpandoColumn> _stagedExpandoColumnStagedModelRepository;
 
 }

@@ -14,10 +14,10 @@
 
 package com.liferay.expando.exportimport.staged.model.repository;
 
+import com.lifeary.expando.exportimport.model.adapter.StagedExpandoColumn;
 import com.lifeary.expando.exportimport.model.adapter.StagedExpandoTable;
-
-import com.liferay.expando.kernel.model.ExpandoTable;
-import com.liferay.expando.kernel.service.ExpandoTableLocalService;
+import com.liferay.expando.kernel.model.ExpandoColumn;
+import com.liferay.expando.kernel.service.ExpandoColumnLocalService;
 import com.liferay.exportimport.kernel.lar.ExportImportHelperUtil;
 import com.liferay.exportimport.kernel.lar.ManifestSummary;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
@@ -36,43 +36,46 @@ import com.liferay.portal.kernel.model.adapter.ModelAdapterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringPool;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 import java.util.Collections;
 import java.util.List;
-
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Akos Thurzo
  */
 @Component(
 	immediate = true,
-	property = {"model.class.name=com.lifeary.expando.exportimport.model.adapter.StagedExpandoTable"},
+	property = {"model.class.name=com.lifeary.expando.exportimport.model.adapter.StagedExpandoColumn"},
 	service = StagedModelRepository.class
 )
-public class StagedExpandoTableStagedModelRepository
-	implements StagedModelRepository<StagedExpandoTable> {
+public class StagedExpandoColumnStagedModelRepository
+	implements StagedModelRepository<StagedExpandoColumn> {
 
 	@Override
-	public StagedExpandoTable addStagedModel(
+	public StagedExpandoColumn addStagedModel(
 			PortletDataContext portletDataContext,
-			StagedExpandoTable stagedExpandoTable)
+			StagedExpandoColumn stagedExpandoColumn)
 		throws PortalException {
 
-		ExpandoTable expandoTable = _expandoTableLocalService.addDefaultTable(
-			portletDataContext.getCompanyId(),
-			stagedExpandoTable.getClassName());
+		ExpandoColumn expandoColumn = _expandoColumnLocalService.addColumn(
+			stagedExpandoColumn.getTableId(), stagedExpandoColumn.getName(),
+			stagedExpandoColumn.getType(),
+			stagedExpandoColumn.getDefaultData());
+
+		expandoColumn = _expandoColumnLocalService.updateTypeSettings(
+			expandoColumn.getColumnId(), stagedExpandoColumn.getTypeSettings());
 
 		return ModelAdapterUtil.adapt(
-			expandoTable, ExpandoTable.class, StagedExpandoTable.class);
+			expandoColumn, ExpandoColumn.class, StagedExpandoColumn.class);
 	}
 
 	@Override
-	public void deleteStagedModel(StagedExpandoTable stagedExpandoTable)
+	public void deleteStagedModel(StagedExpandoColumn stagedExpandoColumn)
 		throws PortalException {
 
-		_expandoTableLocalService.deleteTable(stagedExpandoTable);
+		_expandoColumnLocalService.deleteColumn(stagedExpandoColumn);
 	}
 
 	@Override
@@ -80,65 +83,68 @@ public class StagedExpandoTableStagedModelRepository
 			String uuid, long groupId, String className, String extraData)
 		throws PortalException {
 
-		//_expandoTableLocalService.deleteTable(                   ///////////////////////////
-		//	, ,ExpandoTableConstants.DEFAULT_TABLE_NAME);
+		//_expandoColumnLocalService.deleteTable(                   ///////////////////////////
+		//	, ,ExpandoColumnConstants.DEFAULT_TABLE_NAME);
 	}
 
 	@Override
 	public void deleteStagedModels(PortletDataContext portletDataContext)
 		throws PortalException {
 
-		List<ExpandoTable> expandoTables =
-			_expandoTableLocalService.getExpandoTables(
+		List<ExpandoColumn> expandoColumns =
+			_expandoColumnLocalService.getExpandoColumns(
 				QueryUtil.ALL_POS, QueryUtil.ALL_POS);
 
-		for (ExpandoTable expandoTable : expandoTables) {
-			_expandoTableLocalService.deleteTable(expandoTable);
+		for (ExpandoColumn expandoColumn : expandoColumns) {
+			_expandoColumnLocalService.deleteColumn(expandoColumn);
 		}
 	}
 
 	@Override
-	public StagedExpandoTable fetchMissingReference(String uuid, long groupId) {
+	public StagedExpandoColumn fetchMissingReference(String uuid, long groupId) {
 		return null;
 	}
 
 	@Override
-	public StagedExpandoTable fetchStagedModelByUuidAndGroupId(
+	public StagedExpandoColumn fetchStagedModelByUuidAndGroupId(
 		String uuid, long groupId) {
 
 		return null;
 	}
 
 	@Override
-	public List<StagedExpandoTable> fetchStagedModelsByUuidAndCompanyId(
+	public List<StagedExpandoColumn> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		DynamicQuery dynamicQuery = _expandoTableLocalService.dynamicQuery();
+		DynamicQuery dynamicQuery = _expandoColumnLocalService.dynamicQuery();
 
 		Property companyIdProperty = PropertyFactoryUtil.forName("companyId");
 
 		dynamicQuery.add(companyIdProperty.eq(companyId));
 
-		Property classNameIdProperty = PropertyFactoryUtil.forName(
-			"classNameId");
+		List<StagedExpandoTable> stagedExpandoTables =
+			_stagedExpandoTableStagedModelRepository.
+				fetchStagedModelsByUuidAndCompanyId(
+					_parseExpandoTableUuid(uuid), companyId);
 
-		String className = _parseClassName(uuid);
+		StagedExpandoTable stagedExpandoTable = stagedExpandoTables.get(0);
 
-		dynamicQuery.add(
-			classNameIdProperty.eq(_portal.getClassNameId(className)));
+		Property tableIdProperty = PropertyFactoryUtil.forName("tableId");
+
+		dynamicQuery.add(tableIdProperty.eq(stagedExpandoTable.getTableId()));
 
 		Property nameProperty = PropertyFactoryUtil.forName("name");
 
-		String name = _parseName(uuid);
+		String name = _parseExpandoColumnName(uuid);
 
 		dynamicQuery.add(nameProperty.eq(name));
 
-		List<ExpandoTable> expandoTables =
-			_expandoTableLocalService.dynamicQuery(dynamicQuery);
+		List<ExpandoColumn> expandoColumns =
+			_expandoColumnLocalService.dynamicQuery(dynamicQuery);
 
-		if (ListUtil.isNotEmpty(expandoTables)) {
+		if (ListUtil.isNotEmpty(expandoColumns)) {
 			return ModelAdapterUtil.adapt(
-				expandoTables, ExpandoTable.class, StagedExpandoTable.class);
+				expandoColumns, ExpandoColumn.class, StagedExpandoColumn.class);
 		}
 
 		return Collections.emptyList();
@@ -175,37 +181,37 @@ public class StagedExpandoTableStagedModelRepository
 			};
 
 		exportActionableDynamicQuery.setBaseLocalService(
-			_expandoTableLocalService);
+			_expandoColumnLocalService);
 
-		Class<? extends ExpandoTableLocalService> expandoTableLocalServiceClass =
-			_expandoTableLocalService.getClass();
+		Class<? extends ExpandoColumnLocalService> expandoColumnLocalServiceClass =
+			_expandoColumnLocalService.getClass();
 
 		exportActionableDynamicQuery.setClassLoader(
-			expandoTableLocalServiceClass.getClassLoader());
+			expandoColumnLocalServiceClass.getClassLoader());
 
 		exportActionableDynamicQuery.setCompanyId(
 			portletDataContext.getCompanyId());
-		exportActionableDynamicQuery.setModelClass(ExpandoTable.class);
+		exportActionableDynamicQuery.setModelClass(ExpandoColumn.class);
 		exportActionableDynamicQuery.setPerformActionMethod(
-			new ActionableDynamicQuery.PerformActionMethod<ExpandoTable>() {
+			new ActionableDynamicQuery.PerformActionMethod<ExpandoColumn>() {
 
 				@Override
-				public void performAction(ExpandoTable expandoTable)
+				public void performAction(ExpandoColumn expandoColumn)
 					throws PortalException {
 
-					StagedExpandoTable stagedExpandoTable =
+					StagedExpandoColumn stagedExpandoColumn =
 						ModelAdapterUtil.adapt(
-							expandoTable, ExpandoTable.class,
-							StagedExpandoTable.class);
+							expandoColumn, ExpandoColumn.class,
+							StagedExpandoColumn.class);
 
 					StagedModelDataHandlerUtil.exportStagedModel(
-						portletDataContext, stagedExpandoTable);
+						portletDataContext, stagedExpandoColumn);
 				}
 
 			});
 		exportActionableDynamicQuery.setPrimaryKeyPropertyName("tableId");
 		exportActionableDynamicQuery.setStagedModelType(
-			new StagedModelType(StagedExpandoTable.class));
+			new StagedModelType(StagedExpandoColumn.class));
 
 		return exportActionableDynamicQuery;
 	}
@@ -213,42 +219,64 @@ public class StagedExpandoTableStagedModelRepository
 	@Override
 	public void restoreStagedModel(
 			PortletDataContext portletDataContext,
-			StagedExpandoTable stagedModel)
+			StagedExpandoColumn stagedModel)
 		throws PortletDataException {
 	}
 
 	@Override
-	public StagedExpandoTable saveStagedModel(
-			StagedExpandoTable stagedExpandoTable)
+	public StagedExpandoColumn saveStagedModel(
+			StagedExpandoColumn stagedExpandoColumn)
 		throws PortalException {
 
-		_expandoTableLocalService.updateExpandoTable(stagedExpandoTable);
+		_expandoColumnLocalService.updateExpandoColumn(stagedExpandoColumn);
 
 		return ModelAdapterUtil.adapt(
-			stagedExpandoTable, ExpandoTable.class, StagedExpandoTable.class);
+			stagedExpandoColumn, ExpandoColumn.class, StagedExpandoColumn.class);
 	}
 
 	@Override
-	public StagedExpandoTable updateStagedModel(
+	public StagedExpandoColumn updateStagedModel(
 			PortletDataContext portletDataContext,
-			StagedExpandoTable stagedExpandoTable)
+			StagedExpandoColumn stagedExpandoColumn)
 		throws PortalException {
 
 		throw new UnsupportedOperationException();
 	}
 
-	private String _parseClassName(String uuid) {
+	private String _parseExpandoTableClassName(String uuid) {
 		return uuid.substring(0, uuid.indexOf(StringPool.POUND));
 	}
 
-	private String _parseName(String uuid) {
-		return uuid.substring(uuid.indexOf(StringPool.POUND) + 1);
+	private String _parseExpandoTableName(String uuid) {
+		return uuid.substring(
+			uuid.indexOf(StringPool.POUND) + 1,
+			uuid.lastIndexOf(StringPool.POUND));
+	}
+
+	private String _parseExpandoColumnName(String uuid) {
+		return uuid.substring(uuid.lastIndexOf(StringPool.POUND) + 1);
+	}
+
+	private String _parseExpandoTableUuid(String uuid) {
+		return uuid.substring(0, uuid.lastIndexOf(StringPool.POUND));
 	}
 
 	@Reference
-	private ExpandoTableLocalService _expandoTableLocalService;
+	private ExpandoColumnLocalService _expandoColumnLocalService;
 
-	@Reference
-	private Portal _portal;
+	@Reference(
+		target = "(model.class.name=com.lifeary.expando.exportimport.model.adapter.StagedExpandoTable)",
+		unbind = "-"
+	)
+	protected void setStagedExpandoTableStagedModelRepository(
+		StagedModelRepository<StagedExpandoTable>
+			stagedExpandoTableStagedModelRepository) {
+
+		_stagedExpandoTableStagedModelRepository =
+			stagedExpandoTableStagedModelRepository;
+	}
+
+	private StagedModelRepository<StagedExpandoTable>
+		_stagedExpandoTableStagedModelRepository;
 
 }
