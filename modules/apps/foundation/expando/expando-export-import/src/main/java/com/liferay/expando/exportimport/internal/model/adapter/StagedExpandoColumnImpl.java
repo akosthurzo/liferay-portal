@@ -12,8 +12,9 @@
  * details.
  */
 
-package com.liferay.expando.exportimport.model.adapter;
+package com.liferay.expando.exportimport.internal.model.adapter;
 
+import com.liferay.expando.exportimport.model.adapter.StagedExpandoColumn;
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.expando.kernel.model.ExpandoColumn;
 import com.liferay.expando.kernel.model.ExpandoTable;

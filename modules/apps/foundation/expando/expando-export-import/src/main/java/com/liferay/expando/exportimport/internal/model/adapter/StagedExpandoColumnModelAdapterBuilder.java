@@ -12,8 +12,9 @@
  * details.
  */
 
-package com.liferay.expando.exportimport.model.adapter;
+package com.liferay.expando.exportimport.internal.model.adapter;
 
+import com.liferay.expando.exportimport.model.adapter.StagedExpandoColumn;
 import com.liferay.expando.kernel.model.ExpandoColumn;
 import com.liferay.portal.kernel.model.adapter.builder.ModelAdapterBuilder;
 import org.osgi.service.component.annotations.Component;

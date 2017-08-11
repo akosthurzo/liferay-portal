@@ -12,10 +12,10 @@
  * details.
  */
 
-package com.liferay.expando.exportimport.xstream.configurator;
+package com.liferay.expando.exportimport.internal.xstream.configurator;
 
-import com.liferay.expando.exportimport.model.adapter.StagedExpandoColumnImpl;
-import com.liferay.expando.exportimport.model.adapter.StagedExpandoTableImpl;
+import com.liferay.expando.exportimport.internal.model.adapter.StagedExpandoColumnImpl;
+import com.liferay.expando.exportimport.internal.model.adapter.StagedExpandoTableImpl;
 
 import com.liferay.exportimport.kernel.xstream.XStreamAlias;
 import com.liferay.exportimport.kernel.xstream.XStreamConverter;

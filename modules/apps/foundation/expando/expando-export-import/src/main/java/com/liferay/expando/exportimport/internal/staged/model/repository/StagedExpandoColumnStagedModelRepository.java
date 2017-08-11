@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.expando.exportimport.staged.model.repository;
+package com.liferay.expando.exportimport.internal.staged.model.repository;
 
 import com.liferay.expando.exportimport.model.adapter.StagedExpandoColumn;
 import com.liferay.expando.exportimport.model.adapter.StagedExpandoTable;

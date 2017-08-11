@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.expando.exportimport.data.handler;
+package com.liferay.expando.exportimport.internal.data.handler;
 
 import com.liferay.expando.exportimport.model.adapter.StagedExpandoTable;
 
