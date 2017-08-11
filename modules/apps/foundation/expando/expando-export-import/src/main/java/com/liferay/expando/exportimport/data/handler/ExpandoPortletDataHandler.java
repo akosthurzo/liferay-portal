@@ -14,8 +14,8 @@
 
 package com.liferay.expando.exportimport.data.handler;
 
-import com.lifeary.expando.exportimport.model.adapter.StagedExpandoColumn;
-import com.lifeary.expando.exportimport.model.adapter.StagedExpandoTable;
+import com.liferay.expando.exportimport.model.adapter.StagedExpandoColumn;
+import com.liferay.expando.exportimport.model.adapter.StagedExpandoTable;
 
 import com.liferay.expando.kernel.service.ExpandoTableLocalService;
 import com.liferay.expando.web.constants.ExpandoPortletKeys;
@@ -24,7 +24,6 @@ import com.liferay.exportimport.kernel.lar.DataLevel;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataHandler;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerBoolean;
-import com.liferay.exportimport.kernel.lar.PortletDataHandlerControl;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.exportimport.staged.model.repository.StagedModelRepository;

@@ -14,7 +14,7 @@
 
 package com.liferay.expando.exportimport.staged.model.repository;
 
-import com.lifeary.expando.exportimport.model.adapter.StagedExpandoTable;
+import com.liferay.expando.exportimport.model.adapter.StagedExpandoTable;
 
 import com.liferay.expando.kernel.model.ExpandoTable;
 import com.liferay.expando.kernel.service.ExpandoTableLocalService;

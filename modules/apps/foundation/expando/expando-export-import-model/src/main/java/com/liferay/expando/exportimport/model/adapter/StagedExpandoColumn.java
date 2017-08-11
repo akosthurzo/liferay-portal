@@ -12,13 +12,24 @@
  * details.
  */
 
-package com.lifeary.expando.exportimport.model.adapter;
+package com.liferay.expando.exportimport.model.adapter;
 
-import com.liferay.expando.kernel.model.ExpandoTable;
+import com.liferay.expando.kernel.model.ExpandoColumn;
 import com.liferay.portal.kernel.model.StagedModel;
 
 /**
  * @author Akos Thurzo
  */
-public interface StagedExpandoTable extends ExpandoTable, StagedModel {
+public interface StagedExpandoColumn extends ExpandoColumn, StagedModel {
+	public ExpandoColumn getExpandoColumn();
+
+	public String getExpandoTableClassName();
+
+	public String getExpandoTableName();
+
+	public void setExpandoColumn(ExpandoColumn expandoColumn);
+
+	public void setExpandoTableClassName(String expandoTableClassName);
+
+	public void setExpandoTableName(String expandoTableName);
 }

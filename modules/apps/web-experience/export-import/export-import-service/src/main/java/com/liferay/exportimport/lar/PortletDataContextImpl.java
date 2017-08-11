@@ -16,7 +16,7 @@ package com.liferay.exportimport.lar;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.lifeary.expando.exportimport.model.adapter.StagedExpandoColumn;
+import com.liferay.expando.exportimport.model.adapter.StagedExpandoColumn;
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetLink;
 import com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil;

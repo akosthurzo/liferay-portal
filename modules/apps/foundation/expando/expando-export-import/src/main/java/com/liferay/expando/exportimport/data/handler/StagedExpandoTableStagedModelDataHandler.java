@@ -14,7 +14,7 @@
 
 package com.liferay.expando.exportimport.data.handler;
 
-import com.lifeary.expando.exportimport.model.adapter.StagedExpandoTable;
+import com.liferay.expando.exportimport.model.adapter.StagedExpandoTable;
 
 import com.liferay.exportimport.kernel.lar.BaseStagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;

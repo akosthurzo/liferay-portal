@@ -14,10 +14,9 @@
 
 package com.liferay.expando.exportimport.xstream.configurator;
 
-import com.lifeary.expando.exportimport.model.adapter.StagedExpandoColumnImpl;
-import com.lifeary.expando.exportimport.model.adapter.StagedExpandoTableImpl;
+import com.liferay.expando.exportimport.model.adapter.StagedExpandoColumnImpl;
+import com.liferay.expando.exportimport.model.adapter.StagedExpandoTableImpl;
 
-import com.liferay.expando.kernel.model.ExpandoColumn;
 import com.liferay.exportimport.kernel.xstream.XStreamAlias;
 import com.liferay.exportimport.kernel.xstream.XStreamConverter;
 import com.liferay.exportimport.kernel.xstream.XStreamType;

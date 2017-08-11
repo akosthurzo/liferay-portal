@@ -12,23 +12,13 @@
  * details.
  */
 
-package com.lifeary.expando.exportimport.model.adapter;
+package com.liferay.expando.exportimport.model.adapter;
 
 import com.liferay.expando.kernel.model.ExpandoTable;
-import com.liferay.portal.kernel.model.adapter.builder.ModelAdapterBuilder;
-
-import org.osgi.service.component.annotations.Component;
+import com.liferay.portal.kernel.model.StagedModel;
 
 /**
  * @author Akos Thurzo
  */
-@Component(immediate = true, service = ModelAdapterBuilder.class)
-public class StagedExpandoTableModelAdapterBuilder
-	implements ModelAdapterBuilder<ExpandoTable, StagedExpandoTable> {
-
-	@Override
-	public StagedExpandoTable build(ExpandoTable expandoTable) {
-		return new StagedExpandoTableImpl(expandoTable);
-	}
-
+public interface StagedExpandoTable extends ExpandoTable, StagedModel {
 }

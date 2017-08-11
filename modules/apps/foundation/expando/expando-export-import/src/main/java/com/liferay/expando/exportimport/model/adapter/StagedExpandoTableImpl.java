@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.lifeary.expando.exportimport.model.adapter;
+package com.liferay.expando.exportimport.model.adapter;
 
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.expando.kernel.model.ExpandoTable;

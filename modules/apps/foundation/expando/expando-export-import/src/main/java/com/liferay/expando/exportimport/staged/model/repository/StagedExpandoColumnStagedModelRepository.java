@@ -14,8 +14,8 @@
 
 package com.liferay.expando.exportimport.staged.model.repository;
 
-import com.lifeary.expando.exportimport.model.adapter.StagedExpandoColumn;
-import com.lifeary.expando.exportimport.model.adapter.StagedExpandoTable;
+import com.liferay.expando.exportimport.model.adapter.StagedExpandoColumn;
+import com.liferay.expando.exportimport.model.adapter.StagedExpandoTable;
 import com.liferay.expando.kernel.model.ExpandoColumn;
 import com.liferay.expando.kernel.service.ExpandoColumnLocalService;
 import com.liferay.exportimport.kernel.lar.ExportImportHelperUtil;
@@ -34,7 +34,6 @@ import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.adapter.ModelAdapterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringPool;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
