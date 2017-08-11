@@ -562,7 +562,7 @@ public class LayoutImportController implements ImportController {
 				PortletDataHandlerKeys.
 					LAYOUTS_IMPORT_MODE_CREATED_FROM_PROTOTYPE)) {
 
-			_portletImportController.readExpandoTables(portletDataContext);
+			//_portletImportController.readExpandoTables(portletDataContext);
 		}
 
 		_portletImportController.readLocks(portletDataContext);

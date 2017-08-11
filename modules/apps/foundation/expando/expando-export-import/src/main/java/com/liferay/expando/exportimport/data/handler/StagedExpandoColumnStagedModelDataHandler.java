@@ -15,20 +15,25 @@
 package com.liferay.expando.exportimport.data.handler;
 
 import com.lifeary.expando.exportimport.model.adapter.StagedExpandoColumn;
+import com.lifeary.expando.exportimport.model.adapter.StagedExpandoTable;
 import com.liferay.expando.kernel.model.ExpandoTable;
 import com.liferay.expando.kernel.service.ExpandoTableLocalService;
 import com.liferay.exportimport.kernel.lar.BaseStagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
+import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.adapter.ModelAdapterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.xml.Element;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Akos Thurzo
@@ -75,11 +80,21 @@ public class StagedExpandoColumnStagedModelDataHandler
 			StagedExpandoColumn stagedExpandoColumn)
 		throws Exception {
 
-		Element entryElement = portletDataContext.getExportDataElement(
-			stagedExpandoColumn);
+		ExpandoTable expandoTable = _expandoTableLocalService.getTable(
+			stagedExpandoColumn.getTableId());
+
+		StagedExpandoTable stagedExpandoTable = ModelAdapterUtil.adapt(
+			expandoTable, ExpandoTable.class, StagedExpandoTable.class);
+
+		StagedModelDataHandlerUtil.exportReferenceStagedModel(
+			portletDataContext, stagedExpandoColumn, stagedExpandoTable,
+			PortletDataContext.REFERENCE_TYPE_PARENT);
+
+		Element stagedExpandoColumnElement =
+			portletDataContext.getExportDataElement(stagedExpandoColumn);
 
 		portletDataContext.addClassedModel(
-			entryElement,
+			stagedExpandoColumnElement,
 			ExportImportPathUtil.getModelPath(stagedExpandoColumn),
 			stagedExpandoColumn);
 	}
@@ -90,8 +105,18 @@ public class StagedExpandoColumnStagedModelDataHandler
 			StagedExpandoColumn stagedExpandoColumn)
 		throws Exception {
 
+		Map<Long, Long> tableIds =
+			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
+				StagedExpandoTable.class);
+
+		long tableId = MapUtil.getLong(
+			tableIds, stagedExpandoColumn.getTableId(),
+			stagedExpandoColumn.getTableId());
+
 		StagedExpandoColumn importedExpandoColumn =
 			(StagedExpandoColumn)stagedExpandoColumn.clone();
+
+		importedExpandoColumn.setTableId(tableId);
 
 		List<StagedExpandoColumn> stagedExpandoColumns =
 			_stagedModelRepository.fetchStagedModelsByUuidAndCompanyId(
@@ -99,14 +124,7 @@ public class StagedExpandoColumnStagedModelDataHandler
 				portletDataContext.getCompanyId());
 
 		if (ListUtil.isEmpty(stagedExpandoColumns)) {
-			ExpandoTable expandoTable = _expandoTableLocalService.getTable(
-				portletDataContext.getCompanyId(),
-				stagedExpandoColumn.getExpandoTableClassName(),
-				stagedExpandoColumn.getExpandoTableName());
-
-			importedExpandoColumn.setTableId(expandoTable.getTableId());
-
-			_stagedModelRepository.addStagedModel(
+			importedExpandoColumn = _stagedModelRepository.addStagedModel(
 				portletDataContext, importedExpandoColumn);
 		}
 		else {
@@ -116,9 +134,12 @@ public class StagedExpandoColumnStagedModelDataHandler
 			importedExpandoColumn.setColumnId(
 				existingExpandoColumn.getColumnId());
 
-			_stagedModelRepository.updateStagedModel(
+			importedExpandoColumn = _stagedModelRepository.updateStagedModel(
 				portletDataContext, importedExpandoColumn);
 		}
+
+		portletDataContext.importClassedModel(
+			stagedExpandoColumn, importedExpandoColumn);
 
 	}
 

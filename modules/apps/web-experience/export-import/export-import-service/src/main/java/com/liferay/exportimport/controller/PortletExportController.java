@@ -41,6 +41,7 @@ import com.liferay.exportimport.kernel.lar.PortletDataContextFactory;
 import com.liferay.exportimport.kernel.lar.PortletDataHandler;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerStatusMessageSender;
+import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleManager;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
@@ -879,54 +880,69 @@ public class PortletExportController implements ExportController {
 	protected void exportExpandoTables(PortletDataContext portletDataContext)
 		throws Exception {
 
-		Document document = SAXReaderUtil.createDocument();
+//		Map<String, List<ExpandoColumn>> expandoColumnsMap =
+//			portletDataContext.getExpandoColumns();
+//
+//		for (Map.Entry<String, List<ExpandoColumn>> entry :
+//				expandoColumnsMap.entrySet()) {
+//
+//			List<ExpandoColumn> expandoColumns = entry.getValue();
+//
+//			for (ExpandoColumn expandoColumn : expandoColumns) {
+//				ModelAdapterUtil.adapt(expandoColumn, ExpandoColumn.class, Staged)
+//
+//				StagedModelDataHandlerUtil.exportStagedModel();
+//			}
+//		}
 
-		Element rootElement = document.addElement("expando-tables");
-
-		Map<String, List<ExpandoColumn>> expandoColumnsMap =
-			portletDataContext.getExpandoColumns();
-
-		for (Map.Entry<String, List<ExpandoColumn>> entry :
-				expandoColumnsMap.entrySet()) {
-
-			String className = entry.getKey();
-
-			Element expandoTableElement = rootElement.addElement(
-				"expando-table");
-
-			expandoTableElement.addAttribute("class-name", className);
-
-			List<ExpandoColumn> expandoColumns = entry.getValue();
-
-			for (ExpandoColumn expandoColumn : expandoColumns) {
-				Element expandoColumnElement = expandoTableElement.addElement(
-					"expando-column");
-
-				expandoColumnElement.addAttribute(
-					"column-id", String.valueOf(expandoColumn.getColumnId()));
-				expandoColumnElement.addAttribute(
-					"name", expandoColumn.getName());
-				expandoColumnElement.addAttribute(
-					"type", String.valueOf(expandoColumn.getType()));
-
-				DocUtil.add(
-					expandoColumnElement, "default-data",
-					expandoColumn.getDefaultData());
-
-				Element typeSettingsElement = expandoColumnElement.addElement(
-					"type-settings");
-
-				UnicodeProperties typeSettingsProperties =
-					expandoColumn.getTypeSettingsProperties();
-
-				typeSettingsElement.addCDATA(typeSettingsProperties.toString());
-			}
-		}
-
-		portletDataContext.addZipEntry(
-			ExportImportPathUtil.getRootPath(portletDataContext) +
-				"/expando-tables.xml",
-			document.formattedString());
+//		Document document = SAXReaderUtil.createDocument();
+//
+//		Element rootElement = document.addElement("expando-tables");
+//
+//		Map<String, List<ExpandoColumn>> expandoColumnsMap =
+//			portletDataContext.getExpandoColumns();
+//
+//		for (Map.Entry<String, List<ExpandoColumn>> entry :
+//				expandoColumnsMap.entrySet()) {
+//
+//			String className = entry.getKey();
+//
+//			Element expandoTableElement = rootElement.addElement(
+//				"expando-table");
+//
+//			expandoTableElement.addAttribute("class-name", className);
+//
+//			List<ExpandoColumn> expandoColumns = entry.getValue();
+//
+//			for (ExpandoColumn expandoColumn : expandoColumns) {
+//				Element expandoColumnElement = expandoTableElement.addElement(
+//					"expando-column");
+//
+//				expandoColumnElement.addAttribute(
+//					"column-id", String.valueOf(expandoColumn.getColumnId()));
+//				expandoColumnElement.addAttribute(
+//					"name", expandoColumn.getName());
+//				expandoColumnElement.addAttribute(
+//					"type", String.valueOf(expandoColumn.getType()));
+//
+//				DocUtil.add(
+//					expandoColumnElement, "default-data",
+//					expandoColumn.getDefaultData());
+//
+//				Element typeSettingsElement = expandoColumnElement.addElement(
+//					"type-settings");
+//
+//				UnicodeProperties typeSettingsProperties =
+//					expandoColumn.getTypeSettingsProperties();
+//
+//				typeSettingsElement.addCDATA(typeSettingsProperties.toString());
+//			}
+//		}
+//
+//		portletDataContext.addZipEntry(
+//			ExportImportPathUtil.getRootPath(portletDataContext) +
+//				"/expando-tables.xml",
+//			document.formattedString());
 	}
 
 	protected void exportLocks(PortletDataContext portletDataContext)
