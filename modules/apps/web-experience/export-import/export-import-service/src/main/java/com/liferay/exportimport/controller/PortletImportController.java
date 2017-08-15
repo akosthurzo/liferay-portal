@@ -876,7 +876,7 @@ public class PortletImportController implements ImportController {
 				PortletDataHandlerKeys.
 					LAYOUTS_IMPORT_MODE_CREATED_FROM_PROTOTYPE)) {
 
-			//readExpandoTables(portletDataContext);
+			readExpandoTables(portletDataContext);
 		}
 
 		readLocks(portletDataContext);

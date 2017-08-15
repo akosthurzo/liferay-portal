@@ -16,7 +16,6 @@ package com.liferay.expando.exportimport.internal.data.handler;
 
 import com.liferay.expando.exportimport.model.adapter.StagedExpandoColumn;
 import com.liferay.expando.exportimport.model.adapter.StagedExpandoTable;
-
 import com.liferay.expando.kernel.service.ExpandoTableLocalService;
 import com.liferay.expando.web.constants.ExpandoPortletKeys;
 import com.liferay.exportimport.kernel.lar.BasePortletDataHandler;
@@ -146,7 +145,9 @@ public class ExpandoPortletDataHandler extends BasePortletDataHandler {
 		List<Element> stagedExpandoColumnsElements =
 			stagedExpandoColumnsElement.elements();
 
-		for (Element stagedExpandoColumnElement : stagedExpandoColumnsElements) {
+		for (Element stagedExpandoColumnElement :
+				stagedExpandoColumnsElements) {
+
 			StagedModelDataHandlerUtil.importStagedModel(
 				portletDataContext, stagedExpandoColumnElement);
 		}
@@ -174,18 +175,6 @@ public class ExpandoPortletDataHandler extends BasePortletDataHandler {
 	}
 
 	@Reference(
-		target = "(model.class.name=com.lifeary.expando.exportimport.model.adapter.StagedExpandoTable)",
-		unbind = "-"
-	)
-	protected void setStagedExpandoTableStagedModelRepository(
-		StagedModelRepository<StagedExpandoTable>
-			stagedExpandoTableStagedModelRepository) {
-
-		_stagedExpandoTableStagedModelRepository =
-			stagedExpandoTableStagedModelRepository;
-	}
-
-	@Reference(
 		target = "(model.class.name=com.lifeary.expando.exportimport.model.adapter.StagedExpandoColumn)",
 		unbind = "-"
 	)
@@ -197,10 +186,24 @@ public class ExpandoPortletDataHandler extends BasePortletDataHandler {
 			stagedExpandoColumnStagedModelRepository;
 	}
 
+	@Reference(
+		target = "(model.class.name=com.lifeary.expando.exportimport.model.adapter.StagedExpandoTable)",
+		unbind = "-"
+	)
+	protected void setStagedExpandoTableStagedModelRepository(
+		StagedModelRepository<StagedExpandoTable>
+			stagedExpandoTableStagedModelRepository) {
+
+		_stagedExpandoTableStagedModelRepository =
+			stagedExpandoTableStagedModelRepository;
+	}
+
 	@Reference
 	private ExpandoTableLocalService _expandoTableLocalService;
 
-	private StagedModelRepository<StagedExpandoTable> _stagedExpandoTableStagedModelRepository;
-	private StagedModelRepository<StagedExpandoColumn> _stagedExpandoColumnStagedModelRepository;
+	private StagedModelRepository<StagedExpandoColumn>
+		_stagedExpandoColumnStagedModelRepository;
+	private StagedModelRepository<StagedExpandoTable>
+		_stagedExpandoTableStagedModelRepository;
 
 }

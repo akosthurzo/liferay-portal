@@ -21,19 +21,22 @@ import com.liferay.expando.kernel.service.ExpandoTableLocalService;
 import com.liferay.exportimport.kernel.lar.BaseStagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
+import com.liferay.exportimport.kernel.lar.PortletDataException;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.adapter.ModelAdapterUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.xml.Element;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 import java.util.List;
 import java.util.Map;
+
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Akos Thurzo
@@ -75,6 +78,25 @@ public class StagedExpandoColumnStagedModelDataHandler
 	}
 
 	@Override
+	public boolean validateReference(
+		PortletDataContext portletDataContext, Element referenceElement) {
+
+		validateMissingGroupReference(portletDataContext, referenceElement);
+
+		String uuid = referenceElement.attributeValue("uuid");
+
+		List<StagedExpandoColumn> stagedExpandoColumns =
+			fetchStagedModelsByUuidAndCompanyId(
+				uuid, portletDataContext.getCompanyId());
+
+		if (ListUtil.isEmpty(stagedExpandoColumns)) {
+			return false;
+		}
+
+		return true;
+	}
+
+	@Override
 	protected void doExportStagedModel(
 			PortletDataContext portletDataContext,
 			StagedExpandoColumn stagedExpandoColumn)
@@ -97,6 +119,32 @@ public class StagedExpandoColumnStagedModelDataHandler
 			stagedExpandoColumnElement,
 			ExportImportPathUtil.getModelPath(stagedExpandoColumn),
 			stagedExpandoColumn);
+	}
+
+	@Override
+	protected void doImportMissingReference(
+			PortletDataContext portletDataContext, Element referenceElement)
+		throws PortletDataException {
+
+		importMissingGroupReference(portletDataContext, referenceElement);
+
+		String uuid = referenceElement.attributeValue("uuid");
+
+		List<StagedExpandoColumn> stagedExpandoColumns =
+			fetchStagedModelsByUuidAndCompanyId(
+				uuid, portletDataContext.getCompanyId());
+
+		StagedExpandoColumn existingStagedExpandoColumn =
+			stagedExpandoColumns.get(0);
+
+		Map<Long, Long> columnIds =
+			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
+				StagedExpandoColumn.class);
+
+		long columnId = GetterUtil.getLong(
+			referenceElement.attributeValue("class-pk"));
+
+		columnIds.put(columnId, existingStagedExpandoColumn.getColumnId());
 	}
 
 	@Override
@@ -140,7 +188,6 @@ public class StagedExpandoColumnStagedModelDataHandler
 
 		portletDataContext.importClassedModel(
 			stagedExpandoColumn, importedExpandoColumn);
-
 	}
 
 	@Reference(
@@ -153,9 +200,9 @@ public class StagedExpandoColumnStagedModelDataHandler
 		_stagedModelRepository = stagedModelRepository;
 	}
 
-	private StagedModelRepository<StagedExpandoColumn> _stagedModelRepository;
-
 	@Reference
 	private ExpandoTableLocalService _expandoTableLocalService;
+
+	private StagedModelRepository<StagedExpandoColumn> _stagedModelRepository;
 
 }

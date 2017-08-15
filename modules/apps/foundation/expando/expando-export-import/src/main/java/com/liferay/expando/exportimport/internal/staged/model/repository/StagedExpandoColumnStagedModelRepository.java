@@ -35,11 +35,12 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.adapter.ModelAdapterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.StringPool;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 import java.util.Collections;
 import java.util.List;
+
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Akos Thurzo
@@ -100,7 +101,9 @@ public class StagedExpandoColumnStagedModelRepository
 	}
 
 	@Override
-	public StagedExpandoColumn fetchMissingReference(String uuid, long groupId) {
+	public StagedExpandoColumn fetchMissingReference(
+		String uuid, long groupId) {
+
 		return null;
 	}
 
@@ -254,27 +257,6 @@ public class StagedExpandoColumnStagedModelRepository
 			expandoColumn, ExpandoColumn.class, StagedExpandoColumn.class);
 	}
 
-	private String _parseExpandoTableClassName(String uuid) {
-		return uuid.substring(0, uuid.indexOf(StringPool.POUND));
-	}
-
-	private String _parseExpandoTableName(String uuid) {
-		return uuid.substring(
-			uuid.indexOf(StringPool.POUND) + 1,
-			uuid.lastIndexOf(StringPool.POUND));
-	}
-
-	private String _parseExpandoColumnName(String uuid) {
-		return uuid.substring(uuid.lastIndexOf(StringPool.POUND) + 1);
-	}
-
-	private String _parseExpandoTableUuid(String uuid) {
-		return uuid.substring(0, uuid.lastIndexOf(StringPool.POUND));
-	}
-
-	@Reference
-	private ExpandoColumnLocalService _expandoColumnLocalService;
-
 	@Reference(
 		target = "(model.class.name=com.lifeary.expando.exportimport.model.adapter.StagedExpandoTable)",
 		unbind = "-"
@@ -286,6 +268,27 @@ public class StagedExpandoColumnStagedModelRepository
 		_stagedExpandoTableStagedModelRepository =
 			stagedExpandoTableStagedModelRepository;
 	}
+
+	private String _parseExpandoColumnName(String uuid) {
+		return uuid.substring(uuid.lastIndexOf(StringPool.POUND) + 1);
+	}
+
+	private String _parseExpandoTableClassName(String uuid) {
+		return uuid.substring(0, uuid.indexOf(StringPool.POUND));
+	}
+
+	private String _parseExpandoTableName(String uuid) {
+		return uuid.substring(
+			uuid.indexOf(StringPool.POUND) + 1,
+			uuid.lastIndexOf(StringPool.POUND));
+	}
+
+	private String _parseExpandoTableUuid(String uuid) {
+		return uuid.substring(0, uuid.lastIndexOf(StringPool.POUND));
+	}
+
+	@Reference
+	private ExpandoColumnLocalService _expandoColumnLocalService;
 
 	private StagedModelRepository<StagedExpandoTable>
 		_stagedExpandoTableStagedModelRepository;

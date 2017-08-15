@@ -16,12 +16,12 @@ package com.liferay.exportimport.lar;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.expando.exportimport.model.adapter.StagedExpandoColumn;
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetLink;
 import com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil;
 import com.liferay.asset.kernel.service.AssetLinkLocalServiceUtil;
 import com.liferay.asset.kernel.service.AssetTagLocalServiceUtil;
+import com.liferay.expando.exportimport.model.adapter.StagedExpandoColumn;
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.expando.kernel.model.ExpandoColumn;
 import com.liferay.expando.kernel.service.ExpandoColumnLocalServiceUtil;
@@ -2148,7 +2148,10 @@ public class PortletDataContextImpl implements PortletDataContext {
 			_expandoColumnsMap.put(className, expandoColumns);
 
 			for (ExpandoColumn expandoColumn : expandoColumns) {
-				addReferenceElement(classedModel, element, ModelAdapterUtil.adapt(expandoColumn, ExpandoColumn.class, StagedExpandoColumn.class), REFERENCE_TYPE_DEPENDENCY, true);
+				addReferenceElement(
+					classedModel, element,
+					ModelAdapterUtil.adapt(expandoColumn, ExpandoColumn.class, StagedExpandoColumn.class),
+					REFERENCE_TYPE_DEPENDENCY, true);
 			}
 		}
 

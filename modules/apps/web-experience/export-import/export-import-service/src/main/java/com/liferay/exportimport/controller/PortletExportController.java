@@ -26,7 +26,6 @@ import com.liferay.asset.kernel.model.AssetLink;
 import com.liferay.asset.kernel.model.adapter.StagedAssetLink;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.asset.kernel.service.AssetLinkLocalService;
-import com.liferay.expando.kernel.model.ExpandoColumn;
 import com.liferay.exportimport.kernel.controller.ExportController;
 import com.liferay.exportimport.kernel.controller.ExportImportController;
 import com.liferay.exportimport.kernel.exception.LayoutImportException;
@@ -41,7 +40,6 @@ import com.liferay.exportimport.kernel.lar.PortletDataContextFactory;
 import com.liferay.exportimport.kernel.lar.PortletDataHandler;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerStatusMessageSender;
-import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleManager;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
@@ -51,7 +49,6 @@ import com.liferay.exportimport.portlet.data.handler.provider.PortletDataHandler
 import com.liferay.exportimport.portlet.preferences.processor.Capability;
 import com.liferay.exportimport.portlet.preferences.processor.ExportImportPortletPreferencesProcessor;
 import com.liferay.exportimport.portlet.preferences.processor.ExportImportPortletPreferencesProcessorRegistryUtil;
-import com.liferay.petra.xml.DocUtil;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskThreadLocal;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.exception.NoSuchPortletPreferencesException;
@@ -92,7 +89,6 @@ import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
-import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
@@ -799,7 +795,6 @@ public class PortletExportController implements ExportController {
 			exportPortletControlsMap.get(PortletDataHandlerKeys.PORTLET_SETUP));
 
 		exportAssetLinks(portletDataContext);
-		exportExpandoTables(portletDataContext);
 		exportLocks(portletDataContext);
 
 		portletDataContext.addDeletionSystemEventStagedModelTypes(
@@ -875,74 +870,6 @@ public class PortletExportController implements ExportController {
 		portletDataContext.addZipEntry(
 			ExportImportPathUtil.getRootPath(portletDataContext) + "/links.xml",
 			document.formattedString());
-	}
-
-	protected void exportExpandoTables(PortletDataContext portletDataContext)
-		throws Exception {
-
-//		Map<String, List<ExpandoColumn>> expandoColumnsMap =
-//			portletDataContext.getExpandoColumns();
-//
-//		for (Map.Entry<String, List<ExpandoColumn>> entry :
-//				expandoColumnsMap.entrySet()) {
-//
-//			List<ExpandoColumn> expandoColumns = entry.getValue();
-//
-//			for (ExpandoColumn expandoColumn : expandoColumns) {
-//				ModelAdapterUtil.adapt(expandoColumn, ExpandoColumn.class, Staged)
-//
-//				StagedModelDataHandlerUtil.exportStagedModel();
-//			}
-//		}
-
-//		Document document = SAXReaderUtil.createDocument();
-//
-//		Element rootElement = document.addElement("expando-tables");
-//
-//		Map<String, List<ExpandoColumn>> expandoColumnsMap =
-//			portletDataContext.getExpandoColumns();
-//
-//		for (Map.Entry<String, List<ExpandoColumn>> entry :
-//				expandoColumnsMap.entrySet()) {
-//
-//			String className = entry.getKey();
-//
-//			Element expandoTableElement = rootElement.addElement(
-//				"expando-table");
-//
-//			expandoTableElement.addAttribute("class-name", className);
-//
-//			List<ExpandoColumn> expandoColumns = entry.getValue();
-//
-//			for (ExpandoColumn expandoColumn : expandoColumns) {
-//				Element expandoColumnElement = expandoTableElement.addElement(
-//					"expando-column");
-//
-//				expandoColumnElement.addAttribute(
-//					"column-id", String.valueOf(expandoColumn.getColumnId()));
-//				expandoColumnElement.addAttribute(
-//					"name", expandoColumn.getName());
-//				expandoColumnElement.addAttribute(
-//					"type", String.valueOf(expandoColumn.getType()));
-//
-//				DocUtil.add(
-//					expandoColumnElement, "default-data",
-//					expandoColumn.getDefaultData());
-//
-//				Element typeSettingsElement = expandoColumnElement.addElement(
-//					"type-settings");
-//
-//				UnicodeProperties typeSettingsProperties =
-//					expandoColumn.getTypeSettingsProperties();
-//
-//				typeSettingsElement.addCDATA(typeSettingsProperties.toString());
-//			}
-//		}
-//
-//		portletDataContext.addZipEntry(
-//			ExportImportPathUtil.getRootPath(portletDataContext) +
-//				"/expando-tables.xml",
-//			document.formattedString());
 	}
 
 	protected void exportLocks(PortletDataContext portletDataContext)

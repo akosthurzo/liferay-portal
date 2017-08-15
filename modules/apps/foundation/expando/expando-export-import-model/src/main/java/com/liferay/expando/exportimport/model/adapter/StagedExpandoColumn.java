@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.model.StagedModel;
  * @author Akos Thurzo
  */
 public interface StagedExpandoColumn extends ExpandoColumn, StagedModel {
+
 	public ExpandoColumn getExpandoColumn();
 
 	public String getExpandoTableClassName();
@@ -32,4 +33,5 @@ public interface StagedExpandoColumn extends ExpandoColumn, StagedModel {
 	public void setExpandoTableClassName(String expandoTableClassName);
 
 	public void setExpandoTableName(String expandoTableName);
+
 }

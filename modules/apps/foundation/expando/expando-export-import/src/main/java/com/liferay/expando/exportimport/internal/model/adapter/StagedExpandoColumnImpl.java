@@ -28,6 +28,7 @@ import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 
 import java.io.Serializable;
+
 import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
@@ -36,66 +37,6 @@ import java.util.Map;
  * @author Akos Thurzo
  */
 public class StagedExpandoColumnImpl implements StagedExpandoColumn {
-
-	@Override
-	public Serializable getDefaultValue() {
-		return _expandoColumn.getDefaultValue();
-	}
-
-	@Override
-	public String getDisplayName(Locale locale) {
-		return _expandoColumn.getDisplayName(locale);
-	}
-
-	@Override
-	public UnicodeProperties getTypeSettingsProperties() {
-		return _expandoColumn.getTypeSettingsProperties();
-	}
-
-	@Override
-	public void setTypeSettingsProperties(UnicodeProperties typeSettingsProperties) {
-		_expandoColumn.setTypeSettingsProperties(typeSettingsProperties);
-	}
-
-	@Override
-	public long getColumnId() {
-		return _expandoColumn.getColumnId();
-	}
-
-	@Override
-	public void setColumnId(long columnId) {
-		_expandoColumn.setColumnId(columnId);
-	}
-
-	@Override
-	public int getType() {
-		return _expandoColumn.getType();
-	}
-
-	@Override
-	public void setType(int type) {
-		_expandoColumn.setType(type);
-	}
-
-	@Override
-	public String getDefaultData() {
-		return _expandoColumn.getDefaultData();
-	}
-
-	@Override
-	public void setDefaultData(String defaultData) {
-		_expandoColumn.setDefaultData(defaultData);
-	}
-
-	@Override
-	public String getTypeSettings() {
-		return _expandoColumn.getTypeSettings();
-	}
-
-	@Override
-	public void setTypeSettings(String typeSettings) {
-		_expandoColumn.setTypeSettings(typeSettings);
-	}
 
 	public StagedExpandoColumnImpl() {
 	}
@@ -137,6 +78,11 @@ public class StagedExpandoColumnImpl implements StagedExpandoColumn {
 	}
 
 	@Override
+	public long getColumnId() {
+		return _expandoColumn.getColumnId();
+	}
+
+	@Override
 	public long getCompanyId() {
 		return _expandoColumn.getCompanyId();
 	}
@@ -144,6 +90,21 @@ public class StagedExpandoColumnImpl implements StagedExpandoColumn {
 	@Override
 	public Date getCreateDate() {
 		return new Date(); ///////////////////////////////////////////////////////////////////////
+	}
+
+	@Override
+	public String getDefaultData() {
+		return _expandoColumn.getDefaultData();
+	}
+
+	@Override
+	public Serializable getDefaultValue() {
+		return _expandoColumn.getDefaultValue();
+	}
+
+	@Override
+	public String getDisplayName(Locale locale) {
+		return _expandoColumn.getDisplayName(locale);
 	}
 
 	@Override
@@ -212,6 +173,21 @@ public class StagedExpandoColumnImpl implements StagedExpandoColumn {
 	}
 
 	@Override
+	public int getType() {
+		return _expandoColumn.getType();
+	}
+
+	@Override
+	public String getTypeSettings() {
+		return _expandoColumn.getTypeSettings();
+	}
+
+	@Override
+	public UnicodeProperties getTypeSettingsProperties() {
+		return _expandoColumn.getTypeSettingsProperties();
+	}
+
+	@Override
 	public String getUuid() {
 		return _expandoTableClassName + StringPool.POUND + _expandoTableName +
 			StringPool.POUND + getName();
@@ -258,6 +234,11 @@ public class StagedExpandoColumnImpl implements StagedExpandoColumn {
 	}
 
 	@Override
+	public void setColumnId(long columnId) {
+		_expandoColumn.setColumnId(columnId);
+	}
+
+	@Override
 	public void setCompanyId(long companyId) {
 		_expandoColumn.setCompanyId(companyId);
 	}
@@ -265,6 +246,11 @@ public class StagedExpandoColumnImpl implements StagedExpandoColumn {
 	@Override
 	public void setCreateDate(Date date) {
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void setDefaultData(String defaultData) {
+		_expandoColumn.setDefaultData(defaultData);
 	}
 
 	@Override
@@ -285,6 +271,16 @@ public class StagedExpandoColumnImpl implements StagedExpandoColumn {
 	@Override
 	public void setExpandoColumn(ExpandoColumn expandoColumn) {
 		_expandoColumn = expandoColumn;
+	}
+
+	@Override
+	public void setExpandoTableClassName(String expandoTableClassName) {
+		_expandoTableClassName = expandoTableClassName;
+	}
+
+	@Override
+	public void setExpandoTableName(String expandoTableName) {
+		_expandoTableName = expandoTableName;
 	}
 
 	@Override
@@ -323,6 +319,23 @@ public class StagedExpandoColumnImpl implements StagedExpandoColumn {
 	}
 
 	@Override
+	public void setType(int type) {
+		_expandoColumn.setType(type);
+	}
+
+	@Override
+	public void setTypeSettings(String typeSettings) {
+		_expandoColumn.setTypeSettings(typeSettings);
+	}
+
+	@Override
+	public void setTypeSettingsProperties(
+		UnicodeProperties typeSettingsProperties) {
+
+		_expandoColumn.setTypeSettingsProperties(typeSettingsProperties);
+	}
+
+	@Override
 	public void setUuid(String uuid) {
 		throw new UnsupportedOperationException();
 	}
@@ -347,17 +360,8 @@ public class StagedExpandoColumnImpl implements StagedExpandoColumn {
 		return _expandoColumn.toXmlString();
 	}
 
+	private ExpandoColumn _expandoColumn;
 	private String _expandoTableClassName;
 	private String _expandoTableName;
-	private ExpandoColumn _expandoColumn;
 
-	@Override
-	public void setExpandoTableClassName(String expandoTableClassName) {
-		_expandoTableClassName = expandoTableClassName;
-	}
-
-	@Override
-	public void setExpandoTableName(String expandoTableName) {
-		_expandoTableName = expandoTableName;
-	}
 }
