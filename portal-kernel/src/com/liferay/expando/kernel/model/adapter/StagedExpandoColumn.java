@@ -12,24 +12,26 @@
  * details.
  */
 
-package com.liferay.expando.exportimport.internal.model.adapter;
+package com.liferay.expando.kernel.model.adapter;
 
-import com.liferay.expando.kernel.model.adapter.StagedExpandoColumn;
 import com.liferay.expando.kernel.model.ExpandoColumn;
-import com.liferay.portal.kernel.model.adapter.builder.ModelAdapterBuilder;
-
-import org.osgi.service.component.annotations.Component;
+import com.liferay.portal.kernel.model.StagedModel;
 
 /**
  * @author Akos Thurzo
  */
-@Component(immediate = true, service = ModelAdapterBuilder.class)
-public class StagedExpandoColumnModelAdapterBuilder
-	implements ModelAdapterBuilder<ExpandoColumn, StagedExpandoColumn> {
+public interface StagedExpandoColumn extends ExpandoColumn, StagedModel {
 
-	@Override
-	public StagedExpandoColumn build(ExpandoColumn expandoColumn) {
-		return new StagedExpandoColumnImpl(expandoColumn);
-	}
+	public ExpandoColumn getExpandoColumn();
+
+	public String getExpandoTableClassName();
+
+	public String getExpandoTableName();
+
+	public void setExpandoColumn(ExpandoColumn expandoColumn);
+
+	public void setExpandoTableClassName(String expandoTableClassName);
+
+	public void setExpandoTableName(String expandoTableName);
 
 }

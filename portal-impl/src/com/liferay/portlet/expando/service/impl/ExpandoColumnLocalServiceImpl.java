@@ -22,9 +22,15 @@ import com.liferay.expando.kernel.model.ExpandoColumnConstants;
 import com.liferay.expando.kernel.model.ExpandoTable;
 import com.liferay.expando.kernel.model.ExpandoTableConstants;
 import com.liferay.expando.kernel.model.ExpandoValue;
+import com.liferay.expando.kernel.model.adapter.StagedExpandoColumn;
+import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.SystemEventConstants;
+import com.liferay.portal.kernel.model.adapter.ModelAdapterUtil;
+import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portlet.expando.model.impl.ExpandoValueImpl;
 import com.liferay.portlet.expando.service.base.ExpandoColumnLocalServiceBaseImpl;
@@ -84,6 +90,7 @@ public class ExpandoColumnLocalServiceImpl
 
 	@Override
 	public void deleteColumn(ExpandoColumn column) {
+		addDeletionSystemEvent(column);
 
 		// Column
 
@@ -92,6 +99,23 @@ public class ExpandoColumnLocalServiceImpl
 		// Values
 
 		expandoValueLocalService.deleteColumnValues(column.getColumnId());
+	}
+
+	protected void addDeletionSystemEvent(ExpandoColumn expandoColumn) {
+		StagedExpandoColumn stagedExpandoColumn = ModelAdapterUtil.adapt(
+			expandoColumn, ExpandoColumn.class, StagedExpandoColumn.class);
+
+		StagedModelType stagedModelType = stagedExpandoColumn.getStagedModelType();
+
+		try {
+			systemEventLocalService.addSystemEvent(
+				stagedExpandoColumn.getCompanyId(), stagedModelType.getClassName(),
+				stagedExpandoColumn.getPrimaryKey(), stagedExpandoColumn.getUuid(),
+				null, SystemEventConstants.TYPE_DELETE, StringPool.BLANK);
+		}
+		catch (PortalException pe) {
+			throw new RuntimeException(pe);
+		}
 	}
 
 	@Override

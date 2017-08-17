@@ -14,8 +14,8 @@
 
 package com.liferay.expando.exportimport.internal.data.handler;
 
-import com.liferay.expando.exportimport.model.adapter.StagedExpandoColumn;
-import com.liferay.expando.exportimport.model.adapter.StagedExpandoTable;
+import com.liferay.expando.kernel.model.adapter.StagedExpandoColumn;
+import com.liferay.expando.kernel.model.adapter.StagedExpandoTable;
 import com.liferay.expando.kernel.model.ExpandoTable;
 import com.liferay.expando.kernel.service.ExpandoTableLocalService;
 import com.liferay.exportimport.kernel.lar.BaseStagedModelDataHandler;
@@ -191,7 +191,7 @@ public class StagedExpandoColumnStagedModelDataHandler
 	}
 
 	@Reference(
-		target = "(model.class.name=com.lifeary.expando.exportimport.model.adapter.StagedExpandoColumn)",
+		target = "(model.class.name=com.lifeary.expando.kernel.model.adapter.StagedExpandoColumn)",
 		unbind = "-"
 	)
 	protected void setStagedModelRepository(

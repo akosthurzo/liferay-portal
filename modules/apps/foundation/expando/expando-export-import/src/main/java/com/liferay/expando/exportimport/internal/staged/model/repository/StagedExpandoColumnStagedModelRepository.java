@@ -14,8 +14,8 @@
 
 package com.liferay.expando.exportimport.internal.staged.model.repository;
 
-import com.liferay.expando.exportimport.model.adapter.StagedExpandoColumn;
-import com.liferay.expando.exportimport.model.adapter.StagedExpandoTable;
+import com.liferay.expando.kernel.model.adapter.StagedExpandoColumn;
+import com.liferay.expando.kernel.model.adapter.StagedExpandoTable;
 import com.liferay.expando.kernel.model.ExpandoColumn;
 import com.liferay.expando.kernel.service.ExpandoColumnLocalService;
 import com.liferay.exportimport.kernel.lar.ExportImportHelperUtil;
@@ -47,7 +47,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	immediate = true,
-	property = {"model.class.name=com.lifeary.expando.exportimport.model.adapter.StagedExpandoColumn"},
+	property = {"model.class.name=com.lifeary.expando.kernel.model.adapter.StagedExpandoColumn"},
 	service = StagedModelRepository.class
 )
 public class StagedExpandoColumnStagedModelRepository
@@ -258,7 +258,7 @@ public class StagedExpandoColumnStagedModelRepository
 	}
 
 	@Reference(
-		target = "(model.class.name=com.lifeary.expando.exportimport.model.adapter.StagedExpandoTable)",
+		target = "(model.class.name=com.lifeary.expando.kernel.model.adapter.StagedExpandoTable)",
 		unbind = "-"
 	)
 	protected void setStagedExpandoTableStagedModelRepository(
