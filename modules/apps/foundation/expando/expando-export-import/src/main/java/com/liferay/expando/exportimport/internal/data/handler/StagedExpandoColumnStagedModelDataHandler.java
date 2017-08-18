@@ -14,6 +14,7 @@
 
 package com.liferay.expando.exportimport.internal.data.handler;
 
+import com.liferay.expando.kernel.model.ExpandoColumn;
 import com.liferay.expando.kernel.model.adapter.StagedExpandoColumn;
 import com.liferay.expando.kernel.model.adapter.StagedExpandoTable;
 import com.liferay.expando.kernel.model.ExpandoTable;
@@ -139,7 +140,7 @@ public class StagedExpandoColumnStagedModelDataHandler
 
 		Map<Long, Long> columnIds =
 			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
-				StagedExpandoColumn.class);
+				ExpandoColumn.class);
 
 		long columnId = GetterUtil.getLong(
 			referenceElement.attributeValue("class-pk"));
@@ -155,7 +156,7 @@ public class StagedExpandoColumnStagedModelDataHandler
 
 		Map<Long, Long> tableIds =
 			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
-				StagedExpandoTable.class);
+				ExpandoTable.class);
 
 		long tableId = MapUtil.getLong(
 			tableIds, stagedExpandoColumn.getTableId(),

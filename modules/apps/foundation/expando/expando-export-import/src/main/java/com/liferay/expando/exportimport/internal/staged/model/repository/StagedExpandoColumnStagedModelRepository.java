@@ -32,6 +32,8 @@ import com.liferay.portal.kernel.dao.orm.Property;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.adapter.ModelAdapterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.StringPool;
@@ -83,8 +85,19 @@ public class StagedExpandoColumnStagedModelRepository
 			String uuid, long groupId, String className, String extraData)
 		throws PortalException {
 
-		//_expandoColumnLocalService.deleteTable(                   ///////////////////////////
-		//	, ,ExpandoColumnConstants.DEFAULT_TABLE_NAME);
+		JSONObject extraDataJSONObject = JSONFactoryUtil.createJSONObject(
+			extraData);
+
+		List<StagedExpandoColumn> stagedExpandoColumns = fetchStagedModelsByUuidAndCompanyId(extraDataJSONObject.getString("uuid"), extraDataJSONObject.getInt("companyId"));
+
+		if (ListUtil.isEmpty(stagedExpandoColumns)) {
+			return;
+		}
+
+		for (StagedExpandoColumn stagedExpandoColumn : stagedExpandoColumns) {
+			deleteStagedModel(stagedExpandoColumn);
+		}
+
 	}
 
 	@Override

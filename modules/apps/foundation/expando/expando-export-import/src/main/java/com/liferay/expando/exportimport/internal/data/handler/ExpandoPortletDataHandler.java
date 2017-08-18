@@ -62,7 +62,7 @@ public class ExpandoPortletDataHandler extends BasePortletDataHandler {
 		setDataLevel(DataLevel.PORTAL);
 		setDeletionSystemEventStagedModelTypes(
 			new StagedModelType(StagedExpandoTable.class),
-			new StagedModelType(StagedExpandoTable.class));
+			new StagedModelType(StagedExpandoColumn.class));
 		setExportControls(
 			new PortletDataHandlerBoolean(
 				NAMESPACE, "expando-table", true, true, null,

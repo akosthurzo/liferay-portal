@@ -25,6 +25,8 @@ import com.liferay.expando.kernel.model.ExpandoValue;
 import com.liferay.expando.kernel.model.adapter.StagedExpandoColumn;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.adapter.ModelAdapterUtil;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
@@ -107,11 +109,16 @@ public class ExpandoColumnLocalServiceImpl
 
 		StagedModelType stagedModelType = stagedExpandoColumn.getStagedModelType();
 
+		JSONObject extraDataJSONObject = JSONFactoryUtil.createJSONObject();
+
+		extraDataJSONObject.put("companyId", stagedExpandoColumn.getCompanyId());
+		extraDataJSONObject.put("uuid", stagedExpandoColumn.getUuid());
+
 		try {
 			systemEventLocalService.addSystemEvent(
 				stagedExpandoColumn.getCompanyId(), stagedModelType.getClassName(),
-				stagedExpandoColumn.getPrimaryKey(), stagedExpandoColumn.getUuid(),
-				null, SystemEventConstants.TYPE_DELETE, StringPool.BLANK);
+				stagedExpandoColumn.getPrimaryKey(), StringPool.BLANK,
+				null, SystemEventConstants.TYPE_DELETE, extraDataJSONObject.toString());
 		}
 		catch (PortalException pe) {
 			throw new RuntimeException(pe);
