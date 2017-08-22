@@ -29,7 +29,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.adapter.ModelAdapterUtil;
-import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
@@ -103,28 +102,6 @@ public class ExpandoColumnLocalServiceImpl
 		expandoValueLocalService.deleteColumnValues(column.getColumnId());
 	}
 
-	protected void addDeletionSystemEvent(ExpandoColumn expandoColumn) {
-		StagedExpandoColumn stagedExpandoColumn = ModelAdapterUtil.adapt(
-			expandoColumn, ExpandoColumn.class, StagedExpandoColumn.class);
-
-		StagedModelType stagedModelType = stagedExpandoColumn.getStagedModelType();
-
-		JSONObject extraDataJSONObject = JSONFactoryUtil.createJSONObject();
-
-		extraDataJSONObject.put("companyId", stagedExpandoColumn.getCompanyId());
-		extraDataJSONObject.put("uuid", stagedExpandoColumn.getUuid());
-
-		try {
-			systemEventLocalService.addSystemEvent(
-				stagedExpandoColumn.getCompanyId(), stagedModelType.getClassName(),
-				stagedExpandoColumn.getPrimaryKey(), StringPool.BLANK,
-				null, SystemEventConstants.TYPE_DELETE, extraDataJSONObject.toString());
-		}
-		catch (PortalException pe) {
-			throw new RuntimeException(pe);
-		}
-	}
-
 	@Override
 	public void deleteColumn(long columnId) throws PortalException {
 		ExpandoColumn column = expandoColumnPersistence.findByPrimaryKey(
@@ -150,7 +127,7 @@ public class ExpandoColumnLocalServiceImpl
 			tableId, name);
 
 		if (column != null) {
-			expandoColumnPersistence.remove(column);
+			deleteColumn(column);
 		}
 	}
 
@@ -422,6 +399,32 @@ public class ExpandoColumnLocalServiceImpl
 		expandoColumnPersistence.update(column);
 
 		return column;
+	}
+
+	protected void addDeletionSystemEvent(ExpandoColumn expandoColumn) {
+		StagedExpandoColumn stagedExpandoColumn = ModelAdapterUtil.adapt(
+			expandoColumn, ExpandoColumn.class, StagedExpandoColumn.class);
+
+		StagedModelType stagedModelType =
+			stagedExpandoColumn.getStagedModelType();
+
+		JSONObject extraDataJSONObject = JSONFactoryUtil.createJSONObject();
+
+		extraDataJSONObject.put(
+			"companyId", stagedExpandoColumn.getCompanyId());
+		extraDataJSONObject.put("uuid", stagedExpandoColumn.getUuid());
+
+		try {
+			systemEventLocalService.addSystemEvent(
+				stagedExpandoColumn.getCompanyId(),
+				stagedModelType.getClassName(),
+				stagedExpandoColumn.getPrimaryKey(), StringPool.BLANK, null,
+				SystemEventConstants.TYPE_DELETE,
+				extraDataJSONObject.toString());
+		}
+		catch (PortalException pe) {
+			throw new RuntimeException(pe);
+		}
 	}
 
 	protected ExpandoValue validate(

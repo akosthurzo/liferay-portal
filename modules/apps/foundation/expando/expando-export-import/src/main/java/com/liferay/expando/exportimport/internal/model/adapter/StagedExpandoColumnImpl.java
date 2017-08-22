@@ -14,10 +14,10 @@
 
 package com.liferay.expando.exportimport.internal.model.adapter;
 
-import com.liferay.expando.kernel.model.adapter.StagedExpandoColumn;
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.expando.kernel.model.ExpandoColumn;
 import com.liferay.expando.kernel.model.ExpandoTable;
+import com.liferay.expando.kernel.model.adapter.StagedExpandoColumn;
 import com.liferay.expando.kernel.service.ExpandoTableLocalServiceUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -49,7 +49,8 @@ public class StagedExpandoColumnImpl implements StagedExpandoColumn {
 		try {
 			expandoTable = ExpandoTableLocalServiceUtil.getExpandoTable(
 				expandoColumn.getTableId());
-		} catch (PortalException pe) {
+		}
+		catch (PortalException pe) {
 			throw new RuntimeException(
 				"Could not find expando table for tableId=" +
 					expandoColumn.getTableId(),

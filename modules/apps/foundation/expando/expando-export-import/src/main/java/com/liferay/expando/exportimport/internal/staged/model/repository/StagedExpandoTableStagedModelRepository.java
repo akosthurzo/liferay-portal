@@ -14,10 +14,10 @@
 
 package com.liferay.expando.exportimport.internal.staged.model.repository;
 
-import com.liferay.expando.kernel.model.adapter.StagedExpandoTable;
 import com.liferay.expando.kernel.model.ExpandoTable;
+import com.liferay.expando.kernel.model.adapter.StagedExpandoTable;
 import com.liferay.expando.kernel.service.ExpandoTableLocalService;
-import com.liferay.exportimport.kernel.lar.ExportImportHelperUtil;
+import com.liferay.exportimport.kernel.lar.ExportImportHelper;
 import com.liferay.exportimport.kernel.lar.ManifestSummary;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataException;
@@ -78,9 +78,6 @@ public class StagedExpandoTableStagedModelRepository
 	public void deleteStagedModel(
 			String uuid, long groupId, String className, String extraData)
 		throws PortalException {
-
-		//_expandoTableLocalService.deleteTable(                   ///////////////////////////
-		//	, ,ExpandoTableConstants.DEFAULT_TABLE_NAME);
 	}
 
 	@Override
@@ -159,14 +156,15 @@ public class StagedExpandoTableStagedModelRepository
 
 					long modelAdditionCount = super.performCount();
 
-					manifestSummary.addModelAdditionCount(stagedModelType,
-						modelAdditionCount);
+					manifestSummary.addModelAdditionCount(
+						stagedModelType, modelAdditionCount);
 
-					long modelDeletionCount = ExportImportHelperUtil.getModelDeletionCount(portletDataContext,
-						stagedModelType);
+					long modelDeletionCount =
+						_exportImportHelper.getModelDeletionCount(
+							portletDataContext, stagedModelType);
 
-					manifestSummary.addModelDeletionCount(stagedModelType,
-						modelDeletionCount);
+					manifestSummary.addModelDeletionCount(
+						stagedModelType, modelDeletionCount);
 
 					return modelAdditionCount;
 				}
@@ -176,8 +174,9 @@ public class StagedExpandoTableStagedModelRepository
 		exportActionableDynamicQuery.setBaseLocalService(
 			_expandoTableLocalService);
 
-		Class<? extends ExpandoTableLocalService> expandoTableLocalServiceClass =
-			_expandoTableLocalService.getClass();
+		Class<? extends ExpandoTableLocalService>
+			expandoTableLocalServiceClass =
+				_expandoTableLocalService.getClass();
 
 		exportActionableDynamicQuery.setClassLoader(
 			expandoTableLocalServiceClass.getClassLoader());
@@ -247,6 +246,9 @@ public class StagedExpandoTableStagedModelRepository
 
 	@Reference
 	private ExpandoTableLocalService _expandoTableLocalService;
+
+	@Reference
+	private ExportImportHelper _exportImportHelper;
 
 	@Reference
 	private Portal _portal;

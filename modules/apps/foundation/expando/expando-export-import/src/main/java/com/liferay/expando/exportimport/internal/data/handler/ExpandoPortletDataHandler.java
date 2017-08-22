@@ -78,14 +78,8 @@ public class ExpandoPortletDataHandler extends BasePortletDataHandler {
 			PortletPreferences portletPreferences)
 		throws Exception {
 
-//		if (portletDataContext.addPrimaryKey(
-//			LayoutSetPrototypePortletDataHandler.class, "deleteData")) {
-//
-//			return portletPreferences;
-//		}
-//
-//		layoutSetPrototypeLocalService.deleteNondefaultLayoutSetPrototypes(
-//			portletDataContext.getCompanyId());
+		_stagedExpandoTableStagedModelRepository.deleteStagedModels(
+			portletDataContext);
 
 		return portletPreferences;
 	}

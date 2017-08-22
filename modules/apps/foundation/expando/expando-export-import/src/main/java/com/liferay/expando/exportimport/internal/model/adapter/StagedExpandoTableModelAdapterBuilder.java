@@ -14,8 +14,8 @@
 
 package com.liferay.expando.exportimport.internal.model.adapter;
 
-import com.liferay.expando.kernel.model.adapter.StagedExpandoTable;
 import com.liferay.expando.kernel.model.ExpandoTable;
+import com.liferay.expando.kernel.model.adapter.StagedExpandoTable;
 import com.liferay.portal.kernel.model.adapter.builder.ModelAdapterBuilder;
 
 import org.osgi.service.component.annotations.Component;

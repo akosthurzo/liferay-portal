@@ -14,11 +14,11 @@
 
 package com.liferay.expando.exportimport.internal.staged.model.repository;
 
+import com.liferay.expando.kernel.model.ExpandoColumn;
 import com.liferay.expando.kernel.model.adapter.StagedExpandoColumn;
 import com.liferay.expando.kernel.model.adapter.StagedExpandoTable;
-import com.liferay.expando.kernel.model.ExpandoColumn;
 import com.liferay.expando.kernel.service.ExpandoColumnLocalService;
-import com.liferay.exportimport.kernel.lar.ExportImportHelperUtil;
+import com.liferay.exportimport.kernel.lar.ExportImportHelper;
 import com.liferay.exportimport.kernel.lar.ManifestSummary;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataException;
@@ -88,7 +88,10 @@ public class StagedExpandoColumnStagedModelRepository
 		JSONObject extraDataJSONObject = JSONFactoryUtil.createJSONObject(
 			extraData);
 
-		List<StagedExpandoColumn> stagedExpandoColumns = fetchStagedModelsByUuidAndCompanyId(extraDataJSONObject.getString("uuid"), extraDataJSONObject.getInt("companyId"));
+		List<StagedExpandoColumn> stagedExpandoColumns =
+			fetchStagedModelsByUuidAndCompanyId(
+				extraDataJSONObject.getString("uuid"),
+				extraDataJSONObject.getInt("companyId"));
 
 		if (ListUtil.isEmpty(stagedExpandoColumns)) {
 			return;
@@ -97,7 +100,6 @@ public class StagedExpandoColumnStagedModelRepository
 		for (StagedExpandoColumn stagedExpandoColumn : stagedExpandoColumns) {
 			deleteStagedModel(stagedExpandoColumn);
 		}
-
 	}
 
 	@Override
@@ -181,14 +183,15 @@ public class StagedExpandoColumnStagedModelRepository
 
 					long modelAdditionCount = super.performCount();
 
-					manifestSummary.addModelAdditionCount(stagedModelType,
-						modelAdditionCount);
+					manifestSummary.addModelAdditionCount(
+						stagedModelType, modelAdditionCount);
 
-					long modelDeletionCount = ExportImportHelperUtil.getModelDeletionCount(portletDataContext,
-						stagedModelType);
+					long modelDeletionCount =
+						_exportImportHelper.getModelDeletionCount(
+							portletDataContext, stagedModelType);
 
-					manifestSummary.addModelDeletionCount(stagedModelType,
-						modelDeletionCount);
+					manifestSummary.addModelDeletionCount(
+						stagedModelType, modelDeletionCount);
 
 					return modelAdditionCount;
 				}
@@ -198,8 +201,9 @@ public class StagedExpandoColumnStagedModelRepository
 		exportActionableDynamicQuery.setBaseLocalService(
 			_expandoColumnLocalService);
 
-		Class<? extends ExpandoColumnLocalService> expandoColumnLocalServiceClass =
-			_expandoColumnLocalService.getClass();
+		Class<? extends ExpandoColumnLocalService>
+			expandoColumnLocalServiceClass =
+				_expandoColumnLocalService.getClass();
 
 		exportActionableDynamicQuery.setClassLoader(
 			expandoColumnLocalServiceClass.getClassLoader());
@@ -302,6 +306,9 @@ public class StagedExpandoColumnStagedModelRepository
 
 	@Reference
 	private ExpandoColumnLocalService _expandoColumnLocalService;
+
+	@Reference
+	private ExportImportHelper _exportImportHelper;
 
 	private StagedModelRepository<StagedExpandoTable>
 		_stagedExpandoTableStagedModelRepository;
