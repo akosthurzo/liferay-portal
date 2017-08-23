@@ -32,7 +32,7 @@ public class ExportImportClassedModelUtil {
 	public static String getClassName(ClassedModel classedModel) {
 		String modelClassName = classedModel.getModelClassName();
 
-		if (classedModel instanceof StagedModel) {
+		if (classedModel instanceof StagedModel && !classedModel.getClass().getSimpleName().startsWith("Staged")) {
 			StagedModel stagedModel = (StagedModel)classedModel;
 
 			StagedModelType stagedModelType = stagedModel.getStagedModelType();
