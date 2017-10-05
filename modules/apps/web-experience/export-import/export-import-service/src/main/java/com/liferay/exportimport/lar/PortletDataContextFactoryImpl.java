@@ -65,6 +65,9 @@ public class PortletDataContextFactoryImpl
 		PortletDataContext clonePortletDataContext = new PortletDataContextImpl(
 			_lockManager, false);
 
+		clonePortletDataContext.setExportClassedModels(
+			portletDataContext.getExportClassedModels());
+
 		clonePortletDataContext.setCompanyId(portletDataContext.getCompanyId());
 		clonePortletDataContext.setCompanyGroupId(
 			portletDataContext.getCompanyGroupId());

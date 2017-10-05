@@ -23,6 +23,14 @@ List<Menu> menus = bookmarksPortletToolbarContributor.getPortletTitleMenus(rende
 %>
 
 <div id="addButtonContainer">
+	<portlet:renderURL var="addNewImportProcessURL">
+		<portlet:param name="mvcPath" value="/import/new_import/import_layouts.jsp" />
+		<portlet:param name="groupId" value="<%= String.valueOf(scopeGroupId) %>" />
+		<portlet:param name="privateLayout" value="<%= String.valueOf(privateLayout) %>" />
+		<portlet:param name="validate" value="<%= String.valueOf(Boolean.TRUE) %>" />
+	</portlet:renderURL>
+
+	<liferay-frontend:add-menu-item title="Import entity" url="addNewImportProcessURL" />
 
 	<%
 	for (Menu menu : menus) {

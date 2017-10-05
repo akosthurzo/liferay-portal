@@ -30,6 +30,7 @@ import com.liferay.portal.kernel.model.StagedModel;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.DateRange;
 import com.liferay.portal.kernel.util.KeyValuePair;
+import com.liferay.portal.kernel.util.Tuple;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.zip.ZipReader;
 import com.liferay.portal.kernel.zip.ZipWriter;
@@ -129,6 +130,10 @@ public interface PortletDataContext extends Serializable {
 			Element element, String path, ClassedModel classedModel)
 		throws PortalException;
 
+	public void addExportClassedModel(String className, String uuid);
+
+	public Element addExportDataRootElement();
+
 	public void addLocks(Class<?> clazz, String key) throws PortalException;
 
 	public void addLocks(String className, String key, Lock lock);
@@ -198,6 +203,9 @@ public interface PortletDataContext extends Serializable {
 		String referenceType, boolean missing);
 
 	public boolean addScopedPrimaryKey(Class<?> clazz, String primaryKey);
+
+	public void addUncheckedModelAdditionCount(
+		PortletDataHandlerControl portletDataHandlerControl);
 
 	public void addZipEntry(String path, byte[] bytes);
 
@@ -306,6 +314,8 @@ public interface PortletDataContext extends Serializable {
 
 	public Map<String, List<ExpandoColumn>> getExpandoColumns();
 
+	public List<Tuple> getExportClassedModels();
+
 	public Element getExportDataElement(ClassedModel classedModel);
 
 	/**
@@ -323,6 +333,8 @@ public interface PortletDataContext extends Serializable {
 		Class<? extends StagedModel> clazz);
 
 	public Element getExportDataRootElement();
+
+	public String getExportDataRootElementString();
 
 	public String getExportImportProcessId();
 
@@ -635,6 +647,8 @@ public interface PortletDataContext extends Serializable {
 	public void setDataStrategy(String dataStrategy);
 
 	public void setEndDate(Date endDate);
+
+	public void setExportClassedModels(List<Tuple> exportClassedModels);
 
 	public void setExportDataRootElement(Element exportDataRootElement);
 

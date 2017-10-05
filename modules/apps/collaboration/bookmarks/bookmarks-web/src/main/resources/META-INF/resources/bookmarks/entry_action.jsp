@@ -43,6 +43,17 @@ else {
 %>
 
 <liferay-ui:icon-menu direction="left-side" icon="<%= StringPool.BLANK %>" markupView="lexicon" message="<%= StringPool.BLANK %>" showWhenSingleIcon="<%= true %>">
+	<portlet:actionURL name="/bookmarks/export_entry" var="exportEntry">
+		<portlet:param name="uuid" value="<%= entry.getUuid() %>" />
+		<portlet:param name="plid" value="<%= String.valueOf(plid) %>" />
+		<portlet:param name="groupId" value="<%= String.valueOf(entry.getGroupId()) %>" />
+	</portlet:actionURL>
+
+	<liferay-ui:icon
+		message="export"
+		url="<%= exportEntry %>"
+	/>
+
 	<c:if test="<%= BookmarksEntryPermissionChecker.contains(permissionChecker, entry, ActionKeys.UPDATE) %>">
 		<portlet:renderURL var="editURL">
 			<portlet:param name="mvcRenderCommandName" value="/bookmarks/edit_entry" />

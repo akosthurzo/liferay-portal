@@ -1283,6 +1283,12 @@ public class PortletExportController implements ExportController {
 		portletDataContext.setPortletId(portletId);
 		portletDataContext.setType("portlet");
 
+		String uuid = MapUtil.getString(
+			settingsMap, "com.liferay.bookmarks.model.BookmarksEntry");
+
+		portletDataContext.addExportClassedModel(
+			"com.liferay.bookmarks.model.BookmarksEntry", uuid);
+
 		return portletDataContext;
 	}
 

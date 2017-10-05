@@ -30,6 +30,7 @@ import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
 import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.exportimport.kernel.lar.ManifestSummary;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
+import com.liferay.exportimport.kernel.lar.PortletDataHandlerBoolean;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerControl;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
@@ -90,9 +91,11 @@ import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Tuple;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.xml.Attribute;
+import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.Node;
 import com.liferay.portal.kernel.xml.SAXReaderUtil;
@@ -301,6 +304,24 @@ public class PortletDataContextImpl implements PortletDataContext {
 		Element element, String path, ClassedModel classedModel) {
 
 		addExpando(element, path, classedModel, classedModel.getModelClass());
+	}
+
+	@Override
+	public void addExportClassedModel(String className, String uuid) {
+		_exportClassedModels.add(new Tuple(className, uuid));
+	}
+
+	@Override
+	public Element addExportDataRootElement() {
+		Document document = SAXReaderUtil.createDocument();
+
+		Class<?> clazz = getClass();
+
+		Element rootElement = document.addElement(clazz.getSimpleName());
+
+		setExportDataRootElement(rootElement);
+
+		return rootElement;
 	}
 
 	@Override
@@ -536,6 +557,51 @@ public class PortletDataContextImpl implements PortletDataContext {
 		}
 
 		return value;
+	}
+
+	@Override
+	public void addUncheckedModelAdditionCount(
+		PortletDataHandlerControl portletDataHandlerControl) {
+
+		if (!(portletDataHandlerControl instanceof PortletDataHandlerBoolean)) {
+			return;
+		}
+
+		PortletDataHandlerBoolean portletDataHandlerBoolean =
+			(PortletDataHandlerBoolean)portletDataHandlerControl;
+
+		PortletDataHandlerControl[] childPortletDataHandlerControls =
+			portletDataHandlerBoolean.getChildren();
+
+		if (childPortletDataHandlerControls != null) {
+			for (PortletDataHandlerControl childPortletDataHandlerControl :
+					childPortletDataHandlerControls) {
+
+				addUncheckedModelAdditionCount(childPortletDataHandlerControl);
+			}
+		}
+
+		if (Validator.isNull(portletDataHandlerControl.getClassName())) {
+			return;
+		}
+
+		boolean checkedControl = GetterUtil.getBoolean(
+			getBooleanParameter(
+				portletDataHandlerControl.getNamespace(),
+				portletDataHandlerControl.getControlName(), false));
+
+		if (!checkedControl) {
+			ManifestSummary manifestSummary = getManifestSummary();
+
+			StagedModelType stagedModelType = new StagedModelType(
+				portletDataHandlerControl.getClassName(),
+				portletDataHandlerBoolean.getReferrerClassName());
+
+			String manifestSummaryKey = ManifestSummary.getManifestSummaryKey(
+				stagedModelType);
+
+			manifestSummary.addModelAdditionCount(manifestSummaryKey, 0);
+		}
 	}
 
 	@Override
@@ -864,6 +930,11 @@ public class PortletDataContextImpl implements PortletDataContext {
 	}
 
 	@Override
+	public List<Tuple> getExportClassedModels() {
+		return _exportClassedModels;
+	}
+
+	@Override
 	public Element getExportDataElement(ClassedModel classedModel) {
 		return getExportDataElement(
 			classedModel,
@@ -938,6 +1009,24 @@ public class PortletDataContextImpl implements PortletDataContext {
 	@Override
 	public Element getExportDataRootElement() {
 		return _exportDataRootElement;
+	}
+
+	@Override
+	public String getExportDataRootElementString() {
+		Element rootElement = getExportDataRootElement();
+
+		if (rootElement == null) {
+			return StringPool.BLANK;
+		}
+
+		try {
+			Document document = rootElement.getDocument();
+
+			return document.formattedString();
+		}
+		catch (IOException ioe) {
+			return StringPool.BLANK;
+		}
 	}
 
 	@Override
@@ -1928,6 +2017,11 @@ public class PortletDataContextImpl implements PortletDataContext {
 	}
 
 	@Override
+	public void setExportClassedModels(List<Tuple> exportClassedModels) {
+		_exportClassedModels = exportClassedModels;
+	}
+
+	@Override
 	public void setExportDataRootElement(Element exportDataRootElement) {
 		_exportDataRootElement = exportDataRootElement;
 	}
@@ -2826,6 +2920,7 @@ public class PortletDataContextImpl implements PortletDataContext {
 	private Date _endDate;
 	private final Map<String, List<ExpandoColumn>> _expandoColumnsMap =
 		new HashMap<>();
+	private List<Tuple> _exportClassedModels = new ArrayList<>();
 	private transient Element _exportDataRootElement;
 	private String _exportImportProcessId;
 	private long _groupId;
