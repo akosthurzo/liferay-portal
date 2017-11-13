@@ -3103,8 +3103,8 @@ public class StagingImpl implements Staging {
 			}
 		}
 		catch (PortalException pe) {
-			if (_log.isWarnEnabled()) {
-				_log.warn(
+			if (_log.isDebugEnabled()) {
+				_log.debug(
 					StringBundler.concat(
 						"Unable to set recent layout revision ID with layout ",
 						"set branch ", String.valueOf(layoutSetBranchId),
