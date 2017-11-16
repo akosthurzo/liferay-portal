@@ -2441,9 +2441,6 @@ public class StagingImpl implements Staging {
 	public void updateLastPublishDate(
 			long groupId, boolean privateLayout, Date lastPublishDate)
 		throws PortalException {
-
-		ExportImportDateUtil.updateLastPublishDate(
-			groupId, privateLayout, null, lastPublishDate);
 	}
 
 	/**
@@ -2456,9 +2453,6 @@ public class StagingImpl implements Staging {
 	public void updateLastPublishDate(
 		String portletId, PortletPreferences portletPreferences,
 		Date lastPublishDate) {
-
-		ExportImportDateUtil.updateLastPublishDate(
-			portletId, portletPreferences, null, lastPublishDate);
 	}
 
 	/**
