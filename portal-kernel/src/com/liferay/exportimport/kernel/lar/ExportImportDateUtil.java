@@ -34,11 +34,13 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutSet;
+import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.StagedGroupedModel;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutSetLocalServiceUtil;
+import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.CalendarFactoryUtil;
 import com.liferay.portal.kernel.util.DateRange;
@@ -57,6 +59,7 @@ import java.io.Serializable;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
@@ -289,11 +292,26 @@ public class ExportImportDateUtil {
 
 	public static void updateLastPublishDate(
 			long groupId, boolean privateLayout, DateRange dateRange,
-			Date lastPublishDate)
-		throws PortalException {
+			Date lastPublishDate, Map<String, String[]> parameterMap)
+		throws Exception {
 
 		LayoutSet layoutSet = LayoutSetLocalServiceUtil.getLayoutSet(
 			groupId, privateLayout);
+
+		List<Portlet> dataSiteLevelPortlets =
+			ExportImportHelperUtil.getDataSiteLevelPortlets(
+				layoutSet.getCompanyId());
+
+		for (Portlet dataSiteLevelPortlet : dataSiteLevelPortlets) {
+			PortletDataHandler portletDataHandlerInstance =
+				dataSiteLevelPortlet.getPortletDataHandlerInstance();
+
+			if (!portletDataHandlerInstance.isLastPublishDateUpdatable(
+					parameterMap)) {
+
+				return;
+			}
+		}
 
 		Date originalLastPublishDate = getLastPublishDate(layoutSet);
 
@@ -329,7 +347,24 @@ public class ExportImportDateUtil {
 
 	public static void updateLastPublishDate(
 		String portletId, PortletPreferences portletPreferences,
-		DateRange dateRange, Date lastPublishDate) {
+		DateRange dateRange, Date lastPublishDate,
+		Map<String, String[]> parameterMap) {
+
+		Portlet portlet = PortletLocalServiceUtil.getPortletById(portletId);
+
+		PortletDataHandler portletDataHandlerInstance =
+			portlet.getPortletDataHandlerInstance();
+
+		try {
+			if (!portletDataHandlerInstance.isLastPublishDateUpdatable(
+					parameterMap)) {
+
+				return;
+			}
+		}
+		catch (PortletDataException pde) {
+			_log.error(pde, pde);
+		}
 
 		Date originalLastPublishDate = getLastPublishDate(portletPreferences);
 
