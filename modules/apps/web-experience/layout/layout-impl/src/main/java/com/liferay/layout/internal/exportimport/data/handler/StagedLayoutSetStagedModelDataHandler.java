@@ -256,7 +256,8 @@ public class StagedLayoutSetStagedModelDataHandler
 				new UpdateLayoutSetLastPublishDateCallable(
 					portletDataContext.getDateRange(),
 					portletDataContext.getGroupId(),
-					portletDataContext.isPrivateLayout()));
+					portletDataContext.isPrivateLayout(),
+					portletDataContext.getParameterMap()));
 		}
 	}
 
@@ -733,15 +734,17 @@ public class StagedLayoutSetStagedModelDataHandler
 		implements Callable<Void> {
 
 		public UpdateLayoutSetLastPublishDateCallable(
-			DateRange dateRange, long groupId, boolean privateLayout) {
+			DateRange dateRange, long groupId, boolean privateLayout,
+			Map<String, String[]> parameterMap) {
 
 			_dateRange = dateRange;
 			_groupId = groupId;
 			_privateLayout = privateLayout;
+			_parameterMap = parameterMap;
 		}
 
 		@Override
-		public Void call() throws PortalException {
+		public Void call() throws Exception {
 			Group group = _groupLocalService.getGroup(_groupId);
 
 			Date endDate = null;
@@ -755,11 +758,12 @@ public class StagedLayoutSetStagedModelDataHandler
 
 				ExportImportDateUtil.updateLastPublishDate(
 					stagingGroup.getGroupId(), _privateLayout, _dateRange,
-					endDate);
+					endDate, _parameterMap);
 			}
 			else {
 				ExportImportDateUtil.updateLastPublishDate(
-					_groupId, _privateLayout, _dateRange, endDate);
+					_groupId, _privateLayout, _dateRange, endDate,
+					_parameterMap);
 			}
 
 			return null;
@@ -767,6 +771,7 @@ public class StagedLayoutSetStagedModelDataHandler
 
 		private final DateRange _dateRange;
 		private final long _groupId;
+		private final Map<String, String[]> _parameterMap;
 		private final boolean _privateLayout;
 
 	}

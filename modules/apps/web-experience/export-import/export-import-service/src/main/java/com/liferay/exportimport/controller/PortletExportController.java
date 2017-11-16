@@ -610,7 +610,8 @@ public class PortletExportController implements ExportController {
 				portletDataContext.getExportImportProcessId(),
 				new UpdatePortletLastPublishDateCallable(
 					adjustedDateRange, portletDataContext.getEndDate(),
-					portletDataContext.getGroupId(), plid, portletId));
+					portletDataContext.getGroupId(), plid, portletId,
+					portletDataContext.getParameterMap()));
 		}
 	}
 
@@ -1422,13 +1423,14 @@ public class PortletExportController implements ExportController {
 
 		public UpdatePortletLastPublishDateCallable(
 			DateRange dateRange, Date endDate, long groupId, long plid,
-			String portletId) {
+			String portletId, Map<String, String[]> parameterMap) {
 
 			_dateRange = dateRange;
 			_endDate = endDate;
 			_groupId = groupId;
 			_plid = plid;
 			_portletId = portletId;
+			_parameterMap = parameterMap;
 		}
 
 		@Override
@@ -1461,7 +1463,8 @@ public class PortletExportController implements ExportController {
 			}
 
 			ExportImportDateUtil.updateLastPublishDate(
-				_portletId, jxPortletPreferences, _dateRange, _endDate);
+				_portletId, jxPortletPreferences, _dateRange, _endDate,
+				_parameterMap);
 
 			return null;
 		}
@@ -1469,6 +1472,7 @@ public class PortletExportController implements ExportController {
 		private final DateRange _dateRange;
 		private final Date _endDate;
 		private final long _groupId;
+		private final Map<String, String[]> _parameterMap;
 		private final long _plid;
 		private final String _portletId;
 
