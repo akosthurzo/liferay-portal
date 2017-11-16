@@ -15,7 +15,10 @@
 package com.liferay.exportimport.kernel.lar;
 
 import com.liferay.portal.kernel.model.Portlet;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringPool;
+
+import java.util.Map;
 
 import javax.portlet.PortletPreferences;
 
@@ -226,6 +229,43 @@ public interface PortletDataHandler {
 	public boolean isDataSiteLevel();
 
 	public boolean isDisplayPortlet();
+
+	public default boolean isLastPublishDateUpdatable(
+			Map<String, String[]> parameterMap)
+		throws PortletDataException {
+
+		return isLastPublishDateUpdatable(parameterMap, getExportControls());
+	}
+
+	public default boolean isLastPublishDateUpdatable(
+		Map<String, String[]> parameterMap,
+		PortletDataHandlerControl[] portletDataHandlerControls) {
+
+		for (PortletDataHandlerControl portletDataHandlerControl :
+				portletDataHandlerControls) {
+
+			if (portletDataHandlerControl instanceof
+					PortletDataHandlerBoolean) {
+
+				PortletDataHandlerBoolean portletDataHandlerBoolean =
+					(PortletDataHandlerBoolean)portletDataHandlerControl;
+
+				if (((portletDataHandlerBoolean.getChildren() != null) &&
+					 !isLastPublishDateUpdatable(
+						 parameterMap,
+						 portletDataHandlerBoolean.getChildren())) ||
+					!MapUtil.getBoolean(
+						parameterMap,
+						portletDataHandlerControl.getNamespacedControlName(),
+						true)) {
+
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
 
 	/**
 	 * Returns whether the data exported by this handler should be included by
