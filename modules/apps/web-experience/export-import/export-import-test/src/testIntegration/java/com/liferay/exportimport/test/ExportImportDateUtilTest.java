@@ -15,9 +15,13 @@
 package com.liferay.exportimport.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationParameterMapFactory;
 import com.liferay.exportimport.kernel.lar.ExportImportDateUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
+import com.liferay.exportimport.kernel.lar.PortletDataHandlerControl;
 import com.liferay.exportimport.lar.PortletDataContextImpl;
+import com.liferay.journal.constants.JournalPortletKeys;
+import com.liferay.journal.exportimport.data.handler.JournalPortletDataHandler;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutSet;
@@ -166,6 +170,95 @@ public class ExportImportDateUtilTest {
 	}
 
 	@Test
+	public void testUpdateLastPubishDateNotUpdatableLayoutSet()
+		throws Exception {
+
+		Date now = new Date();
+
+		Date yesterday = new Date(now.getTime() - Time.DAY);
+
+		updateLastPublishDate(_layoutSet, yesterday);
+
+		DateRange dateRange = new DateRange(yesterday, now);
+
+		Map<String, String[]> parameterMap =
+			ExportImportConfigurationParameterMapFactory.buildParameterMap();
+
+		parameterMap.put(
+			PortletDataHandlerControl.getNamespacedControlName(
+				JournalPortletDataHandler.NAMESPACE, "folders"),
+			new String[] {"false"});
+
+		ExportImportDateUtil.updateLastPublishDate(
+			_group.getGroupId(), false, dateRange, now, parameterMap);
+
+		_layoutSet = LayoutSetLocalServiceUtil.getLayoutSet(
+			_layoutSet.getLayoutSetId());
+
+		Date lastPublishDate = ExportImportDateUtil.getLastPublishDate(
+			_layoutSet);
+
+		Assert.assertEquals(yesterday, lastPublishDate);
+
+		parameterMap.put(
+			PortletDataHandlerControl.getNamespacedControlName(
+				JournalPortletDataHandler.NAMESPACE, "folders"),
+			new String[] {"true"});
+
+		ExportImportDateUtil.updateLastPublishDate(
+			_group.getGroupId(), false, dateRange, now, parameterMap);
+
+		_layoutSet = LayoutSetLocalServiceUtil.getLayoutSet(
+			_layoutSet.getLayoutSetId());
+
+		lastPublishDate = ExportImportDateUtil.getLastPublishDate(_layoutSet);
+
+		Assert.assertEquals(now, lastPublishDate);
+	}
+
+	@Test
+	public void testUpdateLastPubishDateNotUpdatablePortlet() throws Exception {
+		Date now = new Date();
+
+		Date yesterday = new Date(now.getTime() - Time.DAY);
+
+		updateLastPublishDate(_portletPreferences, yesterday);
+
+		DateRange dateRange = new DateRange(yesterday, now);
+
+		Map<String, String[]> parameterMap =
+			ExportImportConfigurationParameterMapFactory.buildParameterMap();
+
+		parameterMap.put(
+			PortletDataHandlerControl.getNamespacedControlName(
+				JournalPortletDataHandler.NAMESPACE, "folders"),
+			new String[] {"false"});
+
+		ExportImportDateUtil.updateLastPublishDate(
+			JournalPortletKeys.JOURNAL, _portletPreferences, dateRange, now,
+			parameterMap);
+
+		Date lastPublishDate = ExportImportDateUtil.getLastPublishDate(
+			_portletPreferences);
+
+		Assert.assertEquals(yesterday, lastPublishDate);
+
+		parameterMap.put(
+			PortletDataHandlerControl.getNamespacedControlName(
+				JournalPortletDataHandler.NAMESPACE, "folders"),
+			new String[] {"true"});
+
+		ExportImportDateUtil.updateLastPublishDate(
+			JournalPortletKeys.JOURNAL, _portletPreferences, dateRange, now,
+			parameterMap);
+
+		lastPublishDate = ExportImportDateUtil.getLastPublishDate(
+			_portletPreferences);
+
+		Assert.assertEquals(now, lastPublishDate);
+	}
+
+	@Test
 	public void testUpdateLastPublishDateFirstPublishLayoutSet()
 		throws Exception {
 
@@ -178,7 +271,8 @@ public class ExportImportDateUtilTest {
 
 		ExportImportDateUtil.updateLastPublishDate(
 			_layoutSet.getGroupId(), _layoutSet.isPrivateLayout(), dateRange,
-			endDate);
+			endDate,
+			ExportImportConfigurationParameterMapFactory.buildParameterMap());
 
 		_layoutSet = LayoutSetLocalServiceUtil.getLayoutSet(
 			_layoutSet.getLayoutSetId());
@@ -204,7 +298,8 @@ public class ExportImportDateUtilTest {
 		DateRange dateRange = new DateRange(startDate, endDate);
 
 		ExportImportDateUtil.updateLastPublishDate(
-			PortletKeys.EXPORT_IMPORT, _portletPreferences, dateRange, endDate);
+			PortletKeys.EXPORT_IMPORT, _portletPreferences, dateRange, endDate,
+			ExportImportConfigurationParameterMapFactory.buildParameterMap());
 
 		Date lastPublishDate = ExportImportDateUtil.getLastPublishDate(
 			_portletPreferences);
@@ -230,7 +325,8 @@ public class ExportImportDateUtilTest {
 
 		ExportImportDateUtil.updateLastPublishDate(
 			_layoutSet.getGroupId(), _layoutSet.isPrivateLayout(), dateRange,
-			endDate);
+			endDate,
+			ExportImportConfigurationParameterMapFactory.buildParameterMap());
 
 		_layoutSet = LayoutSetLocalServiceUtil.getLayoutSet(
 			_layoutSet.getLayoutSetId());
@@ -255,7 +351,8 @@ public class ExportImportDateUtilTest {
 		DateRange dateRange = new DateRange(startDate, endDate);
 
 		ExportImportDateUtil.updateLastPublishDate(
-			PortletKeys.EXPORT_IMPORT, _portletPreferences, dateRange, endDate);
+			PortletKeys.EXPORT_IMPORT, _portletPreferences, dateRange, endDate,
+			ExportImportConfigurationParameterMapFactory.buildParameterMap());
 
 		Date lastPublishDate = ExportImportDateUtil.getLastPublishDate(
 			_portletPreferences);
@@ -278,7 +375,8 @@ public class ExportImportDateUtilTest {
 
 		ExportImportDateUtil.updateLastPublishDate(
 			_layoutSet.getGroupId(), _layoutSet.isPrivateLayout(), dateRange,
-			endDate);
+			endDate,
+			ExportImportConfigurationParameterMapFactory.buildParameterMap());
 
 		_layoutSet = LayoutSetLocalServiceUtil.getLayoutSet(
 			_layoutSet.getLayoutSetId());
@@ -303,7 +401,8 @@ public class ExportImportDateUtilTest {
 		DateRange dateRange = new DateRange(startDate, endDate);
 
 		ExportImportDateUtil.updateLastPublishDate(
-			PortletKeys.EXPORT_IMPORT, _portletPreferences, dateRange, endDate);
+			PortletKeys.EXPORT_IMPORT, _portletPreferences, dateRange, endDate,
+			ExportImportConfigurationParameterMapFactory.buildParameterMap());
 
 		Date lastPublishDate = ExportImportDateUtil.getLastPublishDate(
 			_portletPreferences);
@@ -324,7 +423,8 @@ public class ExportImportDateUtilTest {
 
 		ExportImportDateUtil.updateLastPublishDate(
 			_layoutSet.getGroupId(), _layoutSet.isPrivateLayout(), dateRange,
-			endDate);
+			endDate,
+			ExportImportConfigurationParameterMapFactory.buildParameterMap());
 
 		_layoutSet = LayoutSetLocalServiceUtil.getLayoutSet(
 			_layoutSet.getLayoutSetId());
@@ -347,7 +447,8 @@ public class ExportImportDateUtilTest {
 		DateRange dateRange = new DateRange(startDate, endDate);
 
 		ExportImportDateUtil.updateLastPublishDate(
-			PortletKeys.EXPORT_IMPORT, _portletPreferences, dateRange, endDate);
+			PortletKeys.EXPORT_IMPORT, _portletPreferences, dateRange, endDate,
+			ExportImportConfigurationParameterMapFactory.buildParameterMap());
 
 		Date lastPublishDate = ExportImportDateUtil.getLastPublishDate(
 			_portletPreferences);
@@ -369,7 +470,8 @@ public class ExportImportDateUtilTest {
 		DateRange dateRange = new DateRange(now, null);
 
 		ExportImportDateUtil.updateLastPublishDate(
-			PortletKeys.EXPORT_IMPORT, _portletPreferences, dateRange, now);
+			PortletKeys.EXPORT_IMPORT, _portletPreferences, dateRange, now,
+			ExportImportConfigurationParameterMapFactory.buildParameterMap());
 
 		lastPublishDate = ExportImportDateUtil.getLastPublishDate(
 			_portletPreferences);
@@ -379,7 +481,8 @@ public class ExportImportDateUtilTest {
 		dateRange = new DateRange(null, now);
 
 		ExportImportDateUtil.updateLastPublishDate(
-			PortletKeys.EXPORT_IMPORT, _portletPreferences, dateRange, now);
+			PortletKeys.EXPORT_IMPORT, _portletPreferences, dateRange, now,
+			ExportImportConfigurationParameterMapFactory.buildParameterMap());
 
 		lastPublishDate = ExportImportDateUtil.getLastPublishDate(
 			_portletPreferences);
@@ -404,7 +507,8 @@ public class ExportImportDateUtilTest {
 
 		ExportImportDateUtil.updateLastPublishDate(
 			_layoutSet.getGroupId(), _layoutSet.isPrivateLayout(), dateRange,
-			endDate);
+			endDate,
+			ExportImportConfigurationParameterMapFactory.buildParameterMap());
 
 		_layoutSet = LayoutSetLocalServiceUtil.getLayoutSet(
 			_layoutSet.getLayoutSetId());
@@ -425,7 +529,8 @@ public class ExportImportDateUtilTest {
 
 		ExportImportDateUtil.updateLastPublishDate(
 			_layoutSet.getGroupId(), _layoutSet.isPrivateLayout(), dateRange,
-			endDate);
+			endDate,
+			ExportImportConfigurationParameterMapFactory.buildParameterMap());
 
 		_layoutSet = LayoutSetLocalServiceUtil.getLayoutSet(
 			_layoutSet.getLayoutSetId());
@@ -449,7 +554,8 @@ public class ExportImportDateUtilTest {
 		DateRange dateRange = new DateRange(startDate, endDate);
 
 		ExportImportDateUtil.updateLastPublishDate(
-			PortletKeys.EXPORT_IMPORT, _portletPreferences, dateRange, endDate);
+			PortletKeys.EXPORT_IMPORT, _portletPreferences, dateRange, endDate,
+			ExportImportConfigurationParameterMapFactory.buildParameterMap());
 
 		Date lastPublishDate = ExportImportDateUtil.getLastPublishDate(
 			_portletPreferences);
@@ -466,7 +572,8 @@ public class ExportImportDateUtilTest {
 		dateRange = new DateRange(startDate, endDate);
 
 		ExportImportDateUtil.updateLastPublishDate(
-			PortletKeys.EXPORT_IMPORT, _portletPreferences, dateRange, endDate);
+			PortletKeys.EXPORT_IMPORT, _portletPreferences, dateRange, endDate,
+			ExportImportConfigurationParameterMapFactory.buildParameterMap());
 
 		lastPublishDate = ExportImportDateUtil.getLastPublishDate(
 			_portletPreferences);
