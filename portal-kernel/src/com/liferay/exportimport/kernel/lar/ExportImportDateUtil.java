@@ -290,6 +290,24 @@ public class ExportImportDateUtil {
 		return new Date(lastPublishDate);
 	}
 
+	/**
+	 * @deprecated As of 7.0.0
+	 */
+	@Deprecated
+	public static void updateLastPublishDate(
+			long groupId, boolean privateLayout, DateRange dateRange,
+			Date lastPublishDate)
+		throws PortalException {
+
+		try {
+			updateLastPublishDate(
+				groupId, privateLayout, dateRange, lastPublishDate, null);
+		}
+		catch (Exception e) {
+			throw new PortalException(e);
+		}
+	}
+
 	public static void updateLastPublishDate(
 			long groupId, boolean privateLayout, DateRange dateRange,
 			Date lastPublishDate, Map<String, String[]> parameterMap)
@@ -343,6 +361,18 @@ public class ExportImportDateUtil {
 		}
 
 		stagedGroupedModel.setLastPublishDate(lastPublishDate);
+	}
+
+	/**
+	 * @deprecated As of 7.0.0
+	 */
+	@Deprecated
+	public static void updateLastPublishDate(
+		String portletId, PortletPreferences portletPreferences,
+		DateRange dateRange, Date lastPublishDate) {
+
+		updateLastPublishDate(
+			portletId, portletPreferences, dateRange, lastPublishDate, null);
 	}
 
 	public static void updateLastPublishDate(
