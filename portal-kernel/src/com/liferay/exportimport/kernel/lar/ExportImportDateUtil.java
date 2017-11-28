@@ -36,6 +36,7 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.StagedGroupedModel;
+import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
@@ -316,18 +317,55 @@ public class ExportImportDateUtil {
 		LayoutSet layoutSet = LayoutSetLocalServiceUtil.getLayoutSet(
 			groupId, privateLayout);
 
-		List<Portlet> dataSiteLevelPortlets =
-			ExportImportHelperUtil.getDataSiteLevelPortlets(
-				layoutSet.getCompanyId());
+		if (!MapUtil.getBoolean(
+				parameterMap,
+				PortletDataHandlerKeys.PORTLET_CONFIGURATION_ALL) ||
+			!MapUtil.getBoolean(
+				parameterMap, PortletDataHandlerKeys.PORTLET_DATA_ALL) ||
+			!MapUtil.getBoolean(
+				parameterMap, PortletDataHandlerKeys.PORTLET_SETUP_ALL)) {
 
-		for (Portlet dataSiteLevelPortlet : dataSiteLevelPortlets) {
-			PortletDataHandler portletDataHandlerInstance =
-				dataSiteLevelPortlet.getPortletDataHandlerInstance();
+			List<Portlet> dataSiteLevelPortlets =
+				ExportImportHelperUtil.getDataSiteLevelPortlets(
+					layoutSet.getCompanyId());
 
-			if (!portletDataHandlerInstance.isLastPublishDateUpdatable(
-					parameterMap)) {
+			for (Portlet dataSiteLevelPortlet : dataSiteLevelPortlets) {
+				Group group = layoutSet.getGroup();
 
-				return;
+				if (!group.isStagedPortlet(
+						dataSiteLevelPortlet.getPortletId())) {
+
+					continue;
+				}
+
+				String[] portletData = parameterMap.get(
+					PortletDataHandlerKeys.PORTLET_DATA + StringPool.UNDERLINE +
+						PortletIdCodec.decodePortletName(
+							dataSiteLevelPortlet.getPortletId()));
+
+				if (portletData == null) {
+					continue;
+				}
+
+				Map<String, Boolean> exportPortletControlsMap =
+					ExportImportHelperUtil.getExportPortletControlsMap(
+						layoutSet.getCompanyId(),
+						dataSiteLevelPortlet.getPortletId(), parameterMap);
+
+				for (Boolean value : exportPortletControlsMap.values()) {
+					if (!value) {
+						return;
+					}
+				}
+
+				PortletDataHandler portletDataHandlerInstance =
+					dataSiteLevelPortlet.getPortletDataHandlerInstance();
+
+				if (!portletDataHandlerInstance.isLastPublishDateUpdatable(
+						parameterMap)) {
+
+					return;
+				}
 			}
 		}
 
@@ -371,8 +409,14 @@ public class ExportImportDateUtil {
 		String portletId, PortletPreferences portletPreferences,
 		DateRange dateRange, Date lastPublishDate) {
 
-		updateLastPublishDate(
-			portletId, portletPreferences, dateRange, lastPublishDate, null);
+		try {
+			updateLastPublishDate(
+				portletId, portletPreferences, dateRange, lastPublishDate,
+				null);
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public static void updateLastPublishDate(
