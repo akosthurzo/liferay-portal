@@ -19,6 +19,7 @@ import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationPa
 import com.liferay.exportimport.kernel.lar.ExportImportDateUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerControl;
+import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.lar.PortletDataContextImpl;
 import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.exportimport.data.handler.JournalPortletDataHandler;
@@ -34,6 +35,7 @@ import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.util.DateRange;
 import com.liferay.portal.kernel.util.PortletKeys;
+import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
@@ -188,6 +190,18 @@ public class ExportImportDateUtilTest {
 			PortletDataHandlerControl.getNamespacedControlName(
 				JournalPortletDataHandler.NAMESPACE, "folders"),
 			new String[] {"false"});
+		parameterMap.put(
+			PortletDataHandlerKeys.PORTLET_ARCHIVED_SETUPS_ALL,
+			new String[] {"true"});
+		parameterMap.put(
+			PortletDataHandlerKeys.PORTLET_DATA_ALL, new String[] {"false"});
+		parameterMap.put(
+			PortletDataHandlerKeys.PORTLET_DATA + StringPool.UNDERLINE +
+				JournalPortletKeys.JOURNAL,
+			new String[] {"true"});
+		parameterMap.put(
+			PortletDataHandlerKeys.PORTLET_USER_PREFERENCES_ALL,
+			new String[] {"true"});
 
 		ExportImportDateUtil.updateLastPublishDate(
 			_group.getGroupId(), false, dateRange, now, parameterMap);
