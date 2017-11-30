@@ -71,7 +71,7 @@ public class ExportEntryMVCActionCommand extends BaseMVCActionCommand {
 						fetchBookmarksEntryByUuidAndGroupId(uuid, groupId)
 			).build();
 
-			_changeSetLocalService.exportChangeSet(changeSet);
+			_changeSetLocalService.addDraftChangeSet(changeSet);
 		}
 		catch (Exception e) {
 			if (e instanceof LARFileNameException) {

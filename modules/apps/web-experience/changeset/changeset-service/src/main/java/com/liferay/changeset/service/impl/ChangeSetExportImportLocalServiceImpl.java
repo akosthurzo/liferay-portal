@@ -16,8 +16,18 @@ package com.liferay.changeset.service.impl;
 
 import com.liferay.changeset.ChangeSet;
 import com.liferay.changeset.service.base.ChangeSetExportImportLocalServiceBaseImpl;
+import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationConstants;
+import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationParameterMapFactory;
+import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationSettingsMapFactory;
+import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.util.Validator;
 
 import java.io.File;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * The implementation of the change set export import local service.
@@ -37,7 +47,46 @@ public class ChangeSetExportImportLocalServiceImpl
 	extends ChangeSetExportImportLocalServiceBaseImpl {
 
 	public File exportChangeSet(ChangeSet changeSet) {
+		Objects.requireNonNull(changeSet);
+
+		_draftChangeSets.put(changeSet.getUuid(), changeSet);
+
+		Map<String, Serializable> exportPortletSettingsMap =
+			ExportImportConfigurationSettingsMapFactory.
+				buildExportPortletSettingsMap(
+					themeDisplay.getUserId(), themeDisplay.getPlid(),
+					themeDisplay.getScopeGroupId(), "ChangeSetPortlet",
+					ExportImportConfigurationParameterMapFactory.
+						buildParameterMap(),
+					themeDisplay.getLocale(), themeDisplay.getTimeZone(),
+					"ChangeSet" + _changeSet.getUuid());
+
+		exportPortletSettingsMap.put(ChangeSet.class.getName(), _changeSet);
+
+		try {
+			ExportImportConfiguration exportImportConfiguration =
+				_exportImportConfigurationLocalService.
+					addDraftExportImportConfiguration(
+						themeDisplay.getUserId(),
+						ExportImportConfigurationConstants.TYPE_EXPORT_PORTLET,
+						exportPortletSettingsMap);
+
+			return exportImportConfiguration;
+		}
+		catch (PortalException pe) {
+			pe.printStackTrace();
+
+			return null;
+		}
+
 		return null;
 	}
+
+	public ChangeSet fetchChangeSet(String uuid) {
+		return _draftChangeSets.get(uuid);
+	}
+
+	private static final Map<String, ChangeSet> _draftChangeSets =
+		new HashMap<String, ChangeSet>();
 
 }
