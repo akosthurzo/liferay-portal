@@ -31,4 +31,6 @@ public class ExportImportPortletKeys {
 	public static final String IMPORT =
 		"com_liferay_exportimport_web_portlet_ImportPortlet";
 
+	public static final String ENTITY_SET =
+		"com_liferay_exportimport_web_portlet_EntitySetPortlet";
 }

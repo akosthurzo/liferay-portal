@@ -44,6 +44,8 @@ public interface StagedModelRepository<T extends StagedModel> {
 
 	public T fetchStagedModelByUuidAndGroupId(String uuid, long groupId);
 
+	public T fetchStagedModelByClassPK(long classPK);
+
 	public List<T> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId);
 
