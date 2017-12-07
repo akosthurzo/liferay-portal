@@ -26,6 +26,7 @@ import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.exportimport.staged.model.repository.StagedModelRepositoryRegistryUtil;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.PersistedModel;
@@ -33,8 +34,10 @@ import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.StagedModel;
 import com.liferay.portal.kernel.model.adapter.ModelAdapterUtil;
 import com.liferay.portal.kernel.service.PersistedModelLocalService;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Time;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Element;
 
 import javax.portlet.PortletPreferences;
@@ -85,19 +88,27 @@ public class EntitySetPortletDataHandler extends BasePortletDataHandler {
 				String className = _getClassName(classNameClassPK);
 				long classPK = _getClassPK(classNameClassPK);
 
-				StagedModelRepository<?> stagedModelRepository =
-					StagedModelRepositoryRegistryUtil.getStagedModelRepository(
-						className);
-
-				StagedModel stagedModel =
-					stagedModelRepository.fetchStagedModelByClassPK(classPK);
-
-				StagedModelDataHandlerUtil.exportStagedModel(
-					portletDataContext, stagedModel);
+				_exportEntity(portletDataContext, className, classPK);
 			}
 		}
 
 		return getExportDataRootElementString(rootElement);
+	}
+
+	private void _exportEntity(
+			PortletDataContext portletDataContext, String className,
+			long classPK)
+		throws PortalException {
+
+		StagedModelRepository<?> stagedModelRepository =
+			StagedModelRepositoryRegistryUtil.getStagedModelRepository(
+				className);
+
+		StagedModel stagedModel =
+			stagedModelRepository.fetchStagedModelByClassPK(classPK);
+
+		StagedModelDataHandlerUtil.exportStagedModel(
+			portletDataContext, stagedModel);
 	}
 
 	private String _getClassName(String classNameClassPK) {
