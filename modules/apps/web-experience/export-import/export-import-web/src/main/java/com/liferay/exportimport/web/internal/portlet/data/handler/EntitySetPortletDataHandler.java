@@ -14,6 +14,7 @@
 
 package com.liferay.exportimport.web.internal.portlet.data.handler;
 
+import com.liferay.exportimport.constants.ExportImportPortletKeys;
 import com.liferay.exportimport.kernel.lar.BasePortletDataHandler;
 import com.liferay.exportimport.kernel.lar.DataLevel;
 import com.liferay.exportimport.kernel.lar.ManifestSummary;
@@ -47,7 +48,9 @@ import java.util.Map;
  * @author Mate Thurzo
  */
 @Component(
-	immediate = true, property = {"javax.portlet.name=ChangeSetPortlet"},
+	immediate = true, property = {
+		"javax.portlet.name=" + ExportImportPortletKeys.ENTITY_SET
+	},
 	service = PortletDataHandler.class
 )
 public class EntitySetPortletDataHandler extends BasePortletDataHandler {

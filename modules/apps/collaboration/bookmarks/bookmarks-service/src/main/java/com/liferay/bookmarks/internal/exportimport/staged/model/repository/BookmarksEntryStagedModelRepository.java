@@ -115,6 +115,13 @@ public class BookmarksEntryStagedModelRepository
 	}
 
 	@Override
+	public BookmarksEntry fetchStagedModelByClassPK(long classPK)
+		throws PortalException {
+
+		return _bookmarksEntryLocalService.fetchBookmarksEntry(classPK);
+	}
+
+	@Override
 	public List<BookmarksEntry> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId) {
 

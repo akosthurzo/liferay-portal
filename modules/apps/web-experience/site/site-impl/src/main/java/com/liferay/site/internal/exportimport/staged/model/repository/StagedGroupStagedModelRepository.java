@@ -53,6 +53,11 @@ public class StagedGroupStagedModelRepository
 	extends BaseStagedModelRepository<StagedGroup> {
 
 	@Override
+	public StagedGroup fetchStagedModelByClassPK(long classPK) throws PortalException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	public StagedGroup addStagedModel(
 			PortletDataContext portletDataContext, StagedGroup stagedGroup)
 		throws PortalException {

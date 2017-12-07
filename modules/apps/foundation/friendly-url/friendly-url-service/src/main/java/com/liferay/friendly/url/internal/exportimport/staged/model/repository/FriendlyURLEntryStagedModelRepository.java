@@ -112,6 +112,13 @@ public class FriendlyURLEntryStagedModelRepository
 	}
 
 	@Override
+	public FriendlyURLEntry fetchStagedModelByClassPK(long classPK)
+		throws PortalException {
+
+		return _friendlyURLEntryLocalService.fetchFriendlyURLEntry(classPK);
+	}
+
+	@Override
 	public List<FriendlyURLEntry> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId) {
 

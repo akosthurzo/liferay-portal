@@ -147,6 +147,25 @@ public class DummyFolderStagedModelRepository
 	}
 
 	@Override
+	public DummyFolder fetchStagedModelByClassPK(long classPK)
+		throws PortalException {
+
+		Stream<DummyFolder> dummyFoldersStream = _dummyFolders.stream();
+
+		List<DummyFolder> dummyFolders = dummyFoldersStream.filter(
+			dummyFolder -> dummyFolder.getId() == classPK
+		).collect(
+			Collectors.toList()
+		);
+
+		if (dummyFolders.isEmpty()) {
+			return null;
+		}
+
+		return dummyFolders.get(0);
+	}
+
+	@Override
 	public List<DummyFolder> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId) {
 

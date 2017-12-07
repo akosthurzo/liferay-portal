@@ -123,6 +123,14 @@ public class DDLRecordStagedModelRepository
 	}
 
 	@Override
+	public DDLRecord fetchStagedModelByClassPK(long classPK)
+		throws PortalException {
+
+
+		return _ddlRecordLocalService.fetchDDLRecord(classPK);
+	}
+
+	@Override
 	public List<DDLRecord> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId) {
 

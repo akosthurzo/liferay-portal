@@ -19,6 +19,8 @@ import com.liferay.exportimport.kernel.lar.PortletDataException;
 import com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.StagedModel;
+import com.liferay.portal.kernel.service.PersistedModelLocalService;
+import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistryUtil;
 
 import java.util.List;
 
@@ -44,7 +46,7 @@ public interface StagedModelRepository<T extends StagedModel> {
 
 	public T fetchStagedModelByUuidAndGroupId(String uuid, long groupId);
 
-	public T fetchStagedModelByClassPK(long classPK);
+	public T fetchStagedModelByClassPK(long classPK) throws PortalException;
 
 	public List<T> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId);

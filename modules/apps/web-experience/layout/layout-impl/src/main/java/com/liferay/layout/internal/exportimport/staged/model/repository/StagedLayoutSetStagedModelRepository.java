@@ -159,6 +159,16 @@ public class StagedLayoutSetStagedModelRepository
 	}
 
 	@Override
+	public StagedLayoutSet fetchStagedModelByClassPK(long classPK)
+		throws PortalException {
+
+		LayoutSet layoutSet = _layoutSetLocalService.fetchLayoutSet(classPK);
+
+		return ModelAdapterUtil.adapt(
+			layoutSet, LayoutSet.class, StagedLayoutSet.class);
+	}
+
+	@Override
 	public List<StagedLayoutSet> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId) {
 

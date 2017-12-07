@@ -140,6 +140,13 @@ public class DDLRecordSetStagedModelRepository
 	}
 
 	@Override
+	public DDLRecordSet fetchStagedModelByClassPK(long classPK)
+		throws PortalException {
+
+		return _ddlRecordSetLocalService.fetchDDLRecordSet(classPK);
+	}
+
+	@Override
 	public List<DDLRecordSet> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId) {
 

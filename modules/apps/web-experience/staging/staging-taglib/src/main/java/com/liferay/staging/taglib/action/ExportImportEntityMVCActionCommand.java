@@ -16,25 +16,36 @@ package com.liferay.staging.taglib.action;
 
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.exportimport.constants.ExportImportPortletKeys;
+import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationConstants;
 import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationFactory;
 import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationParameterMapFactory;
 import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationSettingsMapFactory;
+import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationService;
+import com.liferay.exportimport.kernel.service.ExportImportLocalService;
+import com.liferay.exportimport.kernel.staging.Staging;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.ClassName;
 import com.liferay.portal.kernel.model.ClassedModel;
+import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
+import javax.portlet.PortletURL;
 
+import com.liferay.portal.kernel.util.WebKeys;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -74,20 +85,73 @@ public class ExportImportEntityMVCActionCommand extends BaseMVCActionCommand {
 
 			parameterMap.put("classNameClassPK", classNameClassPKArray);
 
-			Set<ClassedModel> entitySet = new HashSet<>();
+			ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
-			for (String classNameClassPK : classNameClassPKArray) {
-				_log.error("###> " + classNameClassPK);
-				entitySet.add(new SimpleClassedModel(_getClassName(classNameClassPK), _getClassPK(classNameClassPK)));
+			String cmd = GetterUtil.getString(actionRequest.getParameter("cmd"));
+
+			if (cmd.equals("export")) {
+				Map<String, Serializable> settingsMap =
+					ExportImportConfigurationSettingsMapFactory.buildExportPortletSettingsMap(
+						themeDisplay.getUser(), themeDisplay.getPlid(),
+						themeDisplay.getScopeGroupId(),
+						ExportImportPortletKeys.ENTITY_SET, parameterMap,
+						"fajlnev.lar");
+
+				ExportImportConfiguration exportImportConfiguration =
+					_exportImportConfigurationLocalService.addDraftExportImportConfiguration(
+						themeDisplay.getUserId(), "com_liferay_blogs_web_portlet_BlogsAdminPortlet", // TODO CONSTANT
+						ExportImportConfigurationConstants.TYPE_EXPORT_PORTLET,
+						settingsMap);
+
+				setRedirect(
+					actionRequest, actionResponse,
+					_exportImportLocalService.exportPortletInfoAsFileInBackground(
+					themeDisplay.getUserId(), exportImportConfiguration));
+			}
+			else if (cmd.equals("publish")) {
+				Group scopeGroup = themeDisplay.getScopeGroup();
+
+				if (!scopeGroup.isStagingGroup() && !scopeGroup.isStagedRemotely()) {
+					return;
+					// TODO display error message
+				}
+
+				long liveGroupId = 0;
+
+				if (scopeGroup.isStagingGroup()) {
+					liveGroupId = scopeGroup.getLiveGroupId();
+				}
+				else if (scopeGroup.isStagedRemotely()) {
+					liveGroupId = scopeGroup.getRemoteLiveGroupId();
+				}
+
+				Map<String, Serializable> settingsMap =
+					ExportImportConfigurationSettingsMapFactory.buildPublishPortletSettingsMap(
+						themeDisplay.getUser(), themeDisplay.getScopeGroupId(),
+						themeDisplay.getPlid(), liveGroupId, themeDisplay.getPlid(),
+						ExportImportPortletKeys.ENTITY_SET, parameterMap);
+
+				ExportImportConfiguration exportImportConfiguration =
+					_exportImportConfigurationLocalService.addDraftExportImportConfiguration(
+						themeDisplay.getUserId(), "com_liferay_blogs_web_portlet_BlogsAdminPortlet", // TODO CONSTANT
+						ExportImportConfigurationConstants.TYPE_PUBLISH_PORTLET,
+						settingsMap);
+
+				setRedirect(
+					actionRequest, actionResponse,
+					_staging.publishPortlet(
+						themeDisplay.getUserId(), exportImportConfiguration));
 			}
 
-			_log.error(entitySet);
-
-
-
-			parameterMap.put()
-
-			_exportImportConfigurationLocalService.addDraftExportImportConfiguration()
+//			Set<ClassedModel> entitySet = new HashSet<>();
+//
+//			for (String classNameClassPK : classNameClassPKArray) {
+//				_log.error("###> " + classNameClassPK);
+//				entitySet.add(new SimpleClassedModel(_getClassName(classNameClassPK), _getClassPK(classNameClassPK)));
+//			}
+//
+//			_log.error(entitySet);
 		}
 
 		if (Validator.isNotNull(actionRequest.getParameter("className"))) {
@@ -98,6 +162,22 @@ public class ExportImportEntityMVCActionCommand extends BaseMVCActionCommand {
 			_log.error(
 				"classPK: " + ParamUtil.getLong(actionRequest, "classPK"));
 		}
+	}
+
+	protected void setRedirect(
+		ActionRequest actionRequest, ActionResponse actionResponse,
+		long backgroundTaskId) {
+
+		LiferayPortletResponse liferayPortletResponse =
+			_portal.getLiferayPortletResponse(actionResponse);
+
+		PortletURL renderURL = liferayPortletResponse.createRenderURL();
+
+		renderURL.setParameter("mvcPath", "/view_export_import.jsp");
+		renderURL.setParameter(
+			"backgroundTaskId", String.valueOf(backgroundTaskId));
+
+		actionRequest.setAttribute(WebKeys.REDIRECT, renderURL.toString());
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -158,4 +238,13 @@ public class ExportImportEntityMVCActionCommand extends BaseMVCActionCommand {
 	@Reference
 	private ExportImportConfigurationLocalService
 		_exportImportConfigurationLocalService;
+
+	@Reference
+	private ExportImportLocalService _exportImportLocalService;
+
+	@Reference
+	private Portal _portal;
+
+	@Reference
+	private Staging _staging;
 }

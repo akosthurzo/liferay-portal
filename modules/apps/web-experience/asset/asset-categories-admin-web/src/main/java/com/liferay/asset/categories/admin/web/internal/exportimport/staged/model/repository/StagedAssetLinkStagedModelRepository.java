@@ -124,6 +124,16 @@ public class StagedAssetLinkStagedModelRepository
 			portletDataContext.getScopeGroupId());
 	}
 
+	@Override
+	public StagedAssetLink fetchStagedModelByClassPK(long classPK)
+		throws PortalException {
+
+		AssetLink assetLink = _assetLinkLocalService.fetchAssetLink(classPK);
+
+		return ModelAdapterUtil.adapt(
+			assetLink, AssetLink.class, StagedAssetLink.class);
+	}
+
 	public StagedAssetLink fetchExistingAssetLink(
 			long groupId, String assetEntry1Uuid, String assetEntry2Uuid)
 		throws PortalException {

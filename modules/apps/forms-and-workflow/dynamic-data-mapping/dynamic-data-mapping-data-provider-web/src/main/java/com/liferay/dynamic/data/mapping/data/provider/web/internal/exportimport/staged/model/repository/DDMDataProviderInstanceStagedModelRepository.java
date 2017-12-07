@@ -118,6 +118,13 @@ public class DDMDataProviderInstanceStagedModelRepository
 	}
 
 	@Override
+	public DDMDataProviderInstance fetchStagedModelByClassPK(long classPK)
+		throws PortalException {
+
+		return _ddmDataProviderInstanceLocalService.fetchDataProviderInstance(classPK);
+	}
+
+	@Override
 	public List<DDMDataProviderInstance> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId) {
 
