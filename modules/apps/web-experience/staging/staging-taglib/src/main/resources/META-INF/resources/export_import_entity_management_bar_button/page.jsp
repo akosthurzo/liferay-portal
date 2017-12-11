@@ -1,4 +1,6 @@
-<%--
+<%@ page
+	import="com.liferay.staging.taglib.exception.ExportImportEntityException" %>
+<%@ page import="com.liferay.portal.kernel.util.PortalUtil" %><%--
 /**
  * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
@@ -18,6 +20,18 @@
 
 <c:if test="<%= GroupPermissionUtil.contains(permissionChecker, themeDisplay.getScopeGroup(), ActionKeys.EXPORT_IMPORT_PORTLET_INFO) %>">
 
+	<liferay-ui:error exception="<%= ExportImportEntityException.class %>">
+		<%
+		ExportImportEntityException eiee = (ExportImportEntityException)errorException;
+		%>
+
+		<c:choose>
+			<c:when test="<%= eiee.getType() == ExportImportEntityException.TYPE_INVALID_COMMAND %>">
+				<liferay-ui:message key="invalid-command" />
+			</c:when>
+		</c:choose>
+	</liferay-ui:error>
+
 	<%
 	String taglibURL = "javascript:Liferay.fire('" + renderResponse.getNamespace() + cmd + "'); void(0);";
 	%>
@@ -28,8 +42,9 @@
 	PortletURL portletURL = PortletURLFactoryUtil.create(request, ExportImportPortletKeys.EXPORT_IMPORT, PortletRequest.ACTION_PHASE);
 
 	portletURL.setParameter(ActionRequest.ACTION_NAME, "exportImportEntity");
-	portletURL.setParameter("mvcRenderCommandName", "exportImportEntity");
+	//portletURL.setParameter("mvcRenderCommandName", "exportImportEntity");
 	portletURL.setParameter("cmd", cmd);
+	portletURL.setParameter("backURL", themeDisplay.getURLCurrent());
 	%>
 
 	<aui:script use="liferay-export-import-management-bar-button">
