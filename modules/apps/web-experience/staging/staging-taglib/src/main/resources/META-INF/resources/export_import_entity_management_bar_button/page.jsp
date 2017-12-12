@@ -21,8 +21,8 @@
 
 <c:if test="<%= GroupPermissionUtil.contains(permissionChecker, themeDisplay.getScopeGroup(), ActionKeys.EXPORT_IMPORT_PORTLET_INFO) %>">
 
-	<c:if test='<%= ParamUtil.get(request, "error123", false) %>'>
-		<liferay-ui:error message="invalid-command" />
+	<c:if test='<%= ParamUtil.get(request, "error", "").equals("invalid-command") %>'>
+		<liferay-ui:message key="invalid-command" />
 	</c:if>
 
 	<%
