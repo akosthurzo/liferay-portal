@@ -32,6 +32,8 @@ import com.liferay.portal.kernel.model.ClassName;
 import com.liferay.portal.kernel.model.ClassedModel;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
+import com.liferay.portal.kernel.portlet.LiferayPortletURL;
+import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
@@ -49,6 +51,7 @@ import com.liferay.portal.kernel.util.Validator;
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletContext;
+import javax.portlet.PortletRequest;
 import javax.portlet.PortletRequestDispatcher;
 import javax.portlet.PortletSession;
 import javax.portlet.PortletURL;
@@ -95,13 +98,24 @@ public class ExportImportEntityMVCActionCommand extends BaseMVCActionCommand {
 //		}
 
 //		SessionErrors.add(actionRequest, Exception.class, "hiba");
-//		SessionErrors.add(PortalUtil.getHttpServletRequest(actionRequest).getSession(), ExportImportEntityException.class, new ExportImportEntityException(ExportImportEntityException.TYPE_INVALID_COMMAND));
 
-		String redirect = HttpUtil.setParameter(actionRequest.getParameter("backURL"),
-			"error", "invalid-command");
+		SessionErrors.add(actionRequest, ExportImportEntityException.class, new ExportImportEntityException(ExportImportEntityException.TYPE_INVALID_COMMAND));
 
-		actionRequest.setAttribute(WebKeys.REDIRECT, redirect);
+		LiferayPortletURL renderURL =
+			PortletURLFactoryUtil.create(
+				actionRequest,
+				"com_liferay_blogs_web_portlet_BlogsAdminPortlet",
+				PortletRequest.RENDER_PHASE);
+
+		renderURL.setParameter("mvcPath", "/blogs_admin/view.jsp");
+
+		actionRequest.setAttribute(WebKeys.REDIRECT, renderURL.toString());
 		sendRedirect(actionRequest, actionResponse);
+//		String redirect = HttpUtil.setParameter(actionRequest.getParameter("backURL"),
+//			"error", "invalid-command");
+
+//		actionRequest.setAttribute(WebKeys.REDIRECT, actionRequest.getParameter("backURL"));
+//		sendRedirect(actionRequest, actionResponse);
 //		HttpServletRequest httpServletRequest =
 //			PortalUtil.getHttpServletRequest(actionRequest);
 //		HttpSession session = httpServletRequest.getSession();

@@ -1,4 +1,5 @@
-<%--
+<%@ page
+	import="com.liferay.staging.taglib.exception.ExportImportEntityException" %><%--
 /**
  * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
@@ -15,6 +16,8 @@
 --%>
 
 <%@ include file="/init.jsp" %>
+
+<liferay-ui:error exception="<%= ExportImportEntityException.class %>" message="hiba" />
 
 <liferay-ui:error exception="<%= LARFileException.class %>" message="please-specify-a-lar-file-to-import" />
 <liferay-ui:error exception="<%= LARFileNameException.class %>" message="please-enter-a-file-with-a-valid-file-name" />

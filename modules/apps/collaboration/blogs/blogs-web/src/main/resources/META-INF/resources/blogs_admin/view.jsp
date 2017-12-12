@@ -1,4 +1,5 @@
-<%--
+<%@ page
+	import="com.liferay.staging.taglib.exception.ExportImportEntityException" %><%--
 /**
  * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
@@ -24,6 +25,8 @@ PortletURL portletURL = renderResponse.createRenderURL();
 portletURL.setParameter("mvcRenderCommandName", "/blogs/view");
 portletURL.setParameter("navigation", navigation);
 %>
+
+<liferay-ui:error exception="<%= ExportImportEntityException.class %>" message="hiba2" />
 
 <aui:nav-bar cssClass="collapse-basic-search" markupView="lexicon">
 	<aui:nav cssClass="navbar-nav">
