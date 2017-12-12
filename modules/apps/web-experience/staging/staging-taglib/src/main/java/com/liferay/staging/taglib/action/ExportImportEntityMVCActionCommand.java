@@ -94,10 +94,11 @@ public class ExportImportEntityMVCActionCommand extends BaseMVCActionCommand {
 //			processImportAction(actionRequest, actionResponse);
 //		}
 
+		SessionErrors.add(actionRequest, Exception.class, "hiba");
 //		SessionErrors.add(PortalUtil.getHttpServletRequest(actionRequest).getSession(), ExportImportEntityException.class, new ExportImportEntityException(ExportImportEntityException.TYPE_INVALID_COMMAND));
-		String redirect = HttpUtil.addParameter(actionRequest.getParameter("backURL"),
-			"error", "invalid-command");
-		actionRequest.setAttribute(WebKeys.REDIRECT, redirect);
+//		String redirect = HttpUtil.addParameter(actionRequest.getParameter("backURL"),
+//			"error123", "invalid-command");
+//		actionRequest.setAttribute(WebKeys.REDIRECT, redirect);
 //		sendRedirect(actionRequest, actionResponse);
 //		HttpServletRequest httpServletRequest =
 //			PortalUtil.getHttpServletRequest(actionRequest);

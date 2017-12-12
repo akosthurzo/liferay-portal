@@ -1,6 +1,7 @@
 <%@ page
 	import="com.liferay.staging.taglib.exception.ExportImportEntityException" %>
-<%@ page import="com.liferay.portal.kernel.util.PortalUtil" %><%--
+<%@ page import="com.liferay.portal.kernel.util.PortalUtil" %>
+<%@ page import="com.liferay.portal.kernel.util.ParamUtil" %><%--
 /**
  * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
@@ -20,17 +21,9 @@
 
 <c:if test="<%= GroupPermissionUtil.contains(permissionChecker, themeDisplay.getScopeGroup(), ActionKeys.EXPORT_IMPORT_PORTLET_INFO) %>">
 
-	<liferay-ui:error exception="<%= ExportImportEntityException.class %>">
-		<%
-		ExportImportEntityException eiee = (ExportImportEntityException)errorException;
-		%>
-
-		<c:choose>
-			<c:when test="<%= eiee.getType() == ExportImportEntityException.TYPE_INVALID_COMMAND %>">
-				<liferay-ui:message key="invalid-command" />
-			</c:when>
-		</c:choose>
-	</liferay-ui:error>
+	<c:if test='<%= ParamUtil.get(request, "error123", false) %>'>
+		<liferay-ui:error message="invalid-command" />
+	</c:if>
 
 	<%
 	String taglibURL = "javascript:Liferay.fire('" + renderResponse.getNamespace() + cmd + "'); void(0);";
