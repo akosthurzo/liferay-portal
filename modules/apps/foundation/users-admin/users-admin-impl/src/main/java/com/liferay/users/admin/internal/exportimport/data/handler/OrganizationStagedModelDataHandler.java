@@ -20,10 +20,10 @@ import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataException;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
+import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Address;
 import com.liferay.portal.kernel.model.EmailAddress;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.OrgLabor;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.OrganizationConstants;
@@ -33,7 +33,6 @@ import com.liferay.portal.kernel.model.Phone;
 import com.liferay.portal.kernel.model.Website;
 import com.liferay.portal.kernel.service.AddressLocalService;
 import com.liferay.portal.kernel.service.EmailAddressLocalService;
-import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.OrgLaborLocalService;
 import com.liferay.portal.kernel.service.OrganizationLocalService;
 import com.liferay.portal.kernel.service.PasswordPolicyLocalService;
@@ -67,7 +66,7 @@ public class OrganizationStagedModelDataHandler
 	public void deleteStagedModel(Organization organization)
 		throws PortalException {
 
-		_organizationLocalService.deleteOrganization(organization);
+		_stagedModelRepository.deleteStagedModel(organization);
 	}
 
 	@Override
@@ -75,28 +74,16 @@ public class OrganizationStagedModelDataHandler
 			String uuid, long groupId, String className, String extraData)
 		throws PortalException {
 
-		Group group = _groupLocalService.getGroup(groupId);
-
-		Organization organization =
-			_organizationLocalService.fetchOrganizationByUuidAndCompanyId(
-				uuid, group.getCompanyId());
-
-		if (organization != null) {
-			deleteStagedModel(organization);
-		}
+		_stagedModelRepository.deleteStagedModel(
+			uuid, groupId, className, extraData);
 	}
 
 	@Override
 	public List<Organization> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		List<Organization> organizations = new ArrayList<>();
-
-		organizations.add(
-			_organizationLocalService.fetchOrganizationByUuidAndCompanyId(
-				uuid, companyId));
-
-		return organizations;
+		return _stagedModelRepository.fetchStagedModelsByUuidAndCompanyId(
+			uuid, companyId);
 	}
 
 	@Override
@@ -169,9 +156,11 @@ public class OrganizationStagedModelDataHandler
 
 		serviceContext.setUserId(userId);
 
-		Organization existingOrganization =
-			_organizationLocalService.fetchOrganizationByUuidAndCompanyId(
+		List<Organization> existingOrganizations =
+			_stagedModelRepository.fetchStagedModelsByUuidAndCompanyId(
 				organization.getUuid(), portletDataContext.getGroupId());
+
+		Organization existingOrganization = existingOrganizations.get(0);
 
 		if (existingOrganization == null) {
 			existingOrganization = _organizationLocalService.fetchOrganization(
@@ -304,6 +293,11 @@ public class OrganizationStagedModelDataHandler
 				portletDataContext, organization, website,
 				PortletDataContext.REFERENCE_TYPE_EMBEDDED);
 		}
+	}
+
+	@Override
+	protected StagedModelRepository<Organization> getStagedModelRepository() {
+		return _stagedModelRepository;
 	}
 
 	protected void importAddresses(
@@ -547,11 +541,6 @@ public class OrganizationStagedModelDataHandler
 	}
 
 	@Reference(unbind = "-")
-	protected void setGroupLocalService(GroupLocalService groupLocalService) {
-		_groupLocalService = groupLocalService;
-	}
-
-	@Reference(unbind = "-")
 	protected void setOrganizationLocalService(
 		OrganizationLocalService organizationLocalService) {
 
@@ -584,6 +573,16 @@ public class OrganizationStagedModelDataHandler
 		_phoneLocalService = phoneLocalService;
 	}
 
+	@Reference(
+		target = "(model.class.name=com.liferay.portal.kernel.model.Organization)",
+		unbind = "-"
+	)
+	protected void setStagedModelRepository(
+		StagedModelRepository<Organization> stagedModelRepository) {
+
+		_stagedModelRepository = stagedModelRepository;
+	}
+
 	@Reference(unbind = "-")
 	protected void setWebsiteLocalService(
 		WebsiteLocalService websiteLocalService) {
@@ -593,12 +592,12 @@ public class OrganizationStagedModelDataHandler
 
 	private AddressLocalService _addressLocalService;
 	private EmailAddressLocalService _emailAddressLocalService;
-	private GroupLocalService _groupLocalService;
 	private OrganizationLocalService _organizationLocalService;
 	private OrgLaborLocalService _orgLaborLocalService;
 	private PasswordPolicyLocalService _passwordPolicyLocalService;
 	private PasswordPolicyRelLocalService _passwordPolicyRelLocalService;
 	private PhoneLocalService _phoneLocalService;
+	private StagedModelRepository<Organization> _stagedModelRepository;
 	private WebsiteLocalService _websiteLocalService;
 
 }

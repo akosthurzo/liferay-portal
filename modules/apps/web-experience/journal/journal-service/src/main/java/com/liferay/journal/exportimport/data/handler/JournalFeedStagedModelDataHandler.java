@@ -24,6 +24,7 @@ import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelModifiedDateComparator;
 import com.liferay.exportimport.lar.BaseStagedModelDataHandler;
+import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.journal.exception.FeedTargetLayoutFriendlyUrlException;
 import com.liferay.journal.internal.exportimport.content.processor.JournalFeedExportImportContentProcessor;
 import com.liferay.journal.internal.exportimport.creation.strategy.JournalCreationStrategy;
@@ -59,7 +60,7 @@ public class JournalFeedStagedModelDataHandler
 
 	@Override
 	public void deleteStagedModel(JournalFeed feed) throws PortalException {
-		_journalFeedLocalService.deleteFeed(feed);
+		_stagedModelRepository.deleteStagedModel(feed);
 	}
 
 	@Override
@@ -67,18 +68,15 @@ public class JournalFeedStagedModelDataHandler
 			String uuid, long groupId, String className, String extraData)
 		throws PortalException {
 
-		JournalFeed feed = fetchStagedModelByUuidAndGroupId(uuid, groupId);
-
-		if (feed != null) {
-			deleteStagedModel(feed);
-		}
+		_stagedModelRepository.deleteStagedModel(
+			uuid, groupId, className, extraData);
 	}
 
 	@Override
 	public JournalFeed fetchStagedModelByUuidAndGroupId(
 		String uuid, long groupId) {
 
-		return _journalFeedLocalService.fetchJournalFeedByUuidAndGroupId(
+		return _stagedModelRepository.fetchStagedModelByUuidAndGroupId(
 			uuid, groupId);
 	}
 
@@ -86,9 +84,8 @@ public class JournalFeedStagedModelDataHandler
 	public List<JournalFeed> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		return _journalFeedLocalService.getJournalFeedsByUuidAndCompanyId(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			new StagedModelModifiedDateComparator<JournalFeed>());
+		return _stagedModelRepository.fetchStagedModelsByUuidAndCompanyId(
+			uuid, companyId);
 	}
 
 	@Override
@@ -357,5 +354,22 @@ public class JournalFeedStagedModelDataHandler
 
 	@Reference
 	private Portal _portal;
+
+	@Reference(
+		target = "(model.class.name=com.liferay.journal.model.JournalFeed)",
+		unbind = "-"
+	)
+	protected void setStagedModelRepository(
+		StagedModelRepository<JournalFeed> stagedModelRepository) {
+
+		_stagedModelRepository = stagedModelRepository;
+	}
+
+	@Override
+	protected StagedModelRepository<JournalFeed> getStagedModelRepository() {
+		return _stagedModelRepository;
+	}
+
+	private StagedModelRepository<JournalFeed> _stagedModelRepository;
 
 }

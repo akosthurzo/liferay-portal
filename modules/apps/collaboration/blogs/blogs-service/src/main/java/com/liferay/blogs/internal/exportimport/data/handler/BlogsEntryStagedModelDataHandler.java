@@ -26,13 +26,11 @@ import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataException;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
-import com.liferay.exportimport.kernel.lar.StagedModelModifiedDateComparator;
+import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.friendly.url.model.FriendlyURLEntry;
 import com.liferay.friendly.url.service.FriendlyURLEntryLocalService;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.comment.CommentManager;
 import com.liferay.portal.kernel.comment.DiscussionStagingHandler;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -40,17 +38,14 @@ import com.liferay.portal.kernel.model.Image;
 import com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.ImageLocalService;
-import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.servlet.taglib.ui.ImageSelector;
-import com.liferay.portal.kernel.trash.TrashHandler;
-import com.liferay.portal.kernel.trash.TrashHandlerRegistryUtil;
-import com.liferay.portal.kernel.util.CalendarFactoryUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.MimeTypesUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Element;
@@ -59,7 +54,6 @@ import com.liferay.ratings.kernel.model.RatingsEntry;
 
 import java.io.InputStream;
 
-import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
@@ -79,7 +73,7 @@ public class BlogsEntryStagedModelDataHandler
 
 	@Override
 	public void deleteStagedModel(BlogsEntry entry) throws PortalException {
-		_blogsEntryLocalService.deleteEntry(entry);
+		_stagedModelRepository.deleteStagedModel(entry);
 	}
 
 	@Override
@@ -87,18 +81,15 @@ public class BlogsEntryStagedModelDataHandler
 			String uuid, long groupId, String className, String extraData)
 		throws PortalException {
 
-		BlogsEntry entry = fetchStagedModelByUuidAndGroupId(uuid, groupId);
-
-		if (entry != null) {
-			deleteStagedModel(entry);
-		}
+		_stagedModelRepository.deleteStagedModel(
+			uuid, groupId, className, extraData);
 	}
 
 	@Override
 	public BlogsEntry fetchStagedModelByUuidAndGroupId(
 		String uuid, long groupId) {
 
-		return _blogsEntryLocalService.fetchBlogsEntryByUuidAndGroupId(
+		return _stagedModelRepository.fetchStagedModelByUuidAndGroupId(
 			uuid, groupId);
 	}
 
@@ -106,9 +97,8 @@ public class BlogsEntryStagedModelDataHandler
 	public List<BlogsEntry> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		return _blogsEntryLocalService.getBlogsEntriesByUuidAndCompanyId(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			new StagedModelModifiedDateComparator<BlogsEntry>());
+		return _stagedModelRepository.fetchStagedModelsByUuidAndCompanyId(
+			uuid, companyId);
 	}
 
 	@Override
@@ -231,64 +221,23 @@ public class BlogsEntryStagedModelDataHandler
 			_exportImportContentProcessor.replaceImportContentReferences(
 				portletDataContext, entry, entry.getContent());
 
-		entry.setContent(content);
+		BlogsEntry importedEntry = (BlogsEntry)entry.clone();
 
-		Calendar displayDateCal = CalendarFactoryUtil.getCalendar();
+		importedEntry.setContent(content);
 
-		displayDateCal.setTime(entry.getDisplayDate());
-
-		int displayDateMonth = displayDateCal.get(Calendar.MONTH);
-		int displayDateDay = displayDateCal.get(Calendar.DATE);
-		int displayDateYear = displayDateCal.get(Calendar.YEAR);
-		int displayDateHour = displayDateCal.get(Calendar.HOUR);
-		int displayDateMinute = displayDateCal.get(Calendar.MINUTE);
-
-		if (displayDateCal.get(Calendar.AM_PM) == Calendar.PM) {
-			displayDateHour += 12;
-		}
-
-		boolean allowPingbacks = entry.isAllowPingbacks();
-		boolean allowTrackbacks = entry.isAllowTrackbacks();
-		String[] trackbacks = StringUtil.split(entry.getTrackbacks());
-
-		ServiceContext serviceContext = portletDataContext.createServiceContext(
-			entry);
-
-		BlogsEntry importedEntry = null;
-
-		if (portletDataContext.isDataStrategyMirror()) {
-			BlogsEntry existingEntry = fetchStagedModelByUuidAndGroupId(
+		BlogsEntry existingEntry =
+			_stagedModelRepository.fetchStagedModelByUuidAndGroupId(
 				entry.getUuid(), portletDataContext.getScopeGroupId());
 
-			if (existingEntry == null) {
-				serviceContext.setUuid(entry.getUuid());
+		if ((existingEntry == null) ||
+			!portletDataContext.isDataStrategyMirror()) {
 
-				importedEntry = _blogsEntryLocalService.addEntry(
-					userId, entry.getTitle(), entry.getSubtitle(),
-					entry.getDescription(), entry.getContent(),
-					displayDateMonth, displayDateDay, displayDateYear,
-					displayDateHour, displayDateMinute, allowPingbacks,
-					allowTrackbacks, trackbacks, entry.getCoverImageCaption(),
-					null, null, serviceContext);
-			}
-			else {
-				importedEntry = _blogsEntryLocalService.updateEntry(
-					userId, existingEntry.getEntryId(), entry.getTitle(),
-					entry.getSubtitle(), entry.getDescription(),
-					entry.getContent(), displayDateMonth, displayDateDay,
-					displayDateYear, displayDateHour, displayDateMinute,
-					allowPingbacks, allowTrackbacks, trackbacks,
-					entry.getCoverImageCaption(), new ImageSelector(),
-					new ImageSelector(), serviceContext);
-			}
+			importedEntry = _stagedModelRepository.addStagedModel(
+				portletDataContext, importedEntry);
 		}
 		else {
-			importedEntry = _blogsEntryLocalService.addEntry(
-				userId, entry.getTitle(), entry.getSubtitle(),
-				entry.getDescription(), entry.getContent(), displayDateMonth,
-				displayDateDay, displayDateYear, displayDateHour,
-				displayDateMinute, allowPingbacks, allowTrackbacks, trackbacks,
-				entry.getCoverImageCaption(), null, null, serviceContext);
+			importedEntry = _stagedModelRepository.updateStagedModel(
+				portletDataContext, importedEntry);
 		}
 
 		// Cover image
@@ -312,7 +261,7 @@ public class BlogsEntryStagedModelDataHandler
 
 			importedEntry.setCoverImageFileEntryId(coverImageFileEntryId);
 
-			_blogsEntryLocalService.updateBlogsEntry(importedEntry);
+			_stagedModelRepository.saveStagedModel(importedEntry);
 
 			coverImageSelector = _getImageSelector(
 				portletDataContext, entry.getCoverImageFileEntryId(),
@@ -357,7 +306,7 @@ public class BlogsEntryStagedModelDataHandler
 
 				importedEntry.setSmallImageFileEntryId(smallImageFileEntryId);
 
-				_blogsEntryLocalService.updateBlogsEntry(importedEntry);
+				_stagedModelRepository.saveStagedModel(importedEntry);
 
 				smallImageSelector = _getImageSelector(
 					portletDataContext, entry.getSmallImageFileEntryId(),
@@ -392,57 +341,12 @@ public class BlogsEntryStagedModelDataHandler
 			PortletDataContext portletDataContext, BlogsEntry entry)
 		throws Exception {
 
-		long userId = portletDataContext.getUserId(entry.getUserUuid());
-
-		BlogsEntry existingEntry = fetchStagedModelByUuidAndGroupId(
-			entry.getUuid(), portletDataContext.getScopeGroupId());
-
-		if ((existingEntry == null) || !existingEntry.isInTrash()) {
-			return;
-		}
-
-		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
-			BlogsEntry.class.getName());
-
-		if (trashHandler.isRestorable(existingEntry.getEntryId())) {
-			trashHandler.restoreTrashEntry(userId, existingEntry.getEntryId());
-		}
+		_stagedModelRepository.restoreStagedModel(portletDataContext, entry);
 	}
 
-	protected InputStream getSmallImageInputStream(
-		PortletDataContext portletDataContext, Element attachmentElement) {
-
-		InputStream inputStream = null;
-
-		String path = attachmentElement.attributeValue("path");
-
-		FileEntry fileEntry = (FileEntry)portletDataContext.getZipEntryAsObject(
-			path);
-
-		String binPath = attachmentElement.attributeValue("bin-path");
-
-		if (Validator.isNull(binPath) &&
-			portletDataContext.isPerformDirectBinaryImport()) {
-
-			try {
-				inputStream = FileEntryUtil.getContentStream(fileEntry);
-			}
-			catch (Exception e) {
-			}
-		}
-		else {
-			inputStream = portletDataContext.getZipEntryAsInputStream(binPath);
-		}
-
-		if (inputStream == null) {
-			if (_log.isWarnEnabled()) {
-				_log.warn(
-					"Unable to import small image file entry " +
-						fileEntry.getFileEntryId());
-			}
-		}
-
-		return inputStream;
+	@Override
+	protected StagedModelRepository<BlogsEntry> getStagedModelRepository() {
+		return _stagedModelRepository;
 	}
 
 	@Override
@@ -517,6 +421,16 @@ public class BlogsEntryStagedModelDataHandler
 	@Reference(unbind = "-")
 	protected void setImageLocalService(ImageLocalService imageLocalService) {
 		_imageLocalService = imageLocalService;
+	}
+
+	@Reference(
+		target = "(model.class.name=com.liferay.blogs.model.BlogsEntry)",
+		unbind = "-"
+	)
+	protected void setStagedModelRepository(
+		StagedModelRepository<BlogsEntry> stagedModelRepository) {
+
+		_stagedModelRepository = stagedModelRepository;
 	}
 
 	private void _exportFriendlyURLEntries(
@@ -644,5 +558,7 @@ public class BlogsEntryStagedModelDataHandler
 
 	@Reference
 	private Portal _portal;
+
+	private StagedModelRepository<BlogsEntry> _stagedModelRepository;
 
 }

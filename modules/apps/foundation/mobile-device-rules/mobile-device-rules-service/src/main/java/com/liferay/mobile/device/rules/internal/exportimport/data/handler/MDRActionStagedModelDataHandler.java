@@ -20,12 +20,14 @@ import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelModifiedDateComparator;
+import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.mobile.device.rules.model.MDRAction;
 import com.liferay.mobile.device.rules.model.MDRRuleGroupInstance;
 import com.liferay.mobile.device.rules.rule.group.action.SiteRedirectActionHandler;
 import com.liferay.mobile.device.rules.service.MDRActionLocalService;
 import com.liferay.mobile.device.rules.service.MDRRuleGroupInstanceLocalService;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
@@ -54,26 +56,24 @@ public class MDRActionStagedModelDataHandler
 	public static final String[] CLASS_NAMES = {MDRAction.class.getName()};
 
 	@Override
-	public void deleteStagedModel(MDRAction action) {
-		_mdrActionLocalService.deleteAction(action);
+	public void deleteStagedModel(MDRAction action) throws PortalException {
+		_stagedModelRepository.deleteStagedModel(action);
 	}
 
 	@Override
 	public void deleteStagedModel(
-		String uuid, long groupId, String className, String extraData) {
+			String uuid, long groupId, String className, String extraData)
+		throws PortalException {
 
-		MDRAction action = fetchStagedModelByUuidAndGroupId(uuid, groupId);
-
-		if (action != null) {
-			deleteStagedModel(action);
-		}
+		_stagedModelRepository.deleteStagedModel(
+			uuid, groupId, className, extraData);
 	}
 
 	@Override
 	public MDRAction fetchStagedModelByUuidAndGroupId(
 		String uuid, long groupId) {
 
-		return _mdrActionLocalService.fetchMDRActionByUuidAndGroupId(
+		return _stagedModelRepository.fetchStagedModelByUuidAndGroupId(
 			uuid, groupId);
 	}
 
@@ -81,9 +81,8 @@ public class MDRActionStagedModelDataHandler
 	public List<MDRAction> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		return _mdrActionLocalService.getMDRActionsByUuidAndCompanyId(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			new StagedModelModifiedDateComparator<MDRAction>());
+		return _stagedModelRepository.fetchStagedModelsByUuidAndCompanyId(
+			uuid, companyId);
 	}
 
 	@Override
@@ -265,5 +264,23 @@ public class MDRActionStagedModelDataHandler
 	private LayoutLocalService _layoutLocalService;
 	private MDRActionLocalService _mdrActionLocalService;
 	private MDRRuleGroupInstanceLocalService _mdrRuleGroupInstanceLocalService;
+
+	@Reference(
+		target = "(model.class.name=com.liferay.mobile.device.rules.model.MDRAction)",
+		unbind = "-"
+	)
+	protected void setStagedModelRepository(
+		StagedModelRepository<MDRAction> stagedModelRepository) {
+
+		_stagedModelRepository = stagedModelRepository;
+	}
+
+	@Override
+	protected StagedModelRepository<MDRAction> getStagedModelRepository() {
+		return _stagedModelRepository;
+	}
+
+	private StagedModelRepository<MDRAction> _stagedModelRepository;
+
 
 }

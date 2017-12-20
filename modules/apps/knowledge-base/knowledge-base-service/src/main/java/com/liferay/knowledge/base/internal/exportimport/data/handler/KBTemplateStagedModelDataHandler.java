@@ -14,11 +14,12 @@
 
 package com.liferay.knowledge.base.internal.exportimport.data.handler;
 
-import com.liferay.exportimport.kernel.lar.BaseStagedModelDataHandler;
+import com.liferay.exportimport.data.handler.base.BaseStagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelModifiedDateComparator;
+import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.knowledge.base.model.KBTemplate;
 import com.liferay.knowledge.base.service.KBTemplateLocalService;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
@@ -44,7 +45,7 @@ public class KBTemplateStagedModelDataHandler
 	public void deleteStagedModel(KBTemplate kbTemplate)
 		throws PortalException {
 
-		_kbTemplateLocalService.deleteKBTemplate(kbTemplate);
+		_stagedModelRepository.deleteStagedModel(kbTemplate);
 	}
 
 	@Override
@@ -52,18 +53,15 @@ public class KBTemplateStagedModelDataHandler
 			String uuid, long groupId, String className, String extraData)
 		throws PortalException {
 
-		KBTemplate kbTemplate = fetchStagedModelByUuidAndGroupId(uuid, groupId);
-
-		if (kbTemplate != null) {
-			deleteStagedModel(kbTemplate);
-		}
+		_stagedModelRepository.deleteStagedModel(
+			uuid, groupId, className, extraData);
 	}
 
 	@Override
 	public KBTemplate fetchStagedModelByUuidAndGroupId(
 		String uuid, long groupId) {
 
-		return _kbTemplateLocalService.fetchKBTemplateByUuidAndGroupId(
+		return _stagedModelRepository.fetchStagedModelByUuidAndGroupId(
 			uuid, groupId);
 	}
 
@@ -71,9 +69,8 @@ public class KBTemplateStagedModelDataHandler
 	public List<KBTemplate> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		return _kbTemplateLocalService.getKBTemplatesByUuidAndCompanyId(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			new StagedModelModifiedDateComparator<KBTemplate>());
+		return _stagedModelRepository.fetchStagedModelsByUuidAndCompanyId(
+			uuid, companyId);
 	}
 
 	@Override
@@ -104,46 +101,47 @@ public class KBTemplateStagedModelDataHandler
 			PortletDataContext portletDataContext, KBTemplate kbTemplate)
 		throws Exception {
 
-		long userId = portletDataContext.getUserId(kbTemplate.getUserUuid());
-
-		ServiceContext serviceContext = portletDataContext.createServiceContext(
-			kbTemplate);
-
-		KBTemplate importedKBTemplate = null;
+		KBTemplate importedKBTemplate = (KBTemplate)kbTemplate.clone();
 
 		if (portletDataContext.isDataStrategyMirror()) {
 			KBTemplate existingKBTemplate = fetchStagedModelByUuidAndGroupId(
 				kbTemplate.getUuid(), portletDataContext.getScopeGroupId());
 
 			if (existingKBTemplate == null) {
-				serviceContext.setUuid(kbTemplate.getUuid());
-
-				importedKBTemplate = _kbTemplateLocalService.addKBTemplate(
-					userId, kbTemplate.getTitle(), kbTemplate.getContent(),
-					serviceContext);
+				importedKBTemplate = _stagedModelRepository.addStagedModel(
+					portletDataContext, importedKBTemplate);
 			}
 			else {
-				importedKBTemplate = _kbTemplateLocalService.updateKBTemplate(
-					existingKBTemplate.getKbTemplateId(), kbTemplate.getTitle(),
-					kbTemplate.getContent(), serviceContext);
+				importedKBTemplate.setKbTemplateId(
+					existingKBTemplate.getKbTemplateId());
+
+				importedKBTemplate = _stagedModelRepository.updateStagedModel(
+					portletDataContext, importedKBTemplate);
 			}
 		}
 		else {
-			importedKBTemplate = _kbTemplateLocalService.addKBTemplate(
-				userId, kbTemplate.getTitle(), kbTemplate.getContent(),
-				serviceContext);
+			importedKBTemplate = _stagedModelRepository.addStagedModel(
+				portletDataContext, importedKBTemplate);
 		}
 
 		portletDataContext.importClassedModel(kbTemplate, importedKBTemplate);
 	}
 
-	@Reference(unbind = "-")
-	protected void setKBTemplateLocalService(
-		KBTemplateLocalService kbTemplateLocalService) {
+	@Reference(
+		target = "(model.class.name=com.liferay.knowledge.base.model.KBTemplate)",
+		unbind = "-"
+	)
+	protected void setStagedModelRepository(
+		StagedModelRepository<KBTemplate> stagedModelRepository) {
 
-		_kbTemplateLocalService = kbTemplateLocalService;
+		_stagedModelRepository = stagedModelRepository;
 	}
 
-	private KBTemplateLocalService _kbTemplateLocalService;
+	@Override
+	protected StagedModelRepository<KBTemplate> getStagedModelRepository() {
+		return _stagedModelRepository;
+	}
+
+	private StagedModelRepository<KBTemplate> _stagedModelRepository;
 
 }

@@ -14,15 +14,17 @@
 
 package com.liferay.knowledge.base.internal.exportimport.data.handler;
 
-import com.liferay.exportimport.kernel.lar.BaseStagedModelDataHandler;
+import com.liferay.exportimport.data.handler.base.BaseStagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelModifiedDateComparator;
+import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.knowledge.base.model.KBFolder;
 import com.liferay.knowledge.base.service.KBFolderLocalService;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.xml.Element;
@@ -43,29 +45,25 @@ public class KBFolderStagedModelDataHandler
 	public static final String[] CLASS_NAMES = {KBFolder.class.getName()};
 
 	@Override
-	public void deleteStagedModel(KBFolder kbFolder) {
-		_kbFolderLocalService.deleteKBFolder(kbFolder);
+	public void deleteStagedModel(KBFolder kbFolder) throws PortalException {
+		_stagedModelRepository.deleteStagedModel(kbFolder);
 	}
 
 	@Override
 	public void deleteStagedModel(
-		String uuid, long groupId, String className, String extraData) {
+			String uuid, long groupId, String className, String extraData)
+		throws PortalException {
 
-		KBFolder kbFolder = _kbFolderLocalService.fetchKBFolderByUuidAndGroupId(
-			uuid, groupId);
-
-		if (kbFolder != null) {
-			deleteStagedModel(kbFolder);
-		}
+		_stagedModelRepository.deleteStagedModel(
+			uuid, groupId, className, extraData);
 	}
 
 	@Override
 	public List<KBFolder> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		return _kbFolderLocalService.getKBFoldersByUuidAndCompanyId(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			new StagedModelModifiedDateComparator<KBFolder>());
+		return _stagedModelRepository.fetchStagedModelsByUuidAndCompanyId(
+			uuid, companyId);
 	}
 
 	@Override
@@ -152,5 +150,22 @@ public class KBFolderStagedModelDataHandler
 	}
 
 	private KBFolderLocalService _kbFolderLocalService;
+
+	@Reference(
+		target = "(model.class.name=com.liferay.knowledge.base.model.KBFolder)",
+		unbind = "-"
+	)
+	protected void setStagedModelRepository(
+		StagedModelRepository<KBFolder> stagedModelRepository) {
+
+		_stagedModelRepository = stagedModelRepository;
+	}
+
+	@Override
+	protected StagedModelRepository<KBFolder> getStagedModelRepository() {
+		return _stagedModelRepository;
+	}
+
+	private StagedModelRepository<KBFolder> _stagedModelRepository;
 
 }

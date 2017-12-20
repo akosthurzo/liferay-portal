@@ -18,6 +18,7 @@ import com.liferay.exportimport.data.handler.base.BaseStagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
+import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Website;
@@ -46,32 +47,21 @@ public class WebsiteStagedModelDataHandler
 			String uuid, long groupId, String className, String extraData)
 		throws PortalException {
 
-		Group group = _groupLocalService.getGroup(groupId);
-
-		Website website = _websiteLocalService.fetchWebsiteByUuidAndCompanyId(
-			uuid, group.getCompanyId());
-
-		if (website != null) {
-			deleteStagedModel(website);
-		}
+		_stagedModelRepository.deleteStagedModel(
+			uuid, groupId, className, extraData);
 	}
 
 	@Override
-	public void deleteStagedModel(Website website) {
-		_websiteLocalService.deleteWebsite(website);
+	public void deleteStagedModel(Website website) throws PortalException {
+		_stagedModelRepository.deleteStagedModel(website);
 	}
 
 	@Override
 	public List<Website> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		List<Website> websites = new ArrayList<>();
-
-		websites.add(
-			_websiteLocalService.fetchWebsiteByUuidAndCompanyId(
-				uuid, companyId));
-
-		return websites;
+		return _stagedModelRepository.fetchStagedModelsByUuidAndCompanyId(
+			uuid, companyId);
 	}
 
 	@Override
@@ -97,47 +87,43 @@ public class WebsiteStagedModelDataHandler
 			PortletDataContext portletDataContext, Website website)
 		throws Exception {
 
-		long userId = portletDataContext.getUserId(website.getUserUuid());
-
-		ServiceContext serviceContext = portletDataContext.createServiceContext(
-			website);
-
-		Website existingWebsite =
-			_websiteLocalService.fetchWebsiteByUuidAndCompanyId(
+		List<Website> existingWebsites =
+			_stagedModelRepository.fetchStagedModelsByUuidAndCompanyId(
 				website.getUuid(), portletDataContext.getCompanyGroupId());
 
-		Website importedWebsite = null;
+		Website existingWebsite = existingWebsites.get(0);
+
+		Website importedWebsite = (Website)website.clone();
 
 		if (existingWebsite == null) {
-			serviceContext.setUuid(website.getUuid());
-
-			importedWebsite = _websiteLocalService.addWebsite(
-				userId, website.getClassName(), website.getClassPK(),
-				website.getUrl(), website.getTypeId(), website.isPrimary(),
-				serviceContext);
+			importedWebsite = _stagedModelRepository.addStagedModel(
+				portletDataContext, importedWebsite);
 		}
 		else {
-			importedWebsite = _websiteLocalService.updateWebsite(
-				existingWebsite.getWebsiteId(), website.getUrl(),
-				website.getTypeId(), website.isPrimary());
+			importedWebsite.setWebsiteId(existingWebsite.getWebsiteId());
+
+			importedWebsite = _stagedModelRepository.updateStagedModel(
+				portletDataContext, importedWebsite);
 		}
 
 		portletDataContext.importClassedModel(website, importedWebsite);
 	}
 
-	@Reference(unbind = "-")
-	protected void setGroupLocalService(GroupLocalService groupLocalService) {
-		_groupLocalService = groupLocalService;
+	@Reference(
+		target = "(model.class.name=com.liferay.portal.kernel.model.Website)",
+		unbind = "-"
+	)
+	protected void setStagedModelRepository(
+		StagedModelRepository<Website> stagedModelRepository) {
+
+		_stagedModelRepository = stagedModelRepository;
 	}
 
-	@Reference(unbind = "-")
-	protected void setWebsiteLocalService(
-		WebsiteLocalService websiteLocalService) {
-
-		_websiteLocalService = websiteLocalService;
+	@Override
+	protected StagedModelRepository<Website> getStagedModelRepository() {
+		return _stagedModelRepository;
 	}
 
-	private GroupLocalService _groupLocalService;
-	private WebsiteLocalService _websiteLocalService;
+	private StagedModelRepository<Website> _stagedModelRepository;
 
 }

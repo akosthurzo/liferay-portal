@@ -18,15 +18,11 @@ import com.liferay.exportimport.data.handler.base.BaseStagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
+import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Address;
-import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.service.AddressLocalService;
-import com.liferay.portal.kernel.service.GroupLocalService;
-import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.xml.Element;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.osgi.service.component.annotations.Component;
@@ -42,8 +38,8 @@ public class AddressStagedModelDataHandler
 	public static final String[] CLASS_NAMES = {Address.class.getName()};
 
 	@Override
-	public void deleteStagedModel(Address address) {
-		_addressLocalService.deleteAddress(address);
+	public void deleteStagedModel(Address address) throws PortalException {
+		_stagedModelRepository.deleteStagedModel(address);
 	}
 
 	@Override
@@ -51,14 +47,8 @@ public class AddressStagedModelDataHandler
 			String uuid, long groupId, String className, String extraData)
 		throws PortalException {
 
-		Group group = _groupLocalService.getGroup(groupId);
-
-		Address address = _addressLocalService.fetchAddressByUuidAndCompanyId(
-			uuid, group.getCompanyId());
-
-		if (address != null) {
-			deleteStagedModel(address);
-		}
+		_stagedModelRepository.deleteStagedModel(
+			uuid, groupId, className, extraData);
 	}
 
 	@Override
@@ -78,13 +68,8 @@ public class AddressStagedModelDataHandler
 	public List<Address> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		List<Address> addresses = new ArrayList<>();
-
-		addresses.add(
-			_addressLocalService.fetchAddressByUuidAndCompanyId(
-				uuid, companyId));
-
-		return addresses;
+		return _stagedModelRepository.fetchStagedModelsByUuidAndCompanyId(
+			uuid, companyId);
 	}
 
 	@Override
@@ -97,52 +82,43 @@ public class AddressStagedModelDataHandler
 			PortletDataContext portletDataContext, Address address)
 		throws Exception {
 
-		long userId = portletDataContext.getUserId(address.getUserUuid());
-
-		ServiceContext serviceContext = portletDataContext.createServiceContext(
-			address);
-
-		Address existingAddress =
-			_addressLocalService.fetchAddressByUuidAndCompanyId(
+		List<Address> existingAddresses =
+			_stagedModelRepository.fetchStagedModelsByUuidAndCompanyId(
 				address.getUuid(), portletDataContext.getCompanyId());
 
-		Address importedAddress = null;
+		Address existingAddress = existingAddresses.get(0);
+
+		Address importedAddress = (Address)address.clone();
 
 		if (existingAddress == null) {
-			serviceContext.setUuid(address.getUuid());
-
-			importedAddress = _addressLocalService.addAddress(
-				userId, address.getClassName(), address.getClassPK(),
-				address.getStreet1(), address.getStreet2(),
-				address.getStreet3(), address.getCity(), address.getZip(),
-				address.getRegionId(), address.getCountryId(),
-				address.getTypeId(), address.getMailing(), address.isPrimary(),
-				serviceContext);
+			importedAddress = _stagedModelRepository.addStagedModel(
+				portletDataContext, importedAddress);
 		}
 		else {
-			importedAddress = _addressLocalService.updateAddress(
-				existingAddress.getAddressId(), address.getStreet1(),
-				address.getStreet2(), address.getStreet3(), address.getCity(),
-				address.getZip(), address.getRegionId(), address.getCountryId(),
-				address.getTypeId(), address.getMailing(), address.isPrimary());
+			importedAddress.setAddressId(existingAddress.getAddressId());
+
+			importedAddress = _stagedModelRepository.updateStagedModel(
+				portletDataContext, importedAddress);
 		}
 
 		portletDataContext.importClassedModel(address, importedAddress);
 	}
 
-	@Reference(unbind = "-")
-	protected void setAddressLocalService(
-		AddressLocalService addressLocalService) {
-
-		_addressLocalService = addressLocalService;
+	@Override
+	protected StagedModelRepository<Address> getStagedModelRepository() {
+		return _stagedModelRepository;
 	}
 
-	@Reference(unbind = "-")
-	protected void setGroupLocalService(GroupLocalService groupLocalService) {
-		_groupLocalService = groupLocalService;
+	@Reference(
+		target = "(model.class.name=com.liferay.portal.kernel.model.Address)",
+		unbind = "-"
+	)
+	protected void setStagedModelRepository(
+		StagedModelRepository<Address> stagedModelRepository) {
+
+		_stagedModelRepository = stagedModelRepository;
 	}
 
-	private AddressLocalService _addressLocalService;
-	private GroupLocalService _groupLocalService;
+	private StagedModelRepository<Address> _stagedModelRepository;
 
 }

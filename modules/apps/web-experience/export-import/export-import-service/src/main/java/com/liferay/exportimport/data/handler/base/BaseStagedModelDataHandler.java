@@ -23,6 +23,7 @@ import com.liferay.exportimport.kernel.lar.PortletDataException;
 import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.StagedModel;
+import com.liferay.portal.kernel.model.TrashedModel;
 
 import java.util.Collections;
 import java.util.List;
@@ -114,6 +115,10 @@ public abstract class BaseStagedModelDataHandler<T extends StagedModel>
 	public void restoreStagedModel(
 			PortletDataContext portletDataContext, T stagedModel)
 		throws PortletDataException {
+
+		if (!(stagedModel instanceof TrashedModel)) {
+			return;
+		}
 
 		StagedModelRepository<T> stagedModelRepository =
 			getStagedModelRepository();

@@ -18,6 +18,7 @@ import com.liferay.exportimport.data.handler.base.BaseStagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
+import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Phone;
@@ -42,8 +43,8 @@ public class PhoneStagedModelDataHandler
 	public static final String[] CLASS_NAMES = {Phone.class.getName()};
 
 	@Override
-	public void deleteStagedModel(Phone phone) {
-		_phoneLocalService.deletePhone(phone);
+	public void deleteStagedModel(Phone phone) throws PortalException {
+		_stagedModelRepository.deleteStagedModel(phone);
 	}
 
 	@Override
@@ -51,26 +52,16 @@ public class PhoneStagedModelDataHandler
 			String uuid, long groupId, String className, String extraData)
 		throws PortalException {
 
-		Group group = _groupLocalService.getGroup(groupId);
-
-		Phone phone = _phoneLocalService.fetchPhoneByUuidAndCompanyId(
-			uuid, group.getCompanyId());
-
-		if (phone != null) {
-			deleteStagedModel(phone);
-		}
+		_stagedModelRepository.deleteStagedModel(
+			uuid, groupId, className, extraData);
 	}
 
 	@Override
 	public List<Phone> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		List<Phone> phones = new ArrayList<>();
-
-		phones.add(
-			_phoneLocalService.fetchPhoneByUuidAndCompanyId(uuid, companyId));
-
-		return phones;
+		return _stagedModelRepository.fetchStagedModelsByUuidAndCompanyId(
+			uuid, companyId);
 	}
 
 	@Override
@@ -94,44 +85,43 @@ public class PhoneStagedModelDataHandler
 			PortletDataContext portletDataContext, Phone phone)
 		throws Exception {
 
-		long userId = portletDataContext.getUserId(phone.getUserUuid());
+		List<Phone> existingPhones =
+			_stagedModelRepository.fetchStagedModelsByUuidAndCompanyId(
+				phone.getUuid(), portletDataContext.getCompanyId());
 
-		ServiceContext serviceContext = portletDataContext.createServiceContext(
-			phone);
+		Phone existingPhone = existingPhones.get(0);
 
-		Phone existingPhone = _phoneLocalService.fetchPhoneByUuidAndCompanyId(
-			phone.getUuid(), portletDataContext.getCompanyId());
-
-		Phone importedPhone = null;
+		Phone importedPhone = (Phone)phone.clone();
 
 		if (existingPhone == null) {
-			serviceContext.setUuid(phone.getUuid());
-
-			importedPhone = _phoneLocalService.addPhone(
-				userId, phone.getClassName(), phone.getClassPK(),
-				phone.getNumber(), phone.getExtension(), phone.getTypeId(),
-				phone.isPrimary(), serviceContext);
+			importedPhone = _stagedModelRepository.addStagedModel(
+				portletDataContext, importedPhone);
 		}
 		else {
-			importedPhone = _phoneLocalService.updatePhone(
-				existingPhone.getPhoneId(), phone.getNumber(),
-				phone.getExtension(), phone.getTypeId(), phone.isPrimary());
+			importedPhone.setPhoneId(existingPhone.getPhoneId());
+
+			importedPhone = _stagedModelRepository.updateStagedModel(
+				portletDataContext, importedPhone);
 		}
 
 		portletDataContext.importClassedModel(phone, importedPhone);
 	}
 
-	@Reference(unbind = "-")
-	protected void setGroupLocalService(GroupLocalService groupLocalService) {
-		_groupLocalService = groupLocalService;
+	@Override
+	protected StagedModelRepository<Phone> getStagedModelRepository() {
+		return _stagedModelRepository;
 	}
 
-	@Reference(unbind = "-")
-	protected void setPhoneLocalService(PhoneLocalService phoneLocalService) {
-		_phoneLocalService = phoneLocalService;
+	@Reference(
+		target = "(model.class.name=com.liferay.portal.kernel.model.Phone)",
+		unbind = "-"
+	)
+	protected void setStagedModelRepository(
+		StagedModelRepository<Phone> stagedModelRepository) {
+
+		_stagedModelRepository = stagedModelRepository;
 	}
 
-	private GroupLocalService _groupLocalService;
-	private PhoneLocalService _phoneLocalService;
+	private StagedModelRepository<Phone> _stagedModelRepository;
 
 }

@@ -17,6 +17,7 @@ package com.liferay.users.admin.internal.exportimport.data.handler;
 import com.liferay.exportimport.data.handler.base.BaseStagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
+import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
@@ -43,31 +44,21 @@ public class UserStagedModelDataHandler
 			String uuid, long groupId, String className, String extraData)
 		throws PortalException {
 
-		Group group = _groupLocalService.getGroup(groupId);
-
-		User user = _userLocalService.fetchUserByUuidAndCompanyId(
-			uuid, group.getCompanyId());
-
-		if (user != null) {
-			deleteStagedModel(user);
-		}
+		_stagedModelRepository.deleteStagedModel(
+			uuid, groupId, className, extraData);
 	}
 
 	@Override
 	public void deleteStagedModel(User user) throws PortalException {
-		_userLocalService.deleteUser(user);
+		_stagedModelRepository.deleteStagedModel(user);
 	}
 
 	@Override
 	public List<User> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		List<User> users = new ArrayList<>();
-
-		users.add(
-			_userLocalService.fetchUserByUuidAndCompanyId(uuid, companyId));
-
-		return users;
+		return _stagedModelRepository.fetchStagedModelsByUuidAndCompanyId(
+			uuid, companyId);
 	}
 
 	@Override
@@ -90,17 +81,22 @@ public class UserStagedModelDataHandler
 		PortletDataContext portletDataContext, User user) {
 	}
 
-	@Reference(unbind = "-")
-	protected void setGroupLocalService(GroupLocalService groupLocalService) {
-		_groupLocalService = groupLocalService;
+	@Override
+	protected StagedModelRepository<User> getStagedModelRepository() {
+		return _stagedModelRepository;
 	}
 
-	@Reference(unbind = "-")
-	protected void setUserLocalService(UserLocalService userLocalService) {
-		_userLocalService = userLocalService;
+	@Reference(
+		target = "(model.class.name=com.liferay.portal.kernel.model.User)",
+		unbind = "-"
+	)
+	protected void setStagedModelRepository(
+		StagedModelRepository<User> stagedModelRepository) {
+
+		_stagedModelRepository = stagedModelRepository;
 	}
 
-	private GroupLocalService _groupLocalService;
-	private UserLocalService _userLocalService;
+	private StagedModelRepository<User> _stagedModelRepository;
+
 
 }

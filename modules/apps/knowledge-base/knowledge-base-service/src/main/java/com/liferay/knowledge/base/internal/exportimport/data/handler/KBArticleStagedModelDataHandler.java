@@ -17,12 +17,13 @@ package com.liferay.knowledge.base.internal.exportimport.data.handler;
 import com.liferay.document.library.kernel.exception.DuplicateFileEntryException;
 import com.liferay.document.library.kernel.exception.NoSuchFileException;
 import com.liferay.document.library.kernel.model.DLFileEntry;
-import com.liferay.exportimport.kernel.lar.BaseStagedModelDataHandler;
+import com.liferay.exportimport.data.handler.base.BaseStagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelModifiedDateComparator;
+import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.knowledge.base.constants.KBArticleConstants;
 import com.liferay.knowledge.base.constants.KBFolderConstants;
 import com.liferay.knowledge.base.constants.KBPortletKeys;
@@ -66,7 +67,7 @@ public class KBArticleStagedModelDataHandler
 
 	@Override
 	public void deleteStagedModel(KBArticle kbArticle) throws PortalException {
-		_kbArticleLocalService.deleteKBArticle(kbArticle);
+		_stagedModelRepository.deleteStagedModel(kbArticle);
 	}
 
 	@Override
@@ -74,18 +75,15 @@ public class KBArticleStagedModelDataHandler
 			String uuid, long groupId, String className, String extraData)
 		throws PortalException {
 
-		KBArticle kbArticle = fetchStagedModelByUuidAndGroupId(uuid, groupId);
-
-		if (kbArticle != null) {
-			deleteStagedModel(kbArticle);
-		}
+		_stagedModelRepository.deleteStagedModel(
+			uuid, groupId, className, extraData);
 	}
 
 	@Override
 	public KBArticle fetchStagedModelByUuidAndGroupId(
 		String uuid, long groupId) {
 
-		return _kbArticleLocalService.fetchKBArticleByUuidAndGroupId(
+		return _stagedModelRepository.fetchStagedModelByUuidAndGroupId(
 			uuid, groupId);
 	}
 
@@ -93,9 +91,8 @@ public class KBArticleStagedModelDataHandler
 	public List<KBArticle> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		return _kbArticleLocalService.getKBArticlesByUuidAndCompanyId(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			new StagedModelModifiedDateComparator<KBArticle>());
+	   return _stagedModelRepository.fetchStagedModelsByUuidAndCompanyId(
+	   	uuid, companyId);
 	}
 
 	@Override
@@ -504,5 +501,22 @@ public class KBArticleStagedModelDataHandler
 	private KBFolderLocalService _kbFolderLocalService;
 	private Portal _portal;
 	private PortletFileRepository _portletFileRepository;
+
+	@Reference(
+		target = "(model.class.name=com.liferay.knowledge.base.model.KBArticle)",
+		unbind = "-"
+	)
+	protected void setStagedModelRepository(
+		StagedModelRepository<KBArticle> stagedModelRepository) {
+
+		_stagedModelRepository = stagedModelRepository;
+	}
+
+	@Override
+	protected StagedModelRepository<KBArticle> getStagedModelRepository() {
+		return _stagedModelRepository;
+	}
+
+	private StagedModelRepository<KBArticle> _stagedModelRepository;
 
 }

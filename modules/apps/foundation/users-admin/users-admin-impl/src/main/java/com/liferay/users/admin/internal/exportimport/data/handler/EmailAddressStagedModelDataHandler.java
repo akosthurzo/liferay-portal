@@ -18,15 +18,11 @@ import com.liferay.exportimport.data.handler.base.BaseStagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
+import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.EmailAddress;
-import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.service.EmailAddressLocalService;
-import com.liferay.portal.kernel.service.GroupLocalService;
-import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.xml.Element;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.osgi.service.component.annotations.Component;
@@ -42,8 +38,10 @@ public class EmailAddressStagedModelDataHandler
 	public static final String[] CLASS_NAMES = {EmailAddress.class.getName()};
 
 	@Override
-	public void deleteStagedModel(EmailAddress emailAddress) {
-		_emailAddressLocalService.deleteEmailAddress(emailAddress);
+	public void deleteStagedModel(EmailAddress emailAddress)
+		throws PortalException {
+
+		_stagedModelRepository.deleteStagedModel(emailAddress);
 	}
 
 	@Override
@@ -51,26 +49,16 @@ public class EmailAddressStagedModelDataHandler
 			String uuid, long groupId, String className, String extraData)
 		throws PortalException {
 
-		Group group = _groupLocalService.getGroup(groupId);
-
-		EmailAddress emailAddress =
-			_emailAddressLocalService.fetchEmailAddressByUuidAndCompanyId(
-				uuid, group.getCompanyId());
-
-		deleteStagedModel(emailAddress);
+		_stagedModelRepository.deleteStagedModel(
+			uuid, groupId, className, extraData);
 	}
 
 	@Override
 	public List<EmailAddress> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		List<EmailAddress> emailAddresses = new ArrayList<>();
-
-		emailAddresses.add(
-			_emailAddressLocalService.fetchEmailAddressByUuidAndCompanyId(
-				uuid, companyId));
-
-		return emailAddresses;
+		return _stagedModelRepository.fetchStagedModelsByUuidAndCompanyId(
+			uuid, companyId);
 	}
 
 	@Override
@@ -96,49 +84,45 @@ public class EmailAddressStagedModelDataHandler
 			PortletDataContext portletDataContext, EmailAddress emailAddress)
 		throws Exception {
 
-		long userId = portletDataContext.getUserId(emailAddress.getUserUuid());
-
-		ServiceContext serviceContext = portletDataContext.createServiceContext(
-			emailAddress);
-
-		EmailAddress existingEmailAddress =
-			_emailAddressLocalService.fetchEmailAddressByUuidAndCompanyId(
+		List<EmailAddress> existingEmailAddresses =
+			_stagedModelRepository.fetchStagedModelsByUuidAndCompanyId(
 				emailAddress.getUuid(), portletDataContext.getCompanyId());
 
-		EmailAddress importedEmailAddress = null;
+		EmailAddress importedEmailAddress = (EmailAddress)emailAddress.clone();
+
+		EmailAddress existingEmailAddress = existingEmailAddresses.get(0);
 
 		if (existingEmailAddress == null) {
-			serviceContext.setUuid(emailAddress.getUuid());
-
-			importedEmailAddress = _emailAddressLocalService.addEmailAddress(
-				userId, emailAddress.getClassName(), emailAddress.getClassPK(),
-				emailAddress.getAddress(), emailAddress.getTypeId(),
-				emailAddress.isPrimary(), serviceContext);
+			importedEmailAddress = _stagedModelRepository.addStagedModel(
+				portletDataContext, importedEmailAddress);
 		}
 		else {
-			importedEmailAddress = _emailAddressLocalService.updateEmailAddress(
-				existingEmailAddress.getEmailAddressId(),
-				emailAddress.getAddress(), emailAddress.getTypeId(),
-				emailAddress.isPrimary());
+			importedEmailAddress.setEmailAddressId(
+				existingEmailAddress.getEmailAddressId());
+
+			importedEmailAddress = _stagedModelRepository.updateStagedModel(
+				portletDataContext, importedEmailAddress);
 		}
 
 		portletDataContext.importClassedModel(
 			emailAddress, importedEmailAddress);
 	}
 
-	@Reference(unbind = "-")
-	protected void setEmailAddressLocalService(
-		EmailAddressLocalService emailAddressLocalService) {
-
-		_emailAddressLocalService = emailAddressLocalService;
+	@Override
+	protected StagedModelRepository<EmailAddress> getStagedModelRepository() {
+		return _stagedModelRepository;
 	}
 
-	@Reference(unbind = "-")
-	protected void setGroupLocalService(GroupLocalService groupLocalService) {
-		_groupLocalService = groupLocalService;
+	@Reference(
+		target = "(model.class.name=com.liferay.portal.kernel.model.EmailAddress)",
+		unbind = "-"
+	)
+	protected void setStagedModelRepository(
+		StagedModelRepository<EmailAddress> stagedModelRepository) {
+
+		_stagedModelRepository = stagedModelRepository;
 	}
 
-	private EmailAddressLocalService _emailAddressLocalService;
-	private GroupLocalService _groupLocalService;
+	private StagedModelRepository<EmailAddress> _stagedModelRepository;
 
 }

@@ -22,6 +22,7 @@ import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelModifiedDateComparator;
 import com.liferay.exportimport.lar.BaseStagedModelDataHandler;
+import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.journal.model.JournalFolder;
 import com.liferay.journal.model.JournalFolderConstants;
 import com.liferay.journal.service.JournalFolderLocalService;
@@ -54,7 +55,7 @@ public class JournalFolderStagedModelDataHandler
 
 	@Override
 	public void deleteStagedModel(JournalFolder folder) throws PortalException {
-		_journalFolderLocalService.deleteFolder(folder);
+		_stagedModelRepository.deleteStagedModel(folder);
 	}
 
 	@Override
@@ -62,18 +63,15 @@ public class JournalFolderStagedModelDataHandler
 			String uuid, long groupId, String className, String extraData)
 		throws PortalException {
 
-		JournalFolder folder = fetchStagedModelByUuidAndGroupId(uuid, groupId);
-
-		if (folder != null) {
-			deleteStagedModel(folder);
-		}
+		_stagedModelRepository.deleteStagedModel(
+			uuid, groupId, className, extraData);
 	}
 
 	@Override
 	public JournalFolder fetchStagedModelByUuidAndGroupId(
 		String uuid, long groupId) {
 
-		return _journalFolderLocalService.fetchJournalFolderByUuidAndGroupId(
+		return _stagedModelRepository.fetchStagedModelByUuidAndGroupId(
 			uuid, groupId);
 	}
 
@@ -81,9 +79,8 @@ public class JournalFolderStagedModelDataHandler
 	public List<JournalFolder> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		return _journalFolderLocalService.getJournalFoldersByUuidAndCompanyId(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			new StagedModelModifiedDateComparator<JournalFolder>());
+		return _stagedModelRepository.fetchStagedModelsByUuidAndCompanyId(
+			uuid, companyId);
 	}
 
 	@Override
@@ -182,21 +179,7 @@ public class JournalFolderStagedModelDataHandler
 			PortletDataContext portletDataContext, JournalFolder folder)
 		throws Exception {
 
-		long userId = portletDataContext.getUserId(folder.getUserUuid());
-
-		JournalFolder existingFolder = fetchStagedModelByUuidAndGroupId(
-			folder.getUuid(), portletDataContext.getScopeGroupId());
-
-		if ((existingFolder == null) || !existingFolder.isInTrash()) {
-			return;
-		}
-
-		TrashHandler trashHandler = existingFolder.getTrashHandler();
-
-		if (trashHandler.isRestorable(existingFolder.getFolderId())) {
-			trashHandler.restoreTrashEntry(
-				userId, existingFolder.getFolderId());
-		}
+		_stagedModelRepository.restoreStagedModel(portletDataContext, folder);
 	}
 
 	protected void exportFolderDDMStructures(
@@ -303,5 +286,22 @@ public class JournalFolderStagedModelDataHandler
 
 	private DDMStructureLocalService _ddmStructureLocalService;
 	private JournalFolderLocalService _journalFolderLocalService;
+
+	@Reference(
+		target = "(model.class.name=com.liferay.journal.model.JournalFolder)",
+		unbind = "-"
+	)
+	protected void setStagedModelRepository(
+		StagedModelRepository<JournalFolder> stagedModelRepository) {
+
+		_stagedModelRepository = stagedModelRepository;
+	}
+
+	@Override
+	protected StagedModelRepository<JournalFolder> getStagedModelRepository() {
+		return _stagedModelRepository;
+	}
+
+	private StagedModelRepository<JournalFolder> _stagedModelRepository;
 
 }

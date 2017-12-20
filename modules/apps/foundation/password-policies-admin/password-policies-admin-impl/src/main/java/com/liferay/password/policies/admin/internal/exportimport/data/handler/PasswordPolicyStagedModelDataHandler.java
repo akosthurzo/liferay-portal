@@ -18,6 +18,7 @@ import com.liferay.exportimport.data.handler.base.BaseStagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
+import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.PasswordPolicy;
@@ -45,7 +46,7 @@ public class PasswordPolicyStagedModelDataHandler
 	public void deleteStagedModel(PasswordPolicy passwordPolicy)
 		throws PortalException {
 
-		_passwordPolicyLocalService.deletePasswordPolicy(passwordPolicy);
+		_stagedModelRepository.deleteStagedModel(passwordPolicy);
 	}
 
 	@Override
@@ -53,28 +54,16 @@ public class PasswordPolicyStagedModelDataHandler
 			String uuid, long groupId, String className, String extraData)
 		throws PortalException {
 
-		Group group = _groupLocalService.getGroup(groupId);
-
-		PasswordPolicy passwordPolicy =
-			_passwordPolicyLocalService.fetchPasswordPolicyByUuidAndCompanyId(
-				uuid, group.getCompanyId());
-
-		if (passwordPolicy != null) {
-			deleteStagedModel(passwordPolicy);
-		}
+		_stagedModelRepository.deleteStagedModel(
+			uuid, groupId, className, extraData);
 	}
 
 	@Override
 	public List<PasswordPolicy> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		List<PasswordPolicy> passwordPolicies = new ArrayList<>();
-
-		passwordPolicies.add(
-			_passwordPolicyLocalService.fetchPasswordPolicyByUuidAndCompanyId(
-				uuid, companyId));
-
-		return passwordPolicies;
+		return _stagedModelRepository.fetchStagedModelsByUuidAndCompanyId(
+			uuid, companyId);
 	}
 
 	@Override
@@ -102,15 +91,11 @@ public class PasswordPolicyStagedModelDataHandler
 			PasswordPolicy passwordPolicy)
 		throws Exception {
 
-		long userId = portletDataContext.getUserId(
-			passwordPolicy.getUserUuid());
-
-		ServiceContext serviceContext = portletDataContext.createServiceContext(
-			passwordPolicy);
-
-		PasswordPolicy existingPasswordPolicy =
-			_passwordPolicyLocalService.fetchPasswordPolicyByUuidAndCompanyId(
+		List<PasswordPolicy> existingPasswordPolicies =
+			_stagedModelRepository.fetchStagedModelsByUuidAndCompanyId(
 				passwordPolicy.getUuid(), portletDataContext.getCompanyId());
+
+		PasswordPolicy existingPasswordPolicy = existingPasswordPolicies.get(0);
 
 		if (existingPasswordPolicy == null) {
 			existingPasswordPolicy =
@@ -119,68 +104,24 @@ public class PasswordPolicyStagedModelDataHandler
 					passwordPolicy.getName());
 		}
 
-		PasswordPolicy importedPasswordPolicy = null;
+		PasswordPolicy importedPasswordPolicy =
+			(PasswordPolicy)passwordPolicy.clone();
 
 		if (existingPasswordPolicy == null) {
-			serviceContext.setUuid(passwordPolicy.getUuid());
-
-			importedPasswordPolicy =
-				_passwordPolicyLocalService.addPasswordPolicy(
-					userId, passwordPolicy.isDefaultPolicy(),
-					passwordPolicy.getName(), passwordPolicy.getDescription(),
-					passwordPolicy.getChangeable(),
-					passwordPolicy.isChangeRequired(),
-					passwordPolicy.getMinAge(), passwordPolicy.getCheckSyntax(),
-					passwordPolicy.isAllowDictionaryWords(),
-					passwordPolicy.getMinAlphanumeric(),
-					passwordPolicy.getMinLength(),
-					passwordPolicy.getMinLowerCase(),
-					passwordPolicy.getMinNumbers(),
-					passwordPolicy.getMinSymbols(),
-					passwordPolicy.getMinUpperCase(), passwordPolicy.getRegex(),
-					passwordPolicy.isHistory(),
-					passwordPolicy.getHistoryCount(),
-					passwordPolicy.isExpireable(), passwordPolicy.getMaxAge(),
-					passwordPolicy.getWarningTime(),
-					passwordPolicy.getGraceLimit(), passwordPolicy.isLockout(),
-					passwordPolicy.getMaxFailure(),
-					passwordPolicy.getLockoutDuration(),
-					passwordPolicy.getResetFailureCount(),
-					passwordPolicy.getResetTicketMaxAge(), serviceContext);
+			importedPasswordPolicy = _stagedModelRepository.addStagedModel(
+				portletDataContext, importedPasswordPolicy);
 		}
 		else {
-			importedPasswordPolicy =
-				_passwordPolicyLocalService.updatePasswordPolicy(
-					existingPasswordPolicy.getPasswordPolicyId(),
-					passwordPolicy.getName(), passwordPolicy.getDescription(),
-					passwordPolicy.isChangeable(),
-					passwordPolicy.isChangeRequired(),
-					passwordPolicy.getMinAge(), passwordPolicy.isCheckSyntax(),
-					passwordPolicy.isAllowDictionaryWords(),
-					passwordPolicy.getMinAlphanumeric(),
-					passwordPolicy.getMinLength(),
-					passwordPolicy.getMinLowerCase(),
-					passwordPolicy.getMinNumbers(),
-					passwordPolicy.getMinSymbols(),
-					passwordPolicy.getMinUpperCase(), passwordPolicy.getRegex(),
-					passwordPolicy.isHistory(),
-					passwordPolicy.getHistoryCount(),
-					passwordPolicy.isExpireable(), passwordPolicy.getMaxAge(),
-					passwordPolicy.getWarningTime(),
-					passwordPolicy.getGraceLimit(), passwordPolicy.isLockout(),
-					passwordPolicy.getMaxFailure(),
-					passwordPolicy.getLockoutDuration(),
-					passwordPolicy.getResetFailureCount(),
-					passwordPolicy.getResetTicketMaxAge(), serviceContext);
+			importedPasswordPolicy.setPasswordPolicyId(
+				existingPasswordPolicy.getPasswordPolicyId());
+
+			importedPasswordPolicy = _stagedModelRepository.updateStagedModel(
+				portletDataContext, importedPasswordPolicy);
+
 		}
 
 		portletDataContext.importClassedModel(
 			passwordPolicy, importedPasswordPolicy);
-	}
-
-	@Reference(unbind = "-")
-	protected void setGroupLocalService(GroupLocalService groupLocalService) {
-		_groupLocalService = groupLocalService;
 	}
 
 	@Reference(unbind = "-")
@@ -190,7 +131,23 @@ public class PasswordPolicyStagedModelDataHandler
 		_passwordPolicyLocalService = passwordPolicyLocalService;
 	}
 
-	private GroupLocalService _groupLocalService;
 	private PasswordPolicyLocalService _passwordPolicyLocalService;
+
+	@Reference(
+		target = "(model.class.name=com.liferay.portal.kernel.model.PasswordPolicy)",
+		unbind = "-"
+	)
+	protected void setStagedModelRepository(
+		StagedModelRepository<PasswordPolicy> stagedModelRepository) {
+
+		_stagedModelRepository = stagedModelRepository;
+	}
+
+	@Override
+	protected StagedModelRepository<PasswordPolicy> getStagedModelRepository() {
+		return _stagedModelRepository;
+	}
+
+	private StagedModelRepository<PasswordPolicy> _stagedModelRepository;
 
 }

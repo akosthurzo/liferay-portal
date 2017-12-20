@@ -14,11 +14,13 @@
 
 package com.liferay.knowledge.base.internal.exportimport.data.handler;
 
-import com.liferay.exportimport.kernel.lar.BaseStagedModelDataHandler;
+import com.liferay.exportimport.data.handler.base.BaseStagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelModifiedDateComparator;
+import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
+import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.knowledge.base.model.KBComment;
 import com.liferay.knowledge.base.service.KBCommentLocalService;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
@@ -44,7 +46,7 @@ public class KBCommentStagedModelDataHandler
 
 	@Override
 	public void deleteStagedModel(KBComment kbComment) throws PortalException {
-		_kbCommentLocalService.deleteKBComment(kbComment);
+		_stagedModelRepository.deleteStagedModel(kbComment);
 	}
 
 	@Override
@@ -52,18 +54,15 @@ public class KBCommentStagedModelDataHandler
 			String uuid, long groupId, String className, String extraData)
 		throws PortalException {
 
-		KBComment kbComment = fetchStagedModelByUuidAndGroupId(uuid, groupId);
-
-		if (kbComment != null) {
-			deleteStagedModel(kbComment);
-		}
+		_stagedModelRepository.deleteStagedModel(
+			uuid, groupId, className, extraData);
 	}
 
 	@Override
 	public KBComment fetchStagedModelByUuidAndGroupId(
 		String uuid, long groupId) {
 
-		return _kbCommentLocalService.fetchKBCommentByUuidAndGroupId(
+		return _stagedModelRepository.fetchStagedModelByUuidAndGroupId(
 			uuid, groupId);
 	}
 
@@ -71,9 +70,8 @@ public class KBCommentStagedModelDataHandler
 	public List<KBComment> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId) {
 
-		return _kbCommentLocalService.getKBCommentsByUuidAndCompanyId(
-			uuid, companyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			new StagedModelModifiedDateComparator<KBComment>());
+		return _stagedModelRepository.fetchStagedModelsByUuidAndCompanyId(
+			uuid, companyId);
 	}
 
 	@Override
@@ -156,5 +154,22 @@ public class KBCommentStagedModelDataHandler
 	}
 
 	private KBCommentLocalService _kbCommentLocalService;
+
+	@Reference(
+		target = "(model.class.name=com.liferay.knowledge.base.model.KBComment)",
+		unbind = "-"
+	)
+	protected void setStagedModelRepository(
+		StagedModelRepository<KBComment> stagedModelRepository) {
+
+		_stagedModelRepository = stagedModelRepository;
+	}
+
+	@Override
+	protected StagedModelRepository<KBComment> getStagedModelRepository() {
+		return _stagedModelRepository;
+	}
+
+	private StagedModelRepository<KBComment> _stagedModelRepository;
 
 }

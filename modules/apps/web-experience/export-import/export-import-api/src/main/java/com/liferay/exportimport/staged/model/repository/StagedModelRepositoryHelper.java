@@ -26,5 +26,4 @@ public interface StagedModelRepositoryHelper {
 		StagedModelRepository<?> stagedModelRepository);
 
 	public boolean isStagedModelInTrash(StagedModel stagedModel);
-
 }

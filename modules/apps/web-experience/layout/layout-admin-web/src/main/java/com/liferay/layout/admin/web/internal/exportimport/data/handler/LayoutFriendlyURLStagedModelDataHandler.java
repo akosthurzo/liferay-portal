@@ -19,6 +19,7 @@ import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelModifiedDateComparator;
+import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutFriendlyURL;
@@ -206,14 +207,23 @@ public class LayoutFriendlyURLStagedModelDataHandler
 		_layoutFriendlyURLLocalService = layoutFriendlyURLLocalService;
 	}
 
-	@Reference(unbind = "-")
-	protected void setLayoutLocalService(
-		LayoutLocalService layoutLocalService) {
+	private LayoutFriendlyURLLocalService _layoutFriendlyURLLocalService;
 
-		_layoutLocalService = layoutLocalService;
+	@Reference(
+		target = "(model.class.name=com.liferay.portal.kernel.model.LayoutFriendlyURL)",
+		unbind = "-"
+	)
+	protected void setStagedModelRepository(
+		StagedModelRepository<LayoutFriendlyURL> stagedModelRepository) {
+
+		_stagedModelRepository = stagedModelRepository;
 	}
 
-	private LayoutFriendlyURLLocalService _layoutFriendlyURLLocalService;
-	private LayoutLocalService _layoutLocalService;
+	@Override
+	protected StagedModelRepository<LayoutFriendlyURL> getStagedModelRepository() {
+		return _stagedModelRepository;
+	}
+
+	private StagedModelRepository<LayoutFriendlyURL> _stagedModelRepository;
 
 }
