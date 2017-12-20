@@ -42,6 +42,8 @@ public interface StagedModelRepository<T extends StagedModel> {
 
 	public T fetchMissingReference(String uuid, long groupId);
 
+	public T fetchStagedModelByClassPK(long classPK) throws PortalException;
+
 	public T fetchStagedModelByUuidAndGroupId(String uuid, long groupId);
 
 	public List<T> fetchStagedModelsByUuidAndCompanyId(
