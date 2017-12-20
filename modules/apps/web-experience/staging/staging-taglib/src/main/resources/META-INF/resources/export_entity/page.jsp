@@ -19,13 +19,14 @@
 <c:if test="<%= GroupPermissionUtil.contains(permissionChecker, themeDisplay.getScopeGroup(), ActionKeys.EXPORT_IMPORT_PORTLET_INFO) %>">
 
 	<%
-	PortletURL portletURL = PortletURLFactoryUtil.create(request, ExportImportPortletKeys.EXPORT_IMPORT, PortletRequest.ACTION_PHASE);
+	PortletURL portletURL = PortletURLFactoryUtil.create(request, ExportImportPortletKeys.ENTITY_SET, PortletRequest.ACTION_PHASE);
 
 	portletURL.setParameter(ActionRequest.ACTION_NAME, "exportImportEntity");
 	portletURL.setParameter("mvcRenderCommandName", "exportImportEntity");
 	portletURL.setParameter("cmd", Constants.EXPORT);
 	portletURL.setParameter("className", className);
 	portletURL.setParameter("classPK", String.valueOf(classPK));
+	portletURL.setParameter("portletId", portletDisplay.getId());
 	%>
 
 	<liferay-ui:icon
