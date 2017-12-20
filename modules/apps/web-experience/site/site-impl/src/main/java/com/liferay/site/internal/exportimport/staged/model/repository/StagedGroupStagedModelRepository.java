@@ -151,6 +151,13 @@ public class StagedGroupStagedModelRepository
 	}
 
 	@Override
+	public StagedGroup fetchStagedModelByClassPK(long classPK)
+		throws PortalException {
+
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	public StagedGroup fetchStagedModelByUuidAndGroupId(
 		String uuid, long groupId) {
 

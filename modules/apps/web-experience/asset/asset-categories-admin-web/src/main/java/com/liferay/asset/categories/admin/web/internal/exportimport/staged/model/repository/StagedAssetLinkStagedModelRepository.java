@@ -150,6 +150,16 @@ public class StagedAssetLinkStagedModelRepository
 	}
 
 	@Override
+	public StagedAssetLink fetchStagedModelByClassPK(long classPK)
+		throws PortalException {
+
+		AssetLink assetLink = _assetLinkLocalService.fetchAssetLink(classPK);
+
+		return ModelAdapterUtil.adapt(
+			assetLink, AssetLink.class, StagedAssetLink.class);
+	}
+
+	@Override
 	public List<StagedAssetLink> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId) {
 

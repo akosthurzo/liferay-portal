@@ -147,6 +147,25 @@ public class DummyStagedModelRepository
 	}
 
 	@Override
+	public Dummy fetchStagedModelByClassPK(long classPK)
+		throws PortalException {
+
+		Stream<Dummy> dummiesStream = _dummies.stream();
+
+		List<Dummy> dummies = dummiesStream.filter(
+			dummy -> dummy.getId() == classPK
+		).collect(
+			Collectors.toList()
+		);
+
+		if (dummies.isEmpty()) {
+			return null;
+		}
+
+		return dummies.get(0);
+	}
+
+	@Override
 	public Dummy fetchStagedModelByUuidAndGroupId(String uuid, long groupId) {
 		Stream<Dummy> dummiesStream = _dummies.stream();
 
