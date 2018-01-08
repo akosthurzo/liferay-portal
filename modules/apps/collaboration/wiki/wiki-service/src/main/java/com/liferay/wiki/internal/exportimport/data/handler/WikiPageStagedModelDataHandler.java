@@ -22,6 +22,7 @@ import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelModifiedDateComparator;
+import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
@@ -31,7 +32,6 @@ import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.trash.TrashHandler;
 import com.liferay.portal.kernel.trash.TrashHandlerRegistryUtil;
-import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -206,6 +206,10 @@ public class WikiPageStagedModelDataHandler
 
 		WikiPage importedPage = null;
 
+		importedPage = (WikiPage)page.clone();
+
+		importedPage.setNodeId(nodeId);
+
 		WikiPage existingPage = _wikiPageLocalService.fetchPage(
 			nodeId, page.getTitle());
 
@@ -216,29 +220,14 @@ public class WikiPageStagedModelDataHandler
 			WikiPageResource importedPageResource = null;
 
 			if (existingPage == null) {
-				importedPage = _wikiPageLocalService.addPage(
-					userId, nodeId, page.getTitle(), page.getVersion(),
-					page.getContent(), page.getSummary(), page.isMinorEdit(),
-					page.getFormat(), page.getHead(), page.getParentTitle(),
-					page.getRedirectTitle(), serviceContext);
-
-				importedPageResource =
-					_wikiPageResourceLocalService.getPageResource(
-						importedPage.getResourcePrimKey());
-
-				String pageResourceUuid = GetterUtil.getString(
-					pageElement.attributeValue("page-resource-uuid"));
-
-				if (Validator.isNotNull(pageResourceUuid)) {
-					importedPageResource.setUuid(
-						pageElement.attributeValue("page-resource-uuid"));
-				}
+				importedPage = _stagedModelRepository.addStagedModel(
+					portletDataContext, importedPage);
 			}
 			else {
 				existingPage.setModifiedDate(page.getModifiedDate());
 				existingPage.setTitle(page.getTitle());
 
-				importedPage = _wikiPageLocalService.updateWikiPage(
+				importedPage = _stagedModelRepository.saveStagedModel(
 					existingPage);
 
 				importedPageResource =
@@ -261,11 +250,8 @@ public class WikiPageStagedModelDataHandler
 			}
 
 			if (existingPage == null) {
-				importedPage = _wikiPageLocalService.updatePage(
-					userId, nodeId, page.getTitle(), 0.0, page.getContent(),
-					page.getSummary(), page.isMinorEdit(), page.getFormat(),
-					page.getParentTitle(), page.getRedirectTitle(),
-					serviceContext);
+				importedPage = _stagedModelRepository.updateStagedModel(
+					portletDataContext, importedPage);
 			}
 			else {
 				_wikiPageLocalService.updateAsset(
@@ -354,6 +340,16 @@ public class WikiPageStagedModelDataHandler
 		}
 	}
 
+	@Reference(
+		target = "(model.class.name=com.liferay.wiki.model.WikiPage)",
+		unbind = "-"
+	)
+	protected void setStagedModelRepository(
+		StagedModelRepository<WikiPage> stagedModelRepository) {
+
+		_stagedModelRepository = stagedModelRepository;
+	}
+
 	@Reference(unbind = "-")
 	protected void setWikiPageExportImportContentProcessor(
 		WikiPageExportImportContentProcessor
@@ -406,6 +402,7 @@ public class WikiPageStagedModelDataHandler
 	private static final Log _log = LogFactoryUtil.getLog(
 		WikiPageStagedModelDataHandler.class);
 
+	private StagedModelRepository<WikiPage> _stagedModelRepository;
 	private WikiPageExportImportContentProcessor
 		_wikiPageExportImportContentProcessor;
 	private WikiPageLocalService _wikiPageLocalService;
