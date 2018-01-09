@@ -204,9 +204,7 @@ public class WikiPageStagedModelDataHandler
 		long nodeId = MapUtil.getLong(
 			nodeIds, page.getNodeId(), page.getNodeId());
 
-		WikiPage importedPage = null;
-
-		importedPage = (WikiPage)page.clone();
+		WikiPage importedPage = (WikiPage)page.clone();
 
 		importedPage.setNodeId(nodeId);
 
@@ -214,54 +212,14 @@ public class WikiPageStagedModelDataHandler
 			nodeId, page.getTitle());
 
 		if (existingPage == null) {
-			existingPage = fetchStagedModelByUuidAndGroupId(
-				page.getUuid(), portletDataContext.getScopeGroupId());
+			importedPage.setUuid(page.getUuid());
 
-			WikiPageResource importedPageResource = null;
-
-			if (existingPage == null) {
-				importedPage = _stagedModelRepository.addStagedModel(
-					portletDataContext, importedPage);
-			}
-			else {
-				existingPage.setModifiedDate(page.getModifiedDate());
-				existingPage.setTitle(page.getTitle());
-
-				importedPage = _stagedModelRepository.saveStagedModel(
-					existingPage);
-
-				importedPageResource =
-					_wikiPageResourceLocalService.getPageResource(
-						importedPage.getResourcePrimKey());
-
-				importedPageResource.setTitle(page.getTitle());
-			}
-
-			_wikiPageResourceLocalService.updateWikiPageResource(
-				importedPageResource);
+			_stagedModelRepository.addStagedModel(
+				portletDataContext, importedPage);
 		}
 		else {
-			existingPage = fetchStagedModelByUuidAndGroupId(
-				page.getUuid(), portletDataContext.getScopeGroupId());
-
-			if (existingPage == null) {
-				existingPage = _wikiPageLocalService.fetchPage(
-					nodeId, page.getTitle(), page.getVersion());
-			}
-
-			if (existingPage == null) {
-				importedPage = _stagedModelRepository.updateStagedModel(
-					portletDataContext, importedPage);
-			}
-			else {
-				_wikiPageLocalService.updateAsset(
-					userId, existingPage, serviceContext.getAssetCategoryIds(),
-					serviceContext.getAssetTagNames(),
-					serviceContext.getAssetLinkEntryIds(),
-					serviceContext.getAssetPriority());
-
-				importedPage = existingPage;
-			}
+			_stagedModelRepository.updateStagedModel(
+				portletDataContext, importedPage);
 		}
 
 		if (existingPage != null) {
