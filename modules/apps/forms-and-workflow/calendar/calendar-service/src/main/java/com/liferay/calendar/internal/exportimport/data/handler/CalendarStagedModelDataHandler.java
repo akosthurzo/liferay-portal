@@ -24,11 +24,11 @@ import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelModifiedDateComparator;
+import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.GroupLocalService;
-import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
@@ -154,8 +154,6 @@ public class CalendarStagedModelDataHandler
 			PortletDataContext portletDataContext, Calendar calendar)
 		throws Exception {
 
-		long userId = portletDataContext.getUserId(calendar.getUserUuid());
-
 		Map<Long, Long> calendarResourceIds =
 			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
 				CalendarResource.class);
@@ -167,43 +165,32 @@ public class CalendarStagedModelDataHandler
 		Map<Locale, String> calendarNameMap = getCalendarNameMap(
 			portletDataContext, calendar);
 
-		ServiceContext serviceContext = portletDataContext.createServiceContext(
-			calendar);
+		Calendar importedCalendar = (Calendar)calendar.clone();
 
-		Calendar importedCalendar = null;
+		importedCalendar.setNameMap(calendarNameMap);
+		importedCalendar.setCalendarResourceId(calendarResourceId);
 
 		if (portletDataContext.isDataStrategyMirror()) {
 			Calendar existingCalendar = fetchStagedModelByUuidAndGroupId(
 				calendar.getUuid(), portletDataContext.getScopeGroupId());
 
 			if (existingCalendar == null) {
-				serviceContext.setUuid(calendar.getUuid());
+				importedCalendar.setUuid(calendar.getUuid());
 
-				importedCalendar = _calendarLocalService.addCalendar(
-					userId, portletDataContext.getScopeGroupId(),
-					calendarResourceId, calendarNameMap,
-					calendar.getDescriptionMap(), calendar.getTimeZoneId(),
-					calendar.getColor(), calendar.isDefaultCalendar(),
-					calendar.isEnableComments(), calendar.isEnableRatings(),
-					serviceContext);
+				importedCalendar = _stagedModelRepository.addStagedModel(
+					portletDataContext, importedCalendar);
 			}
 			else {
-				importedCalendar = _calendarLocalService.updateCalendar(
-					existingCalendar.getCalendarId(), calendarNameMap,
-					calendar.getDescriptionMap(), calendar.getTimeZoneId(),
-					calendar.getColor(), calendar.isDefaultCalendar(),
-					calendar.isEnableComments(), calendar.isEnableRatings(),
-					serviceContext);
+				importedCalendar.setCalendarId(
+					existingCalendar.getCalendarId());
+
+				importedCalendar = _stagedModelRepository.updateStagedModel(
+					portletDataContext, calendar);
 			}
 		}
 		else {
-			importedCalendar = _calendarLocalService.addCalendar(
-				userId, portletDataContext.getScopeGroupId(),
-				calendarResourceId, calendarNameMap,
-				calendar.getDescriptionMap(), calendar.getTimeZoneId(),
-				calendar.getColor(), calendar.isDefaultCalendar(),
-				calendar.isEnableComments(), calendar.isEnableRatings(),
-				serviceContext);
+			importedCalendar = _stagedModelRepository.addStagedModel(
+				portletDataContext, importedCalendar);
 		}
 
 		portletDataContext.importClassedModel(calendar, importedCalendar);
@@ -246,7 +233,18 @@ public class CalendarStagedModelDataHandler
 		_groupLocalService = groupLocalService;
 	}
 
+	@Reference(
+		target = "(model.class.name=com.liferay.calendar.model.Calendar)",
+		unbind = "-"
+	)
+	protected void setStagedModelRepository(
+		StagedModelRepository<Calendar> stagedModelRepository) {
+
+		_stagedModelRepository = stagedModelRepository;
+	}
+
 	private CalendarLocalService _calendarLocalService;
 	private GroupLocalService _groupLocalService;
+	private StagedModelRepository<Calendar> _stagedModelRepository;
 
 }
