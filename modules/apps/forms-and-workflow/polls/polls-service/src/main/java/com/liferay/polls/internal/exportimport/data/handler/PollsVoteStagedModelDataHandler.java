@@ -20,13 +20,13 @@ import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelModifiedDateComparator;
 import com.liferay.exportimport.lar.BaseStagedModelDataHandler;
+import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.polls.exception.DuplicateVoteException;
 import com.liferay.polls.model.PollsChoice;
 import com.liferay.polls.model.PollsQuestion;
 import com.liferay.polls.model.PollsVote;
 import com.liferay.polls.service.PollsVoteLocalService;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
-import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.xml.Element;
 
@@ -133,23 +133,23 @@ public class PollsVoteStagedModelDataHandler
 		long choiceId = MapUtil.getLong(
 			choiceIds, vote.getChoiceId(), vote.getChoiceId());
 
-		ServiceContext serviceContext = portletDataContext.createServiceContext(
-			vote);
+		PollsVote importedVote = (PollsVote)vote.clone();
 
-		serviceContext.setCreateDate(vote.getCreateDate());
+		importedVote.setQuestionId(questionId);
+		importedVote.setChoiceId(choiceId);
 
 		if (portletDataContext.isDataStrategyMirror()) {
 			PollsVote existingVote = fetchStagedModelByUuidAndGroupId(
 				vote.getUuid(), portletDataContext.getScopeGroupId());
 
 			if (existingVote == null) {
-				serviceContext.setUuid(vote.getUuid());
+				importedVote.setUuid(vote.getUuid());
 			}
 		}
 
 		try {
-			_pollsVoteLocalService.addVote(
-				vote.getUserId(), questionId, choiceId, serviceContext);
+			_stagedModelRepository.addStagedModel(
+				portletDataContext, importedVote);
 		}
 		catch (DuplicateVoteException dve) {
 		}
@@ -162,6 +162,17 @@ public class PollsVoteStagedModelDataHandler
 		_pollsVoteLocalService = pollsVoteLocalService;
 	}
 
+	@Reference(
+		target = "(model.class.name=com.liferay.polls.model.PollsVote)",
+		unbind = "-"
+	)
+	protected void setStagedModelRepository(
+		StagedModelRepository<PollsVote> stagedModelRepository) {
+
+		_stagedModelRepository = stagedModelRepository;
+	}
+
 	private PollsVoteLocalService _pollsVoteLocalService;
+	private StagedModelRepository<PollsVote> _stagedModelRepository;
 
 }
