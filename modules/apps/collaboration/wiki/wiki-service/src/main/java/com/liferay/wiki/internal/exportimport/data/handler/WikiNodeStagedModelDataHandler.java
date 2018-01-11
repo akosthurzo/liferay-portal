@@ -18,6 +18,7 @@ import com.liferay.exportimport.data.handler.base.BaseStagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
+import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -122,7 +123,7 @@ public class WikiNodeStagedModelDataHandler
 		ServiceContext serviceContext = portletDataContext.createServiceContext(
 			node);
 
-		WikiNode importedNode = null;
+		WikiNode importedNode = (WikiNode)node.clone();
 
 		WikiServiceComponentProvider wikiServiceComponentProvider =
 			WikiServiceComponentProvider.getWikiServiceComponentProvider();
@@ -145,10 +146,12 @@ public class WikiNodeStagedModelDataHandler
 						portletDataContext, node, nodeName, 2);
 				}
 
-				serviceContext.setUuid(node.getUuid());
+				importedNode.setUuid(node.getUuid());
 
-				importedNode = _wikiNodeLocalService.addNode(
-					userId, nodeName, node.getDescription(), serviceContext);
+				importedNode.setName(nodeName);
+
+				importedNode = _stagedModelRepository.addStagedModel(
+					portletDataContext, importedNode);
 			}
 			else {
 				String uuid = existingNode.getUuid();
@@ -160,9 +163,11 @@ public class WikiNodeStagedModelDataHandler
 						portletDataContext, node, nodeName, 2);
 				}
 
-				importedNode = _wikiNodeLocalService.updateNode(
-					existingNode.getNodeId(), nodeName, node.getDescription(),
-					serviceContext);
+				importedNode.setName(nodeName);
+				importedNode.setNodeId(existingNode.getNodeId());
+
+				importedNode = _stagedModelRepository.updateStagedModel(
+					portletDataContext, importedNode);
 			}
 		}
 		else {
@@ -229,6 +234,16 @@ public class WikiNodeStagedModelDataHandler
 			++count);
 	}
 
+	@Reference(
+		target = "(model.class.name=com.liferay.wiki.model.WikiNode)",
+		unbind = "-"
+	)
+	protected void setStagedModelRepository(
+		StagedModelRepository<WikiNode> stagedModelRepository) {
+
+		_stagedModelRepository = stagedModelRepository;
+	}
+
 	@Reference(unbind = "-")
 	protected void setWikiNodeLocalService(
 		WikiNodeLocalService wikiNodeLocalService) {
@@ -236,6 +251,7 @@ public class WikiNodeStagedModelDataHandler
 		_wikiNodeLocalService = wikiNodeLocalService;
 	}
 
+	private StagedModelRepository<WikiNode> _stagedModelRepository;
 	private WikiNodeLocalService _wikiNodeLocalService;
 
 }

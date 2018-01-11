@@ -20,6 +20,7 @@ import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelModifiedDateComparator;
 import com.liferay.exportimport.lar.BaseStagedModelDataHandler;
+import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.polls.model.PollsChoice;
 import com.liferay.polls.model.PollsQuestion;
 import com.liferay.polls.service.PollsChoiceLocalService;
@@ -136,7 +137,9 @@ public class PollsChoiceStagedModelDataHandler
 		long questionId = MapUtil.getLong(
 			questionIds, choice.getQuestionId(), choice.getQuestionId());
 
-		PollsChoice importedChoice = null;
+		PollsChoice importedChoice = (PollsChoice)choice.clone();
+
+		importedChoice.setQuestionId(questionId);
 
 		ServiceContext serviceContext = portletDataContext.createServiceContext(
 			choice);
@@ -146,22 +149,21 @@ public class PollsChoiceStagedModelDataHandler
 				choice.getUuid(), portletDataContext.getScopeGroupId());
 
 			if (existingChoice == null) {
-				serviceContext.setUuid(choice.getUuid());
+				importedChoice.setUuid(choice.getUuid());
 
-				importedChoice = _pollsChoiceLocalService.addChoice(
-					userId, questionId, choice.getName(),
-					choice.getDescription(), serviceContext);
+				importedChoice = _stagedModelRepository.addStagedModel(
+					portletDataContext, importedChoice);
 			}
 			else {
-				importedChoice = _pollsChoiceLocalService.updateChoice(
-					existingChoice.getChoiceId(), questionId, choice.getName(),
-					choice.getDescription(), serviceContext);
+				importedChoice.setChoiceId(existingChoice.getChoiceId());
+
+				importedChoice = _stagedModelRepository.updateStagedModel(
+					portletDataContext, importedChoice);
 			}
 		}
 		else {
-			importedChoice = _pollsChoiceLocalService.addChoice(
-				userId, questionId, choice.getName(), choice.getDescription(),
-				serviceContext);
+			importedChoice = _stagedModelRepository.addStagedModel(
+				portletDataContext, importedChoice);
 		}
 
 		portletDataContext.importClassedModel(choice, importedChoice);
@@ -181,7 +183,18 @@ public class PollsChoiceStagedModelDataHandler
 		_pollsQuestionLocalService = pollsQuestionLocalService;
 	}
 
+	@Reference(
+		target = "(model.class.name=com.liferay.polls.model.PollsChoice)",
+		unbind = "-"
+	)
+	protected void setStagedModelRepository(
+		StagedModelRepository<PollsChoice> stagedModelRepository) {
+
+		_stagedModelRepository = stagedModelRepository;
+	}
+
 	private PollsChoiceLocalService _pollsChoiceLocalService;
 	private PollsQuestionLocalService _pollsQuestionLocalService;
+	private StagedModelRepository<PollsChoice> _stagedModelRepository;
 
 }

@@ -274,6 +274,18 @@ public class AssetLinkLocalServiceUtil {
 	}
 
 	/**
+	* Returns all the asset links of an AssetEntry.
+	*
+	* @param classNameId AssetEntry's classNameId
+	* @param classPK AssetEntry's classPK
+	* @return the asset links of the given entry params
+	*/
+	public static java.util.List<com.liferay.asset.kernel.model.AssetLink> getAssetLinks(
+		long classNameId, long classPK) {
+		return getService().getAssetLinks(classNameId, classPK);
+	}
+
+	/**
 	* Returns the number of asset links.
 	*
 	* @return the number of asset links
@@ -360,18 +372,6 @@ public class AssetLinkLocalServiceUtil {
 	public static java.util.List<com.liferay.asset.kernel.model.AssetLink> getLinks(
 		long entryId, int typeId) {
 		return getService().getLinks(entryId, typeId);
-	}
-
-	/**
-	* Returns all the asset links of an AssetEntry.
-	*
-	* @param classNameId AssetEntry's classNameId
-	* @param classPK AssetEntry's classPK
-	* @return the asset links of the given entry params
-	*/
-	public static java.util.List<com.liferay.asset.kernel.model.AssetLink> getLinks(
-		long classNameId, long classPK) {
-		return getService().getLinks(classNameId, classPK);
 	}
 
 	/**

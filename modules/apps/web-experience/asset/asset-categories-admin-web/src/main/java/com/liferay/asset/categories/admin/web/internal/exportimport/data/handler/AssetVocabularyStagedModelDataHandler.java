@@ -21,6 +21,7 @@ import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelModifiedDateComparator;
 import com.liferay.exportimport.lar.BaseStagedModelDataHandler;
+import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactory;
@@ -28,7 +29,6 @@ import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Element;
@@ -178,7 +178,11 @@ public class AssetVocabularyStagedModelDataHandler
 		vocabulary.setSettings(
 			getImportSettings(portletDataContext, vocabulary));
 
-		AssetVocabulary importedVocabulary = null;
+		AssetVocabulary importedVocabulary =
+			(AssetVocabulary)vocabulary.clone();
+
+		importedVocabulary.setUserId(userId);
+		importedVocabulary.setGroupId(portletDataContext.getScopeGroupId());
 
 		AssetVocabulary existingVocabulary = fetchStagedModelByUuidAndGroupId(
 			vocabulary.getUuid(), portletDataContext.getScopeGroupId());
@@ -190,24 +194,24 @@ public class AssetVocabularyStagedModelDataHandler
 
 			serviceContext.setUuid(vocabulary.getUuid());
 
-			importedVocabulary = _assetVocabularyLocalService.addVocabulary(
-				userId, portletDataContext.getScopeGroupId(), StringPool.BLANK,
+			importedVocabulary.setTitleMap(
 				getVocabularyTitleMap(
-					portletDataContext.getScopeGroupId(), vocabulary, name),
-				vocabulary.getDescriptionMap(), vocabulary.getSettings(),
-				serviceContext);
+					portletDataContext.getScopeGroupId(), vocabulary, name));
+
+			importedVocabulary = _stagedModelRepository.addStagedModel(
+				portletDataContext, importedVocabulary);
 		}
 		else {
 			String name = getVocabularyName(
 				vocabulary.getUuid(), portletDataContext.getScopeGroupId(),
 				vocabulary.getName(), 2);
 
-			importedVocabulary = _assetVocabularyLocalService.updateVocabulary(
-				existingVocabulary.getVocabularyId(), StringPool.BLANK,
+			importedVocabulary.setTitleMap(
 				getVocabularyTitleMap(
-					portletDataContext.getScopeGroupId(), vocabulary, name),
-				vocabulary.getDescriptionMap(), vocabulary.getSettings(),
-				serviceContext);
+					portletDataContext.getScopeGroupId(), vocabulary, name));
+
+			importedVocabulary = _stagedModelRepository.updateStagedModel(
+				portletDataContext, importedVocabulary);
 		}
 
 		Map<Long, Long> vocabularyIds =
@@ -323,6 +327,16 @@ public class AssetVocabularyStagedModelDataHandler
 		return titleMap;
 	}
 
+	@Reference(
+		target = "(model.class.name=com.liferay.asset.kernel.model.AssetVocabulary)",
+		unbind = "-"
+	)
+	protected void setStagedModelRepository(
+		StagedModelRepository<AssetVocabulary> stagedModelRepository) {
+
+		_stagedModelRepository = stagedModelRepository;
+	}
+
 	private static final String _SETTINGS_METADATA = "settings-metadata";
 
 	@Reference
@@ -336,5 +350,7 @@ public class AssetVocabularyStagedModelDataHandler
 
 	@Reference
 	private Portal _portal;
+
+	private StagedModelRepository<AssetVocabulary> _stagedModelRepository;
 
 }

@@ -2815,7 +2815,7 @@ public class PortletDataContextImpl implements PortletDataContext {
 	}
 
 	private void _addAssetLinks(long classNameId, long classPK) {
-		List<AssetLink> assetLinks = AssetLinkLocalServiceUtil.getLinks(
+		List<AssetLink> assetLinks = AssetLinkLocalServiceUtil.getAssetLinks(
 			classNameId, classPK);
 
 		for (AssetLink assetLink : assetLinks) {

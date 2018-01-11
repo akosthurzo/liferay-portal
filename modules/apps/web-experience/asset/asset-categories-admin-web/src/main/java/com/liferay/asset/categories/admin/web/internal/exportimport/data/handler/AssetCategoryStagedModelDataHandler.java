@@ -27,6 +27,7 @@ import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelModifiedDateComparator;
+import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -102,6 +103,10 @@ public class AssetCategoryStagedModelDataHandler
 		return category.getTitleCurrentValue();
 	}
 
+	/**
+	 * @deprecated As of 1.2.0, as of 7.1.0
+	 */
+	@Deprecated
 	protected ServiceContext createServiceContext(
 		PortletDataContext portletDataContext, AssetCategory category) {
 
@@ -180,7 +185,8 @@ public class AssetCategoryStagedModelDataHandler
 			long categoryId)
 		throws Exception {
 
-		AssetCategory existingCategory = fetchMissingReference(uuid, groupId);
+		AssetCategory existingCategory =
+			_stagedModelRepository.fetchMissingReference(uuid, groupId);
 
 		if (existingCategory == null) {
 			return;
@@ -216,57 +222,43 @@ public class AssetCategoryStagedModelDataHandler
 			categoryIds, category.getParentCategoryId(),
 			category.getParentCategoryId());
 
-		Element categoryElement = portletDataContext.getImportDataElement(
-			category);
+		AssetCategory importedCategory = (AssetCategory)category.clone();
 
-		List<Element> propertyElements = categoryElement.elements("property");
-
-		String[] properties = new String[propertyElements.size()];
-
-		for (int i = 0; i < propertyElements.size(); i++) {
-			Element propertyElement = propertyElements.get(i);
-
-			String key = propertyElement.attributeValue("key");
-			String value = propertyElement.attributeValue("value");
-
-			properties[i] = key.concat(
-				AssetCategoryConstants.PROPERTY_KEY_VALUE_SEPARATOR).concat(
-					value);
-		}
-
-		ServiceContext serviceContext = createServiceContext(
-			portletDataContext, category);
-
-		AssetCategory importedCategory = null;
+		importedCategory.setGroupId(portletDataContext.getScopeGroupId());
+		importedCategory.setVocabularyId(vocabularyId);
 
 		AssetCategory existingCategory = fetchStagedModelByUuidAndGroupId(
 			category.getUuid(), portletDataContext.getScopeGroupId());
+
+		importedCategory.setUserId(userId);
+		importedCategory.setParentCategoryId(parentCategoryId);
+		importedCategory.setDescriptionMap(category.getDescriptionMap());
 
 		if (existingCategory == null) {
 			String name = getCategoryName(
 				null, portletDataContext.getScopeGroupId(), parentCategoryId,
 				category.getName(), vocabularyId, 2);
 
-			serviceContext.setUuid(category.getUuid());
-
-			importedCategory = _assetCategoryLocalService.addCategory(
-				userId, portletDataContext.getScopeGroupId(), parentCategoryId,
+			importedCategory.setTitleMap(
 				getCategoryTitleMap(
-					portletDataContext.getScopeGroupId(), category, name),
-				category.getDescriptionMap(), vocabularyId, properties,
-				serviceContext);
+					portletDataContext.getScopeGroupId(), category, name));
+
+			importedCategory.setUuid(category.getUuid());
+
+			importedCategory = _stagedModelRepository.addStagedModel(
+				portletDataContext, importedCategory);
 		}
 		else {
 			String name = getCategoryName(
 				category.getUuid(), portletDataContext.getScopeGroupId(),
 				parentCategoryId, category.getName(), vocabularyId, 2);
 
-			importedCategory = _assetCategoryLocalService.updateCategory(
-				userId, existingCategory.getCategoryId(), parentCategoryId,
+			importedCategory.setTitleMap(
 				getCategoryTitleMap(
-					portletDataContext.getScopeGroupId(), category, name),
-				category.getDescriptionMap(), vocabularyId, properties,
-				serviceContext);
+					portletDataContext.getScopeGroupId(), category, name));
+
+			importedCategory = _stagedModelRepository.updateStagedModel(
+				portletDataContext, importedCategory);
 		}
 
 		categoryIds.put(
@@ -341,6 +333,16 @@ public class AssetCategoryStagedModelDataHandler
 		_assetVocabularyLocalService = assetVocabularyLocalService;
 	}
 
+	@Reference(
+		target = "(model.class.name=com.liferay.asset.kernel.model.AssetCategory)",
+		unbind = "-"
+	)
+	protected void setStagedModelRepository(
+		StagedModelRepository<AssetCategory> stagedModelRepository) {
+
+		_stagedModelRepository = stagedModelRepository;
+	}
+
 	private AssetCategoryLocalService _assetCategoryLocalService;
 	private AssetCategoryPropertyLocalService
 		_assetCategoryPropertyLocalService;
@@ -348,5 +350,7 @@ public class AssetCategoryStagedModelDataHandler
 
 	@Reference
 	private Portal _portal;
+
+	private StagedModelRepository<AssetCategory> _stagedModelRepository;
 
 }

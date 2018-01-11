@@ -26,6 +26,7 @@ import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelModifiedDateComparator;
+import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
 import com.liferay.message.boards.kernel.model.MBMessage;
 import com.liferay.message.boards.kernel.service.MBMessageLocalService;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
@@ -33,7 +34,6 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.trash.TrashHandler;
 import com.liferay.portal.kernel.trash.TrashHandlerRegistryUtil;
-import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -211,10 +211,6 @@ public class CalendarBookingStagedModelDataHandler
 				calendarBooking.getParentCalendarBookingId(),
 				calendarBooking.getParentCalendarBookingId());
 		}
-		else {
-			childCalendarIds = _getChildCalendarIds(
-				portletDataContext, calendarIds, calendarBooking);
-		}
 
 		long recurringCalendarBookingId =
 			CalendarBookingConstants.RECURRING_CALENDAR_BOOKING_ID_DEFAULT;
@@ -227,7 +223,14 @@ public class CalendarBookingStagedModelDataHandler
 		ServiceContext serviceContext = portletDataContext.createServiceContext(
 			calendarBooking);
 
-		CalendarBooking importedCalendarBooking = null;
+		CalendarBooking importedCalendarBooking =
+			(CalendarBooking)calendarBooking.clone();
+
+		importedCalendarBooking.setCalendarId(calendarId);
+		importedCalendarBooking.setParentCalendarBookingId(
+			parentCalendarBookingId);
+		importedCalendarBooking.setRecurringCalendarBookingId(
+			recurringCalendarBookingId);
 
 		if (portletDataContext.isDataStrategyMirror()) {
 			CalendarBooking existingCalendarBooking =
@@ -236,59 +239,23 @@ public class CalendarBookingStagedModelDataHandler
 					portletDataContext.getScopeGroupId());
 
 			if (existingCalendarBooking == null) {
-				serviceContext.setUuid(calendarBooking.getUuid());
+				importedCalendarBooking.setUuid(calendarBooking.getUuid());
 
-				importedCalendarBooking =
-					_calendarBookingLocalService.addCalendarBooking(
-						userId, calendarId, childCalendarIds,
-						parentCalendarBookingId, recurringCalendarBookingId,
-						calendarBooking.getTitleMap(),
-						calendarBooking.getDescriptionMap(),
-						calendarBooking.getLocation(),
-						calendarBooking.getStartTime(),
-						calendarBooking.getEndTime(),
-						calendarBooking.isAllDay(),
-						calendarBooking.getRecurrence(),
-						calendarBooking.getFirstReminder(),
-						calendarBooking.getFirstReminderType(),
-						calendarBooking.getSecondReminder(),
-						calendarBooking.getSecondReminderType(),
-						serviceContext);
+				importedCalendarBooking = _stagedModelRepository.addStagedModel(
+					portletDataContext, importedCalendarBooking);
 			}
 			else {
+				importedCalendarBooking.setCalendarBookingId(
+					existingCalendarBooking.getCalendarBookingId());
+
 				importedCalendarBooking =
-					_calendarBookingLocalService.updateCalendarBooking(
-						userId, existingCalendarBooking.getCalendarBookingId(),
-						calendarId, childCalendarIds,
-						calendarBooking.getTitleMap(),
-						calendarBooking.getDescriptionMap(),
-						calendarBooking.getLocation(),
-						calendarBooking.getStartTime(),
-						calendarBooking.getEndTime(),
-						calendarBooking.isAllDay(),
-						calendarBooking.getRecurrence(),
-						calendarBooking.getFirstReminder(),
-						calendarBooking.getFirstReminderType(),
-						calendarBooking.getSecondReminder(),
-						calendarBooking.getSecondReminderType(),
-						serviceContext);
+					_stagedModelRepository.updateStagedModel(
+						portletDataContext, importedCalendarBooking);
 			}
 		}
 		else {
-			importedCalendarBooking =
-				_calendarBookingLocalService.addCalendarBooking(
-					userId, calendarId, childCalendarIds,
-					parentCalendarBookingId, recurringCalendarBookingId,
-					calendarBooking.getTitleMap(),
-					calendarBooking.getDescriptionMap(),
-					calendarBooking.getLocation(),
-					calendarBooking.getStartTime(),
-					calendarBooking.getEndTime(), calendarBooking.isAllDay(),
-					calendarBooking.getRecurrence(),
-					calendarBooking.getFirstReminder(),
-					calendarBooking.getFirstReminderType(),
-					calendarBooking.getSecondReminder(),
-					calendarBooking.getSecondReminderType(), serviceContext);
+			importedCalendarBooking = _stagedModelRepository.addStagedModel(
+				portletDataContext, importedCalendarBooking);
 		}
 
 		_calendarBookingLocalService.updateStatus(
@@ -354,27 +321,14 @@ public class CalendarBookingStagedModelDataHandler
 		_mbMessageLocalService = mbMessageLocalService;
 	}
 
-	private long[] _getChildCalendarIds(
-		PortletDataContext portletDataContext, Map<Long, Long> calendarIds,
-		CalendarBooking calendarBooking) {
+	@Reference(
+		target = "(model.class.name=com.liferay.calendar.model.CalendarBooking)",
+		unbind = "-"
+	)
+	protected void setStagedModelRepository(
+		StagedModelRepository<CalendarBooking> stagedModelRepository) {
 
-		long[] childCalendarIds = new long[0];
-
-		Element calendarBookingElement =
-			portletDataContext.getImportDataElement(calendarBooking);
-
-		List<Element> childElements = calendarBookingElement.elements("child");
-
-		for (Element childElement : childElements) {
-			long calendarId = Long.valueOf(
-				childElement.attributeValue("calendarId"));
-
-			calendarId = MapUtil.getLong(calendarIds, calendarId, calendarId);
-
-			childCalendarIds = ArrayUtil.append(childCalendarIds, calendarId);
-		}
-
-		return childCalendarIds;
+		_stagedModelRepository = stagedModelRepository;
 	}
 
 	private static final int[] _EXPORTABLE_STATUSES = {
@@ -385,5 +339,6 @@ public class CalendarBookingStagedModelDataHandler
 
 	private CalendarBookingLocalService _calendarBookingLocalService;
 	private MBMessageLocalService _mbMessageLocalService;
+	private StagedModelRepository<CalendarBooking> _stagedModelRepository;
 
 }
