@@ -24,7 +24,7 @@ import java.util.List;
 
 /**
  * Provides an interface for CRUD operations for a given staged model. This
- * interfaces simplifies staged model data handlers because the CRUD operations
+ * interface simplifies staged model data handlers because the CRUD operations
  * and code logic related to those operations can be managed here instead. The
  * get and fetch methods are typically used during an export process to
  * query/find staged models.
