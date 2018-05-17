@@ -53,6 +53,14 @@ import org.osgi.service.component.annotations.Reference;
 public class ExportImportConfigurationParameterMapFactoryImpl
 	implements ExportImportConfigurationParameterMapFactory {
 
+	public Map<String, String[]> buildFullPublicatonParameterMap() {
+		return buildParameterMap(
+			PortletDataHandlerKeys.DATA_STRATEGY_MIRROR_OVERWRITE, true, false,
+			true, true, false, true, true, true, true, true, true, true, true,
+			ExportImportDateUtil.RANGE_ALL, true, true,
+			UserIdStrategy.CURRENT_USER_ID);
+	}
+
 	public Map<String, String[]> buildParameterMap() {
 		return buildParameterMap(
 			PortletDataHandlerKeys.DATA_STRATEGY_MIRROR_OVERWRITE, true, false,
