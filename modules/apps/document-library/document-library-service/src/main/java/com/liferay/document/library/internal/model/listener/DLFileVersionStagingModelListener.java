@@ -15,9 +15,14 @@
 package com.liferay.document.library.internal.model.listener;
 
 import com.liferay.document.library.kernel.model.DLFileEntry;
+import com.liferay.document.library.kernel.model.DLFileVersion;
 import com.liferay.portal.kernel.exception.ModelListenerException;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModelListener;
 import com.liferay.portal.kernel.model.ModelListener;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.staging.model.listener.StagingModelListener;
 
 import org.osgi.service.component.annotations.Component;
@@ -27,22 +32,55 @@ import org.osgi.service.component.annotations.Reference;
  * @author Akos Thurzo
  */
 @Component(immediate = true, service = ModelListener.class)
-public class DLFileEntryStagingModelListener
-	extends BaseModelListener<DLFileEntry> {
+public class DLFileVersionStagingModelListener
+	extends BaseModelListener<DLFileVersion> {
 
 	@Override
-	public void onAfterCreate(DLFileEntry dlFileEntry)
+	public void onAfterCreate(DLFileVersion dlFileVersion)
 		throws ModelListenerException {
+
+		if (dlFileVersion.getStatus() != WorkflowConstants.STATUS_APPROVED) {
+			return;
+		}
+
+		DLFileEntry dlFileEntry;
+
+		try {
+			dlFileEntry = dlFileVersion.getFileEntry();
+		}
+		catch (PortalException pe) {
+			_log.error(pe);
+
+			return;
+		}
 
 		_stagingModelListener.onAfterCreate(dlFileEntry);
 	}
 
 	@Override
-	public void onAfterUpdate(DLFileEntry dlFileEntry)
+	public void onAfterUpdate(DLFileVersion dlFileVersion)
 		throws ModelListenerException {
+
+		if (dlFileVersion.getStatus() != WorkflowConstants.STATUS_APPROVED) {
+			return;
+		}
+
+		DLFileEntry dlFileEntry;
+
+		try {
+			dlFileEntry = dlFileVersion.getFileEntry();
+		}
+		catch (PortalException pe) {
+			_log.error(pe);
+
+			return;
+		}
 
 		_stagingModelListener.onAfterUpdate(dlFileEntry);
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		DLFileVersionStagingModelListener.class);
 
 	@Reference
 	private StagingModelListener<DLFileEntry> _stagingModelListener;
