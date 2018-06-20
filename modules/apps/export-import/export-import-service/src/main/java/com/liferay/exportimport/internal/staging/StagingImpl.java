@@ -58,6 +58,7 @@ import com.liferay.exportimport.kernel.service.StagingLocalService;
 import com.liferay.exportimport.kernel.staging.LayoutStagingUtil;
 import com.liferay.exportimport.kernel.staging.Staging;
 import com.liferay.exportimport.kernel.staging.StagingConstants;
+import com.liferay.exportimport.kernel.staging.StagingURLHelper;
 import com.liferay.exportimport.staged.model.repository.StagedModelRepositoryHelper;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
@@ -146,7 +147,6 @@ import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.exportimport.service.http.StagingServiceHttp;
 import com.liferay.portlet.exportimport.staging.ProxiedLayoutsThreadLocal;
 import com.liferay.staging.StagingGroupHelper;
-import com.liferay.staging.StagingGroupHelperUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -243,10 +243,7 @@ public class StagingImpl implements Staging {
 			return;
 		}
 
-		StagingGroupHelper stagingGroupHelper =
-			StagingGroupHelperUtil.getStagingGroupHelper();
-
-		if (!stagingGroupHelper.isStagingGroup(group)) {
+		if (!_stagingGroupHelper.isStagingGroup(group)) {
 			return;
 		}
 
@@ -1851,8 +1848,8 @@ public class StagingImpl implements Staging {
 			stagingGroup.getTypeSettingsProperties();
 
 		HttpPrincipal httpPrincipal = new HttpPrincipal(
-			buildRemoteURL(typeSettingsProperties), user.getLogin(),
-			user.getPassword(), user.isPasswordEncrypted());
+			_stagingURLHelper.buildRemoteURL(typeSettingsProperties),
+			user.getLogin(), user.getPassword(), user.isPasswordEncrypted());
 
 		long remoteGroupId = GetterUtil.getLong(
 			typeSettingsProperties.getProperty("remoteGroupId"));
@@ -2432,7 +2429,7 @@ public class StagingImpl implements Staging {
 				sourceGroupId, remoteAddress, remotePort, remotePathContext,
 				secureConnection, sourceGroup.getRemoteLiveGroupId());
 
-			String remoteURL = buildRemoteURL(
+			String remoteURL = _stagingURLHelper.buildRemoteURL(
 				remoteAddress, remotePort, remotePathContext, secureConnection);
 
 			PermissionChecker permissionChecker =
@@ -3368,7 +3365,7 @@ public class StagingImpl implements Staging {
 			"exportImportConfigurationId",
 			exportImportConfiguration.getExportImportConfigurationId());
 
-		String remoteURL = buildRemoteURL(
+		String remoteURL = _stagingURLHelper.buildRemoteURL(
 			remoteAddress, remotePort, remotePathContext, secureConnection);
 
 		PermissionChecker permissionChecker =
@@ -4046,7 +4043,13 @@ public class StagingImpl implements Staging {
 	private StagedModelRepositoryHelper _stagedModelRepositoryHelper;
 
 	@Reference
+	private StagingGroupHelper _stagingGroupHelper;
+
+	@Reference
 	private StagingLocalService _stagingLocalService;
+
+	@Reference
+	private StagingURLHelper _stagingURLHelper;
 
 	@Reference
 	private UserLocalService _userLocalService;
