@@ -558,6 +558,7 @@ public class ExportImportConfigurationParameterMapFactoryImpl
 	 * example: <"com.liferay.journal.model.JournalArticle",
 	 * [<code>true</code>]> 3. It adds originalPortletId parameter in case of
 	 * portlet publication
+	 * 4. It adds <"originalPortletDataAll", [true]> parameter if PORTLET_DATA_ALL is true
 	 *
 	 * @param parameterMap
 	 */
@@ -569,6 +570,14 @@ public class ExportImportConfigurationParameterMapFactoryImpl
 
 			boolean portletDataAll = MapUtil.getBoolean(
 				parameterMap, PortletDataHandlerKeys.PORTLET_DATA_ALL);
+
+			if (portletDataAll) {
+				parameterMap.put(
+					"originalPortletDataAll",
+					new String[] {
+						Boolean.TRUE.toString()
+					});
+			}
 
 			for (Portlet dataSiteLevelPortlet : dataSiteLevelPortlets) {
 				String[] portletDataValues = parameterMap.remove(

@@ -193,6 +193,32 @@ import org.osgi.service.component.annotations.Reference;
 public class StagingImpl implements Staging {
 
 	@Override
+	public boolean isStagedModelInChangeset(StagedModel stagedModel) {
+		if (!(stagedModel instanceof StagedGroupedModel)) {
+			return true;
+		}
+
+		StagedGroupedModel stagedGroupedModel = (StagedGroupedModel)stagedModel;
+
+		long groupId = stagedGroupedModel.getGroupId();
+
+		ChangesetCollection changesetCollection =
+			_changesetCollectionLocalService.fetchChangesetCollection(
+				groupId,
+				StagingConstants.RANGE_FROM_LAST_PUBLISH_DATE_CHANGESET_NAME);
+		long classNameId = _classNameLocalService.getClassNameId(
+			stagedGroupedModel.getModelClassName());
+		long classPK = (long)stagedGroupedModel.getPrimaryKeyObj();
+
+		ChangesetEntry changesetEntry =
+			_changesetEntryLocalService.fetchChangesetEntry(
+				changesetCollection.getChangesetCollectionId(), classNameId,
+				classPK);
+
+		return changesetEntry != null;
+	}
+
+	@Override
 	public <T extends BaseModel> void addModelToChangesetCollection(T model)
 		throws PortalException {
 

@@ -28,6 +28,7 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutRevision;
 import com.liferay.portal.kernel.model.Portlet;
+import com.liferay.portal.kernel.model.StagedModel;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.auth.HttpPrincipal;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -54,6 +55,10 @@ import javax.servlet.http.HttpServletRequest;
  */
 @ProviderType
 public class StagingUtil {
+
+	public static boolean isStagedModelInChangeset(StagedModel stagedModel) {
+		return _staging.isStagedModelInChangeset(stagedModel);
+	}
 
 	public static <T extends BaseModel> void addModelToChangesetCollection(
 			T model)
