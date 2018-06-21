@@ -21,6 +21,8 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.StagedModel;
 import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
@@ -39,6 +41,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author Brian Wing Shun Chan
@@ -147,7 +150,9 @@ public class StagedModelDataHandlerUtil {
 			 	portletDataContext) &&
 			 MapUtil.getBoolean(
 			 	portletDataContext.getParameterMap(),
-				 "originalPortletDataAll"))) {
+				 "originalPortletDataAll") &&
+			 !Objects.equals(stagedModel.getModelClassName(), LayoutSet.class.getName()) &&
+			 !Objects.equals(stagedModel.getModelClassName(), Layout.class.getName()))) {
 
 			return portletDataContext.addReferenceElement(
 				referrerStagedModel, referrerStagedModelElement, stagedModel,
