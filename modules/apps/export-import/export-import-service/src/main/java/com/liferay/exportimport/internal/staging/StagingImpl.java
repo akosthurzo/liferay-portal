@@ -206,6 +206,11 @@ public class StagingImpl implements Staging {
 			_changesetCollectionLocalService.fetchChangesetCollection(
 				groupId,
 				StagingConstants.RANGE_FROM_LAST_PUBLISH_DATE_CHANGESET_NAME);
+
+		if (changesetCollection == null) {
+			return false;
+		}
+
 		long classNameId = _classNameLocalService.getClassNameId(
 			stagedGroupedModel.getModelClassName());
 		long classPK = (long)stagedGroupedModel.getPrimaryKeyObj();

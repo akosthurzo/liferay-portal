@@ -25,11 +25,15 @@ import com.liferay.dynamic.data.mapping.util.DDMFormValuesTransformer;
 import com.liferay.exportimport.content.processor.ExportImportContentProcessor;
 import com.liferay.exportimport.kernel.exception.ExportImportContentProcessorException;
 import com.liferay.exportimport.kernel.exception.ExportImportContentValidationException;
+import com.liferay.exportimport.kernel.lar.ExportImportDateUtil;
 import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
+import com.liferay.exportimport.kernel.lar.PortletDataHandlerControl;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
+import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.exception.NoSuchArticleException;
+import com.liferay.journal.internal.exportimport.data.handler.JournalPortletDataHandler;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.util.JournalConverter;
@@ -58,6 +62,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -318,6 +323,27 @@ public class JournalArticleExportImportContentProcessor
 
 				dynamicContentElement.addCDATA(journalArticleReference);
 
+//				Map<String, String[]> parameterMap =
+//					portletDataContext.getParameterMap();
+//
+//				String referencedContentBehaviorControlName =
+//					PortletDataHandlerControl.getNamespacedControlName(
+//						JournalPortletDataHandler.NAMESPACE,
+//						"referenced-content-behavior");
+//
+//				String referencedContentBehavior = MapUtil.getString(parameterMap,
+//					referencedContentBehaviorControlName);
+//
+//				boolean rangeFromLastPublishDate =
+//					ExportImportDateUtil.isRangeFromLastPublishDate(
+//						portletDataContext);
+//
+//				if (exportReferencedContent &&
+//					(!ExportImportThreadLocal.isStagingInProcess() ||
+//					 (rangeFromLastPublishDate &&
+//					  StagingUtil.isStagedModelInChangeset(stagedModel) &&
+//					  !Objects.equals(
+//					  	referencedContentBehavior, "include-if-modified")))) {
 				if (exportReferencedContent) {
 					try {
 						StagedModelDataHandlerUtil.exportReferenceStagedModel(
