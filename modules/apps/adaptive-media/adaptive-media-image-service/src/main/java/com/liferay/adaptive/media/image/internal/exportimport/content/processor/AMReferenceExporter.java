@@ -14,19 +14,12 @@
 
 package com.liferay.adaptive.media.image.internal.exportimport.content.processor;
 
-import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataException;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
-import com.liferay.exportimport.kernel.staging.StagingUtil;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.StagedModel;
 import com.liferay.portal.kernel.repository.model.FileEntry;
-import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.xml.Element;
-
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * @author Adolfo Pérez
@@ -45,22 +38,7 @@ public class AMReferenceExporter {
 	public void exportReference(FileEntry fileEntry)
 		throws PortletDataException {
 
-		Map<String, String[]> parameterMap =
-			_portletDataContext.getParameterMap();
-
-		String referencedContentBehavior = MapUtil.getString(
-			parameterMap,
-			_stagedModel.getModelClassName() + StringPool.POUND +
-				"referenced-content-behavior");
-
-		boolean includeAlways = !Objects.equals(
-			referencedContentBehavior, "include-if-modified");
-
-		if (_exportReferencedContent &&
-			(StagingUtil.isStagedModelInChangeset(fileEntry) ||
-			 includeAlways ||
-			 !ExportImportThreadLocal.isStagingInProcess())) {
-
+		if (_exportReferencedContent) {
 			StagedModelDataHandlerUtil.exportReferenceStagedModel(
 				_portletDataContext, _stagedModel, fileEntry,
 				PortletDataContext.REFERENCE_TYPE_DEPENDENCY);
