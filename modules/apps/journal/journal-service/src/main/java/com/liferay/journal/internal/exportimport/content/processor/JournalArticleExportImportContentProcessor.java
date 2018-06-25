@@ -323,28 +323,25 @@ public class JournalArticleExportImportContentProcessor
 
 				dynamicContentElement.addCDATA(journalArticleReference);
 
-//				Map<String, String[]> parameterMap =
-//					portletDataContext.getParameterMap();
-//
-//				String referencedContentBehaviorControlName =
-//					PortletDataHandlerControl.getNamespacedControlName(
-//						JournalPortletDataHandler.NAMESPACE,
-//						"referenced-content-behavior");
-//
-//				String referencedContentBehavior = MapUtil.getString(parameterMap,
-//					referencedContentBehaviorControlName);
-//
-//				boolean rangeFromLastPublishDate =
-//					ExportImportDateUtil.isRangeFromLastPublishDate(
-//						portletDataContext);
-//
-//				if (exportReferencedContent &&
-//					(!ExportImportThreadLocal.isStagingInProcess() ||
-//					 (rangeFromLastPublishDate &&
-//					  StagingUtil.isStagedModelInChangeset(stagedModel) &&
-//					  !Objects.equals(
-//					  	referencedContentBehavior, "include-if-modified")))) {
-				if (exportReferencedContent) {
+				Map<String, String[]> parameterMap =
+					portletDataContext.getParameterMap();
+
+				String referencedContentBehaviorControlName =
+					PortletDataHandlerControl.getNamespacedControlName(
+						JournalPortletDataHandler.NAMESPACE,
+						"referenced-content-behavior");
+
+				String referencedContentBehavior = MapUtil.getString(
+					parameterMap, referencedContentBehaviorControlName);
+
+				boolean includeAlways = !Objects.equals(
+					referencedContentBehavior, "include-if-modified");
+
+				if (exportReferencedContent &&
+					(StagingUtil.isStagedModelInChangeset(stagedModel) ||
+					 includeAlways ||
+					 !ExportImportThreadLocal.isStagingInProcess())) {
+
 					try {
 						StagedModelDataHandlerUtil.exportReferenceStagedModel(
 							portletDataContext, stagedModel, journalArticle,
