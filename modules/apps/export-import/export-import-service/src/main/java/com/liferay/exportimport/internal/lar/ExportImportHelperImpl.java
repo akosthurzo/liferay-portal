@@ -33,6 +33,7 @@ import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerRegistryUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.exportimport.kernel.lar.UserIdStrategy;
+import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.exportimport.portlet.data.handler.provider.PortletDataHandlerProvider;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
@@ -102,6 +103,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 
 import javax.portlet.PortletPreferences;
@@ -772,42 +774,28 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 	@Override
 	public boolean isAlwaysIncludeReference(
 		PortletDataContext portletDataContext,
-		StagedModel referenceStagedModel) {
+		StagedModel referrerStagedModel, StagedModel referenceStagedModel) {
 
-		String rootPortletId = portletDataContext.getRootPortletId();
-
-		if (Validator.isBlank(rootPortletId)) {
+		if (!ExportImportThreadLocal.isStagingInProcess()) {
 			return true;
 		}
 
-		Portlet portlet = _portletLocalService.getPortletById(rootPortletId);
-
-		PortletDataHandler portletDataHandler =
-			portlet.getPortletDataHandlerInstance();
+		if (StagingUtil.isStagedModelInChangeset(referenceStagedModel)) {
+			return true;
+		}
 
 		Map<String, String[]> parameterMap =
 			portletDataContext.getParameterMap();
 
-		String[] referencedContentBehaviorArray = parameterMap.get(
-			PortletDataHandlerControl.getNamespacedControlName(
-				portletDataHandler.getNamespace(),
-				"referenced-content-behavior"));
+		String referencedContentBehavior = MapUtil.getString(
+			parameterMap,
+			referrerStagedModel.getModelClassName() + StringPool.POUND +
+				"referenced-content-behavior");
 
-		String referencedContentBehavior = "include-always";
+		boolean includeAlways = !Objects.equals(
+			referencedContentBehavior, "include-if-modified");
 
-		if (!ArrayUtil.isEmpty(referencedContentBehaviorArray)) {
-			referencedContentBehavior = referencedContentBehaviorArray[0];
-		}
-
-		if (referencedContentBehavior.equals("include-always") ||
-			(referencedContentBehavior.equals("include-if-modified") &&
-			 portletDataContext.isWithinDateRange(
-				 referenceStagedModel.getModifiedDate()))) {
-
-			return true;
-		}
-
-		return false;
+		return includeAlways;
 	}
 
 	@Override

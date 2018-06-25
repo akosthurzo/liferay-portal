@@ -32,6 +32,7 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.GroupLocalService;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MapUtil;
@@ -480,6 +481,14 @@ public class ExportImportConfigurationParameterMapFactoryImpl
 		PortletDataHandlerControl[] exportControls =
 			portletDataHandlerInstance.getExportControls();
 
+		String referencedContentBehaviorControlName =
+			PortletDataHandlerControl.getNamespacedControlName(
+				portletDataHandlerInstance.getNamespace(),
+				"referenced-content-behavior");
+
+		boolean referencedContextBehaviorControlExists =
+			parameterMap.containsKey(referencedContentBehaviorControlName);
+
 		for (PortletDataHandlerControl exportControl : exportControls) {
 			if (exportControl instanceof PortletDataHandlerBoolean) {
 				PortletDataHandlerBoolean portletDataHandlerBoolean =
@@ -507,7 +516,54 @@ public class ExportImportConfigurationParameterMapFactoryImpl
 										getReferrerClassName(),
 							new String[] {Boolean.TRUE.toString()});
 					}
+
+					if (!referencedContextBehaviorControlExists) {
+						continue;
+					}
+
+					String referencedContentBehaviorValue = MapUtil.getString(
+						parameterMap, referencedContentBehaviorControlName);
+
+					_addReferencedContentBehaviorParameter(
+						portletDataHandlerBoolean.getChildren(), parameterMap,
+						portletDataHandlerBoolean.getClassName(),
+						referencedContentBehaviorValue);
 				}
+			}
+		}
+	}
+
+	private void _addReferencedContentBehaviorParameter(
+		PortletDataHandlerControl[] portletDataHandlerControls,
+		Map<String, String[]> parameterMap, String className,
+		String referencedContentBehaviorValue) {
+
+		if (ArrayUtil.isEmpty(portletDataHandlerControls)) {
+			return;
+		}
+
+		for (PortletDataHandlerControl portletDataHandlerControl :
+				portletDataHandlerControls) {
+
+			if (Objects.equals(
+					"referenced-content-behavior",
+					portletDataHandlerControl.getControlName())) {
+
+				parameterMap.put(
+					className + StringPool.POUND +
+						"referenced-content-behavior",
+					new String[] {referencedContentBehaviorValue});
+
+				return;
+			}
+
+			if (portletDataHandlerControl instanceof PortletDataHandlerBoolean) {
+				PortletDataHandlerBoolean portletDataHandlerBoolean =
+					(PortletDataHandlerBoolean)portletDataHandlerControl;
+
+				_addReferencedContentBehaviorParameter(
+					portletDataHandlerBoolean.getChildren(), parameterMap,
+					className, referencedContentBehaviorValue);
 			}
 		}
 	}

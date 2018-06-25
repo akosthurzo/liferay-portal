@@ -299,7 +299,7 @@ public interface ExportImportHelper {
 
 	public boolean isAlwaysIncludeReference(
 		PortletDataContext portletDataContext,
-		StagedModel referenceStagedModel);
+		StagedModel referrerStagedModel, StagedModel referenceStagedModel);
 
 	public boolean isReferenceWithinExportScope(
 		PortletDataContext portletDataContext, StagedModel stagedModel);

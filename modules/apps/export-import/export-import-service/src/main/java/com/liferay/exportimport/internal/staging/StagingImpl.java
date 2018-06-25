@@ -211,8 +211,8 @@ public class StagingImpl implements Staging {
 			return false;
 		}
 
-		long classNameId = _classNameLocalService.getClassNameId(
-			stagedGroupedModel.getModelClassName());
+		long classNameId = ExportImportClassedModelUtil.getClassNameId(
+			stagedGroupedModel);
 		long classPK = (long)stagedGroupedModel.getPrimaryKeyObj();
 
 		ChangesetEntry changesetEntry =

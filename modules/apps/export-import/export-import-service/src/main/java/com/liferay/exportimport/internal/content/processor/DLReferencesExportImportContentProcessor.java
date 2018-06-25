@@ -23,8 +23,11 @@ import com.liferay.exportimport.content.processor.ExportImportContentProcessor;
 import com.liferay.exportimport.kernel.exception.ExportImportContentProcessorException;
 import com.liferay.exportimport.kernel.exception.ExportImportContentValidationException;
 import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
+import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
+import com.liferay.exportimport.kernel.lar.PortletDataHandlerControl;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
+import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -53,6 +56,7 @@ import com.liferay.portal.kernel.xml.Element;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -320,8 +324,23 @@ public class DLReferencesExportImportContentProcessor
 
 			endPos = MapUtil.getInteger(dlReferenceParameters, "endPos");
 
+			Map<String, String[]> parameterMap =
+				portletDataContext.getParameterMap();
+
+			String referencedContentBehavior = MapUtil.getString(
+				parameterMap,
+				stagedModel.getModelClassName() + StringPool.POUND +
+					"referenced-content-behavior");
+
+			boolean includeAlways = !Objects.equals(
+				referencedContentBehavior, "include-if-modified");
+
 			try {
-				if (exportReferencedContent && !fileEntry.isInTrash()) {
+				if (exportReferencedContent && !fileEntry.isInTrash() &&
+					(StagingUtil.isStagedModelInChangeset(fileEntry) ||
+					 includeAlways ||
+					 !ExportImportThreadLocal.isStagingInProcess())) {
+
 					StagedModelDataHandlerUtil.exportReferenceStagedModel(
 						portletDataContext, stagedModel, fileEntry,
 						PortletDataContext.REFERENCE_TYPE_DEPENDENCY);
