@@ -79,7 +79,7 @@ public class StagedModelDataHandlerUtil {
 			referrerPortletId);
 
 		if (!ExportImportHelperUtil.isAlwaysIncludeReference(
-				portletDataContext, stagedModel) ||
+				portletDataContext, null, stagedModel) ||
 			!ExportImportHelperUtil.isReferenceWithinExportScope(
 				portletDataContext, stagedModel)) {
 
@@ -144,15 +144,15 @@ public class StagedModelDataHandlerUtil {
 		if (!ExportImportHelperUtil.isAlwaysIncludeReference(
 				portletDataContext, referrerStagedModel, stagedModel) ||
 			!ExportImportHelperUtil.isReferenceWithinExportScope(
-				portletDataContext, stagedModel)) {
-//			(!StagingUtil.isStagedModelInChangeset(stagedModel) &&
-//			 ExportImportDateUtil.isRangeFromLastPublishDate(
-//			 	portletDataContext) &&
-//			 MapUtil.getBoolean(
-//			 	portletDataContext.getParameterMap(),
-//				 "originalPortletDataAll") &&
-//			 !Objects.equals(stagedModel.getModelClassName(), LayoutSet.class.getName()) &&
-//			 !Objects.equals(stagedModel.getModelClassName(), Layout.class.getName()))) {
+				portletDataContext, stagedModel) ||
+			(!StagingUtil.isStagedModelInChangeset(stagedModel) &&
+			 ExportImportDateUtil.isRangeFromLastPublishDate(
+			 	portletDataContext) &&
+			 MapUtil.getBoolean(
+			 	portletDataContext.getParameterMap(),
+				 "originalPortletDataAll") &&
+			 !Objects.equals(stagedModel.getModelClassName(), LayoutSet.class.getName()) &&
+			 !Objects.equals(stagedModel.getModelClassName(), Layout.class.getName()))) {
 
 			return portletDataContext.addReferenceElement(
 				referrerStagedModel, referrerStagedModelElement, stagedModel,

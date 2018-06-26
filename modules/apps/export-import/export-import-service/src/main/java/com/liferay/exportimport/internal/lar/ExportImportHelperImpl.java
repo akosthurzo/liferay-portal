@@ -784,6 +784,10 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 			return true;
 		}
 
+		if (referrerStagedModel == null) {
+			return true;
+		}
+
 		Map<String, String[]> parameterMap =
 			portletDataContext.getParameterMap();
 
