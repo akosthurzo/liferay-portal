@@ -557,7 +557,9 @@ public class ExportImportConfigurationParameterMapFactoryImpl
 				return;
 			}
 
-			if (portletDataHandlerControl instanceof PortletDataHandlerBoolean) {
+			if (portletDataHandlerControl instanceof
+					PortletDataHandlerBoolean) {
+
 				PortletDataHandlerBoolean portletDataHandlerBoolean =
 					(PortletDataHandlerBoolean)portletDataHandlerControl;
 
@@ -608,13 +610,15 @@ public class ExportImportConfigurationParameterMapFactoryImpl
 
 	/**
 	 * 1. Removes PORTLET_DATA_portletId and PORTLET_DATA_ALL parameters in
-	 * parameterMap and replaces them with PORTLET_DATA_changesetPortletId. 2.
-	 * It also adds model specific parameters to be able to decide in changeset
-	 * portlet data handler whether a model needs to be exported or not. For
-	 * example: <"com.liferay.journal.model.JournalArticle",
-	 * [<code>true</code>]> 3. It adds originalPortletId parameter in case of
-	 * portlet publication
-	 * 4. It adds <"originalPortletDataAll", [true]> parameter if PORTLET_DATA_ALL is true
+	 *    parameterMap and replaces them with PORTLET_DATA_changesetPortletId.
+	 * 2. It also adds model specific parameters to be able to decide in
+	 *    changeset portlet data handler whether a model needs to be exported
+	 *    or not.
+	 *    For example: <"com.liferay.journal.model.JournalArticle",
+	 *    [<code>true</code>]>
+	 * 3. It adds originalPortletId parameter in case of portlet publication
+	 * 4. It adds <"originalPortletDataAll", [<code>true</code>]> parameter
+	 *    if PORTLET_DATA_ALL is true
 	 *
 	 * @param parameterMap
 	 */
@@ -630,9 +634,7 @@ public class ExportImportConfigurationParameterMapFactoryImpl
 			if (portletDataAll) {
 				parameterMap.put(
 					"originalPortletDataAll",
-					new String[] {
-						Boolean.TRUE.toString()
-					});
+					new String[] {Boolean.TRUE.toString()});
 			}
 
 			for (Portlet dataSiteLevelPortlet : dataSiteLevelPortlets) {

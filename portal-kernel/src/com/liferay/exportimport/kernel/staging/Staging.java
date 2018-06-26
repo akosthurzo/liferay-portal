@@ -55,8 +55,6 @@ import javax.servlet.http.HttpServletRequest;
 @ProviderType
 public interface Staging {
 
-	public boolean isStagedModelInChangeset(StagedModel stagedModel);
-
 	public <T extends BaseModel> void addModelToChangesetCollection(T model)
 		throws PortalException;
 
@@ -281,6 +279,8 @@ public interface Staging {
 
 	public boolean isRemoteLayoutHasPortletId(
 		long userId, long stagingGroupId, long plid, String portletId);
+
+	public boolean isStagedModelInChangeset(StagedModel stagedModel);
 
 	/**
 	 * @deprecated As of Wilberforce, see {@link

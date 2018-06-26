@@ -27,13 +27,12 @@ import com.liferay.exportimport.kernel.lar.MissingReferences;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataContextFactory;
 import com.liferay.exportimport.kernel.lar.PortletDataHandler;
-import com.liferay.exportimport.kernel.lar.PortletDataHandlerControl;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerRegistryUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.exportimport.kernel.lar.UserIdStrategy;
-import com.liferay.exportimport.kernel.staging.StagingUtil;
+import com.liferay.exportimport.kernel.staging.Staging;
 import com.liferay.exportimport.portlet.data.handler.provider.PortletDataHandlerProvider;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
@@ -774,13 +773,22 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 	@Override
 	public boolean isAlwaysIncludeReference(
 		PortletDataContext portletDataContext,
-		StagedModel referrerStagedModel, StagedModel referenceStagedModel) {
+		StagedModel referenceStagedModel) {
+
+		return isAlwaysIncludeReference(
+			portletDataContext, null, referenceStagedModel);
+	}
+
+	@Override
+	public boolean isAlwaysIncludeReference(
+		PortletDataContext portletDataContext, StagedModel referrerStagedModel,
+		StagedModel referenceStagedModel) {
 
 		if (!ExportImportThreadLocal.isStagingInProcess()) {
 			return true;
 		}
 
-		if (StagingUtil.isStagedModelInChangeset(referenceStagedModel)) {
+		if (_staging.isStagedModelInChangeset(referenceStagedModel)) {
 			return true;
 		}
 
@@ -1803,14 +1811,16 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 	private GroupLocalService _groupLocalService;
 	private LayoutLocalService _layoutLocalService;
 	private LayoutService _layoutService;
-
-	@Reference
 	private PortletDataContextFactory _portletDataContextFactory;
 
 	@Reference
 	private PortletDataHandlerProvider _portletDataHandlerProvider;
 
 	private PortletLocalService _portletLocalService;
+
+	@Reference
+	private Staging _staging;
+
 	private SystemEventLocalService _systemEventLocalService;
 	private UserLocalService _userLocalService;
 

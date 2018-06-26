@@ -56,10 +56,6 @@ import javax.servlet.http.HttpServletRequest;
 @ProviderType
 public class StagingUtil {
 
-	public static boolean isStagedModelInChangeset(StagedModel stagedModel) {
-		return _staging.isStagedModelInChangeset(stagedModel);
-	}
-
 	public static <T extends BaseModel> void addModelToChangesetCollection(
 			T model)
 		throws PortalException {
@@ -447,6 +443,10 @@ public class StagingUtil {
 
 		return _staging.isRemoteLayoutHasPortletId(
 			userId, stagingGroupId, plid, portletId);
+	}
+
+	public static boolean isStagedModelInChangeset(StagedModel stagedModel) {
+		return _staging.isStagedModelInChangeset(stagedModel);
 	}
 
 	/**

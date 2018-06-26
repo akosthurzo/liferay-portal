@@ -329,7 +329,15 @@ public class ExportImportHelperUtil {
 
 	public static boolean isAlwaysIncludeReference(
 		PortletDataContext portletDataContext,
-		StagedModel referrerStagedModel, StagedModel referenceStagedModel) {
+		StagedModel referenceStagedModel) {
+
+		return _exportImportHelper.isAlwaysIncludeReference(
+			portletDataContext, referenceStagedModel);
+	}
+
+	public static boolean isAlwaysIncludeReference(
+		PortletDataContext portletDataContext, StagedModel referrerStagedModel,
+		StagedModel referenceStagedModel) {
 
 		return _exportImportHelper.isAlwaysIncludeReference(
 			portletDataContext, referrerStagedModel, referenceStagedModel);
