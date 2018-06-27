@@ -435,6 +435,18 @@ public class PortletImportControllerImpl implements PortletImportController {
 			boolean importPortletSetup, boolean importPortletUserPreferences)
 		throws Exception {
 
+		String portletId = portletDataContext.getPortletId();
+		String rootPortletId = portletDataContext.getRootPortletId();
+
+		String originalPortletId = MapUtil.getString(
+			portletDataContext.getParameterMap(), "originalPortletId");
+
+		if (Validator.isNotNull(originalPortletId)) {
+			portletId = originalPortletId;
+
+			rootPortletId = PortletIdCodec.decodePortletName(portletId);
+		}
+
 		long plid = LayoutConstants.DEFAULT_PLID;
 		String scopeType = StringPool.BLANK;
 		String scopeLayoutUuid = StringPool.BLANK;
@@ -445,7 +457,7 @@ public class PortletImportControllerImpl implements PortletImportController {
 			if (preserveScopeLayoutId) {
 				javax.portlet.PortletPreferences jxPortletPreferences =
 					PortletPreferencesFactoryUtil.getLayoutPortletSetup(
-						layout, portletDataContext.getPortletId());
+						layout, portletId);
 
 				scopeType = GetterUtil.getString(
 					jxPortletPreferences.getValue("lfrScopeType", null));
@@ -512,11 +524,11 @@ public class PortletImportControllerImpl implements PortletImportController {
 				}
 
 				long curPlid = plid;
-				String curPortletId = portletDataContext.getPortletId();
+				String curPortletId = portletId;
 
 				if (ownerType == PortletKeys.PREFS_OWNER_TYPE_GROUP) {
 					curPlid = PortletKeys.PREFS_PLID_SHARED;
-					curPortletId = portletDataContext.getRootPortletId();
+					curPortletId = rootPortletId;
 					ownerId = portletDataContext.getScopeGroupId();
 				}
 
@@ -539,7 +551,7 @@ public class PortletImportControllerImpl implements PortletImportController {
 
 					String name = element.attributeValue("archive-name");
 
-					curPortletId = portletDataContext.getRootPortletId();
+					curPortletId = rootPortletId;
 
 					PortletItem portletItem =
 						_portletItemLocalService.updatePortletItem(
@@ -636,7 +648,7 @@ public class PortletImportControllerImpl implements PortletImportController {
 		if (preserveScopeLayoutId && (layout != null)) {
 			javax.portlet.PortletPreferences jxPortletPreferences =
 				PortletPreferencesFactoryUtil.getLayoutPortletSetup(
-					layout, portletDataContext.getPortletId());
+					layout, portletId);
 
 			try {
 				jxPortletPreferences.setValue("lfrScopeType", scopeType);

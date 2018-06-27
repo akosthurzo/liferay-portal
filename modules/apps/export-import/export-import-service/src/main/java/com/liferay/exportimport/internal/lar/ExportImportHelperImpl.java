@@ -1456,6 +1456,13 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 			Map<String, String[]> parameterMap, String type)
 		throws Exception {
 
+		String originalPortletId = MapUtil.getString(
+			parameterMap, "originalPortletId");
+
+		if (Validator.isNotNull(originalPortletId)) {
+			portletId = originalPortletId;
+		}
+
 		boolean exportPortletConfiguration = MapUtil.getBoolean(
 			parameterMap, PortletDataHandlerKeys.PORTLET_CONFIGURATION);
 		boolean exportPortletConfigurationAll = MapUtil.getBoolean(
@@ -1575,6 +1582,13 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 			long companyId, String portletId,
 			Map<String, String[]> parameterMap, ManifestSummary manifestSummary)
 		throws Exception {
+
+		String originalPortletId = MapUtil.getString(
+			parameterMap, "originalPortletId");
+
+		if (Validator.isNotNull(originalPortletId)) {
+			portletId = originalPortletId;
+		}
 
 		boolean importPortletConfiguration = MapUtil.getBoolean(
 			parameterMap, PortletDataHandlerKeys.PORTLET_CONFIGURATION);
