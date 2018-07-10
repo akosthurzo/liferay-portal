@@ -26,6 +26,9 @@ import com.liferay.asset.publisher.constants.AssetPublisherPortletKeys;
 import com.liferay.asset.publisher.web.configuration.AssetPublisherWebConfiguration;
 import com.liferay.asset.publisher.web.internal.util.AssetPublisherWebUtil;
 import com.liferay.asset.publisher.web.util.AssetPublisherUtil;
+import com.liferay.changeset.model.ChangesetCollection;
+import com.liferay.changeset.service.ChangesetCollectionLocalService;
+import com.liferay.changeset.service.ChangesetEntryLocalService;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFileEntryType;
 import com.liferay.document.library.kernel.service.DLFileEntryTypeLocalService;
@@ -40,6 +43,7 @@ import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerRegistryUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.staging.MergeLayoutPrototypesThreadLocal;
+import com.liferay.exportimport.kernel.staging.StagingConstants;
 import com.liferay.exportimport.portlet.preferences.processor.Capability;
 import com.liferay.exportimport.portlet.preferences.processor.ExportImportPortletPreferencesProcessor;
 import com.liferay.exportimport.portlet.preferences.processor.base.BaseExportImportPortletPreferencesProcessor;
@@ -83,6 +87,7 @@ import com.liferay.site.model.adapter.StagedGroup;
 import java.io.Serializable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -262,9 +267,30 @@ public class AssetPublisherExportImportPortletPreferencesProcessor
 				continue;
 			}
 
+			StagedModel stagedModel =
+				(StagedModel)assetRenderer.getAssetObject();
+
+			ChangesetCollection changesetCollection =
+				changsetCollectionLocalService.fetchChangesetCollection(
+					assetEntry.getGroupId(),
+					StagingConstants.
+						RANGE_FROM_LAST_PUBLISH_DATE_CHANGESET_NAME);
+
+			if (changesetCollection != null) {
+				if (changesetEntryLocalService.getChangesetEntriesCount(
+						changesetCollection.getChangesetCollectionId(),
+						assetEntry.getClassNameId(),
+						Collections.singleton(
+							GetterUtil.getLong(
+								stagedModel.getPrimaryKeyObj()))) > 0) {
+
+					continue;
+				}
+			}
+
 			StagedModelDataHandlerUtil.exportReferenceStagedModel(
 				portletDataContext, portletDataContext.getPortletId(),
-				(StagedModel)assetRenderer.getAssetObject());
+				stagedModel);
 		}
 	}
 
@@ -1348,6 +1374,12 @@ public class AssetPublisherExportImportPortletPreferencesProcessor
 
 	@Reference(target = "(name=ReferencedStagedModelImporter)")
 	protected Capability capability;
+
+	@Reference
+	protected ChangesetEntryLocalService changesetEntryLocalService;
+
+	@Reference
+	protected ChangesetCollectionLocalService changsetCollectionLocalService;
 
 	@Reference
 	protected Portal portal;

@@ -18,6 +18,7 @@ dependencies {
 	compileOnly project(":apps:asset:asset-publisher-api")
 	compileOnly project(":apps:asset:asset-tag-stats-api")
 	compileOnly project(":apps:asset:asset-taglib")
+	compileOnly project(":apps:changeset:changeset-api")
 	compileOnly project(":apps:comment:comment-taglib")
 	compileOnly project(":apps:dynamic-data-mapping:dynamic-data-mapping-api")
 	compileOnly project(":apps:dynamic-data-mapping:dynamic-data-mapping-taglib")
